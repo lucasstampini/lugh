@@ -1,0 +1,7 @@
+DESIGN.md
+CLAUDE.md
+PROJETO.md
+node_modules
+.env*
+!.env.example
+.DS_Store
