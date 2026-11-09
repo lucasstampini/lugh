@@ -8,13 +8,14 @@
  * sumiria da tela, o desfazer seria perdido e o quadro escondido deixaria de receber o que
  * o outro desenha. Estes testes pegam esse tipo de regressão.
  *
- * A reconexão ("Reconectando...") é coberta por lib/room/connection.test.ts e testada à mão:
- * derrubar o collab no meio do E2E afetaria os outros arquivos, que usam o mesmo servidor.
+ * Queda do collab: em vez de derrubar o servidor (que os outros arquivos também usam), o teste
+ * intercepta o WebSocket de uma janela só com `routeWebSocket`, corta e depois deixa reconectar.
+ * As combinações de estados estão em lib/room/connection.test.ts.
  *
  * Pré-requisitos: os do e2e/sala-editor.spec.ts (collab local sobe pelo playwright.config.ts).
  * Rodar só este arquivo: npx playwright test e2e/sala-layout.spec.ts
  */
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Page, test, type WebSocketRoute } from "@playwright/test";
 
 import { drawRectangle, INK, inkIn, joinRoom, openBoard } from "./helpers";
 
@@ -33,6 +34,33 @@ test.describe("layout da sala", () => {
 
     await ana.context().close();
     await bruno.context().close();
+  });
+
+  test("mostra Reconectando... quando o collab cai e Conectado quando volta", async ({ browser }) => {
+    // Intercepta só o WebSocket do collab desta janela: os outros testes não são afetados.
+    // Enquanto `offline` for true, cada tentativa de reconexão é recusada na hora.
+    let offline = false;
+    const sockets: WebSocketRoute[] = [];
+    const ana = await joinRoom(browser, "Ana Candidata", (context) =>
+      context.routeWebSocket(/localhost:1234/, (ws) => {
+        if (offline) return ws.close();
+        ws.connectToServer();
+        sockets.push(ws);
+      }),
+    );
+    const status = ana.getByRole("status").filter({ hasText: /Conectado|Reconectando/ });
+    await expect(status).toHaveText("Conectado");
+
+    offline = true;
+    for (const ws of sockets) await ws.close();
+
+    await expect(status).toHaveText("Reconectando...");
+
+    // O provider tenta de novo sozinho (com espera crescente): basta liberar a conexão.
+    offline = false;
+    await expect(status).toHaveText("Conectado", { timeout: 30_000 });
+
+    await ana.context().close();
   });
 
   test("trocar de aba não perde o código nem o desenho", async ({ browser }) => {

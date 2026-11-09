@@ -1,9 +1,15 @@
-import type { Browser, Page } from "@playwright/test";
+import type { Browser, BrowserContext, Page } from "@playwright/test";
 
 // Abre a sala de teste num contexto de navegador isolado (como uma janela anônima)
-// e entra com o nome dado, passando pelo PreJoin.
-export async function joinRoom(browser: Browser, name: string): Promise<Page> {
+// e entra com o nome dado, passando pelo PreJoin. `beforeOpen` roda antes de abrir a página
+// (ex: interceptar o WebSocket do collab, que conecta assim que se entra na sala).
+export async function joinRoom(
+  browser: Browser,
+  name: string,
+  beforeOpen?: (context: BrowserContext) => Promise<void>,
+): Promise<Page> {
   const context = await browser.newContext();
+  await beforeOpen?.(context);
   const page = await context.newPage();
 
   await page.goto("/sala/teste");
