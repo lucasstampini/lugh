@@ -8,6 +8,7 @@ import { useState } from "react";
 
 import { participantNameSchema } from "@/lib/room/session";
 
+import { CollabProvider } from "./CollabProvider";
 import { VideoPanel } from "./VideoPanel";
 
 // Monaco só existe no navegador e é pesado: fica num pedaço separado do bundle.
@@ -97,8 +98,10 @@ export default function RoomContent({ sessionId }: Props) {
         <aside className="w-80 shrink-0">
           <VideoPanel />
         </aside>
-        <main className="min-w-0 flex-1">
-          <CodeEditor />
+        <main className="flex min-w-0 flex-1 flex-col">
+          <CollabProvider sessionId={sessionId} userName={choices.username.trim()}>
+            <CodeEditor />
+          </CollabProvider>
         </main>
       </div>
     </LiveKitRoom>

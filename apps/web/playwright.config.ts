@@ -22,10 +22,22 @@ export default defineConfig({
       args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"],
     },
   },
-  webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000",
-    reuseExistingServer: true,
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      // Servidor de colaboração (Hocuspocus) local, para o editor e o quadro.
+      command: "npm run dev --prefix ../collab",
+      url: "http://localhost:1234/health",
+      reuseExistingServer: true,
+      timeout: 60_000,
+    },
+    {
+      command: "npm run dev",
+      url: "http://localhost:3000",
+      reuseExistingServer: true,
+      timeout: 120_000,
+      // Variável do processo vence o .env.local: os testes usam o collab local, não o Render.
+      // Se já houver um `npm run dev` rodando, ele é reaproveitado com a URL que estiver nele.
+      env: { NEXT_PUBLIC_COLLAB_URL: "ws://localhost:1234" },
+    },
+  ],
 });
