@@ -67,8 +67,7 @@ export default function Whiteboard() {
   }, [api, sceneReady, collab]);
 
   return (
-    <section aria-label="Quadro" className="flex min-h-0 flex-1 flex-col gap-2">
-      <h2 className="text-sm font-medium">Quadro</h2>
+    <section aria-label="Quadro" className="flex min-h-0 flex-1 flex-col">
       {/* O Excalidraw ocupa 100% do pai: sem altura definida aqui ele some (0px). */}
       <div ref={containerRef} className="min-h-0 flex-1 overflow-hidden rounded-lg border">
         <Excalidraw

@@ -74,8 +74,7 @@ export default function CodeEditor() {
   return (
     <section aria-label="Editor de código" className="flex min-h-0 flex-1 flex-col gap-2">
       {collab?.provider.awareness && <RemoteCursorStyles awareness={collab.provider.awareness} />}
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-medium">Código</h2>
+      <div className="flex items-center justify-end gap-2">
         <Select items={languageItems} value={language} onValueChange={(value) => changeLanguage(parseLanguage(value))}>
           <SelectTrigger aria-label="Linguagem" size="sm" className="min-w-32">
             <SelectValue />
