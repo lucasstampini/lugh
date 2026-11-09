@@ -54,3 +54,14 @@ export function getCode(ydoc: Y.Doc): Y.Text {
 export function getMeta(ydoc: Y.Doc): Y.Map<unknown> {
   return ydoc.getMap("meta");
 }
+
+// Elementos do quadro: cada item é um Y.Map { el, pos } no formato do y-excalidraw
+// (el = elemento do Excalidraw, pos = índice fracionário que define a ordem das camadas).
+export function getBoard(ydoc: Y.Doc): Y.Array<Y.Map<unknown>> {
+  return ydoc.getArray("board");
+}
+
+// Arquivos do quadro (imagens coladas), indexados pelo id do arquivo no Excalidraw.
+export function getBoardAssets(ydoc: Y.Doc): Y.Map<unknown> {
+  return ydoc.getMap("board-assets");
+}

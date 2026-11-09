@@ -3,11 +3,11 @@
  *
  * O que cobre: dois participantes conectados a um Hocuspocus de verdade (subido
  * dentro do teste, numa porta livre) compartilhando o documento da sessão:
- * código, linguagem e awareness (nome e cor), inclusive depois de o servidor cair
- * e voltar.
+ * código, linguagem, quadro (elementos e imagens) e awareness (nome e cor),
+ * inclusive depois de o servidor cair e voltar.
  *
- * Por que importa: é o coração do editor colaborativo. O E2E (e2e/sala-editor.spec.ts)
- * prova que o Monaco está ligado ao documento; este prova que o documento de fato
+ * Por que importa: é o coração da sala colaborativa. Os E2E (e2e/sala-editor.spec.ts e
+ * e2e/sala-quadro.spec.ts) provam que Monaco e Excalidraw estão ligados ao documento; este prova que o documento de fato
  * chega ao outro lado e que nada se perde numa queda, cenário real com o Render
  * grátis dormindo ou a internet do candidato oscilando.
  *
@@ -17,8 +17,10 @@ import type { Socket } from "node:net";
 
 import { Server } from "@hocuspocus/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { yjsToExcalidraw } from "y-excalidraw";
+import * as Y from "yjs";
 
-import { createCollab, getCode, getMeta, type Collab } from "./collab";
+import { createCollab, getBoard, getBoardAssets, getCode, getMeta, type Collab } from "./collab";
 import { getLanguage, setLanguage } from "./meta";
 
 const WAIT = { timeout: 15_000, interval: 50 };
@@ -39,6 +41,18 @@ async function startServer(port = 0) {
   }
 
   return { server, crash };
+}
+
+// Um elemento do quadro no formato que o y-excalidraw grava: Y.Map { el, pos }.
+function boardElement(id: string, pos: string) {
+  const item = new Y.Map<unknown>();
+  item.set("el", { id, type: "rectangle", version: 1 });
+  item.set("pos", pos);
+  return item;
+}
+
+function boardIds(collab: Collab) {
+  return yjsToExcalidraw(getBoard(collab.ydoc)).map((el: { id: string }) => el.id);
 }
 
 function waitForSync(collab: Collab) {
@@ -151,4 +165,70 @@ describe("createCollab", () => {
 
     await vi.waitFor(() => expect(getCode(bruno.ydoc).toString()).toBe("escrito offline"), WAIT);
   }, 30_000);
+
+  it("um elemento desenhado no quadro aparece para o outro", async () => {
+    const ana = join("Ana");
+    const bruno = join("Bruno");
+    await Promise.all([waitForSync(ana), waitForSync(bruno)]);
+
+    getBoard(ana.ydoc).push([boardElement("retangulo-api", "a0")]);
+
+    await vi.waitFor(() => expect(boardIds(bruno)).toEqual(["retangulo-api"]), WAIT);
+  });
+
+  it("os desenhos dos dois ficam na ordem das camadas, igual nos dois lados", async () => {
+    const ana = join("Ana");
+    const bruno = join("Bruno");
+    await Promise.all([waitForSync(ana), waitForSync(bruno)]);
+
+    // A posição (índice fracionário) define a camada, não a ordem de chegada.
+    getBoard(ana.ydoc).push([boardElement("de-cima", "a2")]);
+    getBoard(bruno.ydoc).push([boardElement("de-baixo", "a1")]);
+
+    await vi.waitFor(() => {
+      expect(boardIds(ana)).toEqual(["de-baixo", "de-cima"]);
+      expect(boardIds(bruno)).toEqual(["de-baixo", "de-cima"]);
+    }, WAIT);
+  });
+
+  it("uma imagem colada no quadro chega ao outro", async () => {
+    const ana = join("Ana");
+    const bruno = join("Bruno");
+    await Promise.all([waitForSync(ana), waitForSync(bruno)]);
+
+    getBoardAssets(ana.ydoc).set("arquivo-1", { id: "arquivo-1", mimeType: "image/png", dataURL: "data:image/png;base64,AA==" });
+
+    await vi.waitFor(() => expect(getBoardAssets(bruno.ydoc).get("arquivo-1")).toMatchObject({ mimeType: "image/png" }), WAIT);
+  });
+
+  it("editor e quadro dividem o documento sem se misturar", async () => {
+    const ana = join("Ana");
+    const bruno = join("Bruno");
+    await Promise.all([waitForSync(ana), waitForSync(bruno)]);
+
+    getCode(ana.ydoc).insert(0, "SELECT 1");
+    getBoard(ana.ydoc).push([boardElement("caixa", "a0")]);
+
+    await vi.waitFor(() => {
+      expect(getCode(bruno.ydoc).toString()).toBe("SELECT 1");
+      expect(boardIds(bruno)).toEqual(["caixa"]);
+    }, WAIT);
+  });
+
+  it("desfazer no quadro só desfaz as próprias ações, não o desenho do outro", async () => {
+    const ana = join("Ana");
+    const bruno = join("Bruno");
+    await Promise.all([waitForSync(ana), waitForSync(bruno)]);
+    // Mesma configuração do Whiteboard: só rastreia transações com a origem do binding local.
+    const anaOrigin = { binding: "ana" };
+    const anaUndo = new Y.UndoManager(getBoard(ana.ydoc), { trackedOrigins: new Set([anaOrigin]) });
+    ana.ydoc.transact(() => getBoard(ana.ydoc).push([boardElement("da-ana", "a1")]), anaOrigin);
+    getBoard(bruno.ydoc).push([boardElement("do-bruno", "a2")]);
+    await vi.waitFor(() => expect(boardIds(ana)).toEqual(["da-ana", "do-bruno"]), WAIT);
+
+    anaUndo.undo();
+
+    await vi.waitFor(() => expect(boardIds(bruno)).toEqual(["do-bruno"]), WAIT);
+    anaUndo.destroy();
+  });
 });
