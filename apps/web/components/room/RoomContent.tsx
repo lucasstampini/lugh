@@ -17,6 +17,12 @@ const CodeEditor = dynamic(() => import("./CodeEditor"), {
   loading: () => <p className="text-muted-foreground p-4 text-sm">Carregando o editor...</p>,
 });
 
+// Excalidraw também só roda no navegador (canvas, window) e é ainda maior que o Monaco.
+const Whiteboard = dynamic(() => import("./Whiteboard"), {
+  ssr: false,
+  loading: () => <p className="text-muted-foreground p-4 text-sm">Carregando o quadro...</p>,
+});
+
 type Props = { sessionId: string };
 
 type JoinedState = { choices: LocalUserChoices; token: string };
@@ -93,14 +99,18 @@ export default function RoomContent({ sessionId }: Props) {
       onDisconnected={() => setJoined(null)}
       onError={() => setError("A conexão de vídeo falhou. Entre de novo.")}
     >
-      {/* Layout provisório: vídeo à esquerda, editor à direita. As abas Código/Quadro vêm no bullet 6. */}
+      {/* Layout provisório: vídeo à esquerda, editor e quadro à direita. */}
       <div className="flex h-full gap-2">
         <aside className="w-80 shrink-0">
           <VideoPanel />
         </aside>
         <main className="flex min-w-0 flex-1 flex-col">
           <CollabProvider sessionId={sessionId} userName={choices.username.trim()}>
-            <CodeEditor />
+            {/* Provisório: editor em cima e quadro embaixo. As abas Código/Quadro vêm no bullet 6. */}
+            <div className="flex min-h-0 flex-1 flex-col gap-2">
+              <CodeEditor />
+              <Whiteboard />
+            </div>
           </CollabProvider>
         </main>
       </div>
