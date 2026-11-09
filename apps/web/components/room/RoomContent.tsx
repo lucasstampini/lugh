@@ -3,25 +3,12 @@
 import "@livekit/components-styles";
 
 import { LiveKitRoom, PreJoin, type LocalUserChoices } from "@livekit/components-react";
-import dynamic from "next/dynamic";
 import { useState } from "react";
 
 import { participantNameSchema } from "@/lib/room/session";
 
 import { CollabProvider } from "./CollabProvider";
-import { VideoPanel } from "./VideoPanel";
-
-// Monaco só existe no navegador e é pesado: fica num pedaço separado do bundle.
-const CodeEditor = dynamic(() => import("./CodeEditor"), {
-  ssr: false,
-  loading: () => <p className="text-muted-foreground p-4 text-sm">Carregando o editor...</p>,
-});
-
-// Excalidraw também só roda no navegador (canvas, window) e é ainda maior que o Monaco.
-const Whiteboard = dynamic(() => import("./Whiteboard"), {
-  ssr: false,
-  loading: () => <p className="text-muted-foreground p-4 text-sm">Carregando o quadro...</p>,
-});
+import { RoomLayout } from "./RoomLayout";
 
 type Props = { sessionId: string };
 
@@ -99,21 +86,10 @@ export default function RoomContent({ sessionId }: Props) {
       onDisconnected={() => setJoined(null)}
       onError={() => setError("A conexão de vídeo falhou. Entre de novo.")}
     >
-      {/* Layout provisório: vídeo à esquerda, editor e quadro à direita. */}
-      <div className="flex h-full gap-2">
-        <aside className="w-80 shrink-0">
-          <VideoPanel />
-        </aside>
-        <main className="flex min-w-0 flex-1 flex-col">
-          <CollabProvider sessionId={sessionId} userName={choices.username.trim()}>
-            {/* Provisório: editor em cima e quadro embaixo. As abas Código/Quadro vêm no bullet 6. */}
-            <div className="flex min-h-0 flex-1 flex-col gap-2">
-              <CodeEditor />
-              <Whiteboard />
-            </div>
-          </CollabProvider>
-        </main>
-      </div>
+      {/* O CollabProvider envolve o layout inteiro: editor, quadro e indicador de conexão usam a mesma conexão. */}
+      <CollabProvider sessionId={sessionId} userName={choices.username.trim()}>
+        <RoomLayout />
+      </CollabProvider>
     </LiveKitRoom>
   );
 }
