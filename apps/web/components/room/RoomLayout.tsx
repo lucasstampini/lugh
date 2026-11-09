@@ -5,7 +5,10 @@ import { useState } from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+import { useCollab } from "./CollabProvider";
 import { ConnectionStatus } from "./ConnectionStatus";
+import { LanguageSelect } from "./LanguageSelect";
+import { useLanguage } from "./useLanguage";
 import { VideoPanel } from "./VideoPanel";
 
 // Monaco só existe no navegador e é pesado: fica num pedaço separado do bundle.
@@ -27,6 +30,9 @@ type Tab = "code" | "board";
 export function RoomLayout() {
   // A aba é de cada participante (não sincroniza): um pode ler o código enquanto o outro desenha.
   const [tab, setTab] = useState<Tab>("code");
+  // A linguagem mora aqui porque o seletor fica no cabeçalho, fora do painel do editor.
+  const collab = useCollab()?.collab ?? null;
+  const [language, changeLanguage] = useLanguage(collab);
 
   return (
     // `dark`: a sala é toda escura (LiveKit, Monaco vs-dark, Excalidraw dark); sem isto as abas e
@@ -40,17 +46,20 @@ export function RoomLayout() {
       </aside>
       <main className="flex min-h-0 min-w-0 flex-1 flex-col">
         <Tabs value={tab} onValueChange={(value: Tab) => setTab(value)} className="min-h-0 flex-1">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <TabsList>
               <TabsTrigger value="code">Código</TabsTrigger>
               <TabsTrigger value="board">Quadro</TabsTrigger>
             </TabsList>
-            <ConnectionStatus />
+            <div className="flex items-center gap-2">
+              <LanguageSelect value={language} onChange={changeLanguage} />
+              <ConnectionStatus />
+            </div>
           </div>
           {/* keepMounted: o painel inativo só fica escondido. Desmontar destruiria o binding
               do Yjs (e o Monaco perderia desfazer, cursor e rolagem) a cada troca de aba. */}
           <TabsContent value="code" keepMounted className="flex min-h-0 flex-col data-hidden:hidden">
-            <CodeEditor />
+            <CodeEditor language={language} />
           </TabsContent>
           <TabsContent value="board" keepMounted className="flex min-h-0 flex-col data-hidden:hidden">
             <Whiteboard />
