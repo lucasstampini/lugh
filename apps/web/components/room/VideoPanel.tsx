@@ -4,6 +4,7 @@ import {
   ControlBar,
   ParticipantTile,
   RoomAudioRenderer,
+  StartMediaButton,
   TrackLoop,
   useTracks,
 } from "@livekit/components-react";
@@ -26,7 +27,13 @@ export function VideoPanel() {
           <ParticipantTile className="aspect-video w-full shrink-0" />
         </TrackLoop>
       </div>
+      {/* Quando o navegador bloqueia o som automático, o LiveKit mostra um botão para liberar.
+          O da ControlBar não cabe na coluna de 320px e ficava escondido atrás do editor, então
+          ele é escondido lá e mostrado aqui, numa linha própria (some sozinho quando não precisa).
+          Abaixo de 600px o CSS do LiveKit o fixa no centro da tela, onde o editor o cobre: mantemos no fluxo. */}
+      <StartMediaButton label="Ativar som" className="w-full shrink-0 max-[600px]:static! max-[600px]:transform-none!" />
       <ControlBar
+        className="[&_.lk-start-audio-button]:hidden!"
         variation="minimal"
         controls={{ microphone: true, camera: true, leave: true, screenShare: false, chat: false }}
       />
