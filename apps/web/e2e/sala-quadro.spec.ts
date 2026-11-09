@@ -10,61 +10,20 @@
  * está de fato ligado a elas (y-excalidraw) e que o nosso desfazer está no lugar do nativo.
  *
  * Como verifica: o Excalidraw desenha num <canvas>, não no DOM. Contamos os pixels do
- * canvas estático que são diferentes do fundo, em cada metade do quadro.
+ * canvas estático que são diferentes do fundo, em cada metade do quadro (e2e/helpers.ts).
  *
  * Pré-requisitos: os do e2e/sala-editor.spec.ts (collab local sobe pelo playwright.config.ts).
  * Rodar só este arquivo: npx playwright test e2e/sala-quadro.spec.ts
  */
 import { expect, type Page, test } from "@playwright/test";
 
-import { joinRoom } from "./helpers";
-
-type Half = "left" | "right";
-
-function staticCanvas(page: Page) {
-  return page.locator(".excalidraw canvas.static");
-}
+import { drawRectangle, INK, inkIn, joinRoom, openBoard } from "./helpers";
 
 async function joinWithBoard(page: Promise<Page>) {
   const ready = await page;
-  await staticCanvas(ready).waitFor();
+  await openBoard(ready);
   return ready;
 }
-
-// Desenha um retângulo no meio da metade escolhida do quadro (tecla "r" + arrastar).
-async function drawRectangle(page: Page, half: Half) {
-  const box = (await staticCanvas(page).boundingBox())!;
-  const x = box.x + box.width * (half === "left" ? 0.2 : 0.65);
-  const y = box.y + box.height * 0.35;
-
-  await page.mouse.click(x - 20, y - 20);
-  await page.keyboard.press("r");
-  await page.mouse.move(x, y);
-  await page.mouse.down();
-  await page.mouse.move(x + 80, y + 50, { steps: 5 });
-  await page.mouse.up();
-  // Esc solta a seleção, para as alças de seleção não contarem como desenho.
-  await page.keyboard.press("Escape");
-}
-
-// Quantos pixels da metade do canvas diferem da cor do canto (o fundo).
-function inkIn(page: Page, half: Half) {
-  return staticCanvas(page).evaluate((canvas: HTMLCanvasElement, side: Half) => {
-    const context = canvas.getContext("2d")!;
-    const { width, height } = canvas;
-    const startX = side === "left" ? 0 : Math.floor(width / 2);
-    const data = context.getImageData(startX, 0, Math.floor(width / 2), height).data;
-    const [r, g, b] = context.getImageData(1, 1, 1, 1).data;
-
-    let ink = 0;
-    for (let i = 0; i < data.length; i += 4) {
-      if (Math.abs(data[i] - r) + Math.abs(data[i + 1] - g) + Math.abs(data[i + 2] - b) > 60) ink++;
-    }
-    return ink;
-  }, half);
-}
-
-const INK = 50;
 
 test.describe("quadro colaborativo", () => {
   test("o que um desenha aparece para o outro", async ({ browser }) => {
