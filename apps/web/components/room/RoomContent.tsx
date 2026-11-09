@@ -3,11 +3,19 @@
 import "@livekit/components-styles";
 
 import { LiveKitRoom, PreJoin, type LocalUserChoices } from "@livekit/components-react";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 
 import { participantNameSchema } from "@/lib/room/session";
 
+import { CollabProvider } from "./CollabProvider";
 import { VideoPanel } from "./VideoPanel";
+
+// Monaco só existe no navegador e é pesado: fica num pedaço separado do bundle.
+const CodeEditor = dynamic(() => import("./CodeEditor"), {
+  ssr: false,
+  loading: () => <p className="text-muted-foreground p-4 text-sm">Carregando o editor...</p>,
+});
 
 type Props = { sessionId: string };
 
@@ -73,7 +81,9 @@ export default function RoomContent({ sessionId }: Props) {
   return (
     <LiveKitRoom
       data-lk-theme="default"
-      className="h-screen p-2"
+      className="p-2"
+      // Inline porque o CSS do LiveKit (.lk-room-container { height: 100% }) vence a classe do Tailwind.
+      style={{ height: "100dvh" }}
       serverUrl={livekitUrl}
       token={token}
       connect
@@ -83,7 +93,17 @@ export default function RoomContent({ sessionId }: Props) {
       onDisconnected={() => setJoined(null)}
       onError={() => setError("A conexão de vídeo falhou. Entre de novo.")}
     >
-      <VideoPanel />
+      {/* Layout provisório: vídeo à esquerda, editor à direita. As abas Código/Quadro vêm no bullet 6. */}
+      <div className="flex h-full gap-2">
+        <aside className="w-80 shrink-0">
+          <VideoPanel />
+        </aside>
+        <main className="flex min-w-0 flex-1 flex-col">
+          <CollabProvider sessionId={sessionId} userName={choices.username.trim()}>
+            <CodeEditor />
+          </CollabProvider>
+        </main>
+      </div>
     </LiveKitRoom>
   );
 }
