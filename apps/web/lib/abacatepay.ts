@@ -178,3 +178,35 @@ export async function checkPixCharge(chargeId: string, env?: Env): Promise<strin
   }
   return data.status;
 }
+
+// Chave do Modo Teste da AbacatePay. Nele não existe saque: as cobranças e o split
+// funcionam, mas o dinheiro da subconta não sai.
+export function isTestMode(env: Env = process.env): boolean {
+  return (env.ABACATEPAY_API_KEY ?? "").startsWith("abc_dev_");
+}
+
+// Saca da subconta por PIX para a chave do CPF ou CNPJ do titular (não há como escolher
+// outra chave). A taxa do saque sai do próprio valor. externalId é a idempotência:
+// repetir com o mesmo id e o mesmo valor devolve o saque que já existe, sem outro PIX.
+// Devolve o status do saque: "COMPLETE" quando o PIX saiu.
+export async function withdrawFromSubAccount(
+  input: { subAccountId: string; amountCents: number; externalId: string; description: string },
+  env?: Env,
+): Promise<string> {
+  const data = await request<{ status?: unknown }>({
+    method: "POST",
+    path: "/sub-accounts/withdraw",
+    body: {
+      id: input.subAccountId,
+      amount: input.amountCents,
+      externalId: input.externalId,
+      description: input.description,
+    },
+    env,
+  });
+
+  if (typeof data.status !== "string") {
+    throw new AbacatePayError("Saque sem status na resposta da AbacatePay", 200);
+  }
+  return data.status;
+}
