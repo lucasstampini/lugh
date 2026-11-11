@@ -36,6 +36,13 @@ export type TokenBody = z.infer<typeof tokenBodySchema>;
 
 export type SessionType = "coding" | "system_design" | "behavioral";
 
+// Rótulo mono do tipo da entrevista (cabeçalho da sala).
+export const SESSION_TYPE_LABELS: Record<SessionType, string> = {
+  coding: "código ao vivo",
+  system_design: "system design",
+  behavioral: "comportamental",
+};
+
 export type SessionRole = "candidate" | "interviewer";
 
 // O que a sala precisa saber de uma sessão real. Vem de getSessionForUser (lib/sessions.ts).
