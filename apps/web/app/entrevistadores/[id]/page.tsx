@@ -9,6 +9,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format-price";
 import { initials } from "@/lib/initials";
 import { AREA_OPTIONS, SENIORITY_OPTIONS } from "@/lib/interviewer-options";
+import { getFreeSlots } from "@/lib/slots";
 import { createClient } from "@/lib/supabase/server";
 
 export const instant = false;
@@ -22,18 +23,13 @@ const seniorityLabels: Record<string, string> = Object.fromEntries(
   SENIORITY_OPTIONS.map((option) => [option.value, option.label]),
 );
 
-// weekday 0 = domingo, igual ao banco. A semana é exibida de segunda a domingo.
+// weekday 0 = domingo, igual ao banco.
 const WEEKDAY_SHORT = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
-const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 const H2 = "font-heading text-2xl font-bold";
 const EXTERNAL_LINK = "text-brand-deep inline-flex min-h-11 items-center gap-1 font-bold underline";
-
-// "19:00:00" vira "19h"; "19:30:00" vira "19h30".
-function formatTime(time: string) {
-  const [hour, minute] = time.split(":");
-  return minute === "00" ? `${Number(hour)}h` : `${Number(hour)}h${minute}`;
-}
+const SLOT_CHIP =
+  "edge bg-card inline-flex min-h-11 min-w-[52px] items-center justify-center rounded-lg px-2";
 
 export default async function InterviewerProfilePage({
   params,
@@ -87,24 +83,15 @@ export default async function InterviewerProfilePage({
     notFound();
   }
 
-  const [{ data: availability }, { data: completedSessions }, { data: ratings }] =
-    await Promise.all([
-      supabase
-        .from("availability")
-        .select("weekday, start_time, end_time")
-        .eq("interviewer_id", id)
-        .order("weekday")
-        .order("start_time"),
-      supabase.rpc("interviewer_completed_sessions", { interviewer: id }),
-      supabase.rpc("interviewer_ratings", { interviewer_ids: [id] }),
-    ]);
+  const [freeSlots, { data: completedSessions }, { data: ratings }] = await Promise.all([
+    getFreeSlots(supabase, id),
+    supabase.rpc("interviewer_completed_sessions", { interviewer: id }),
+    supabase.rpc("interviewer_ratings", { interviewer_ids: [id] }),
+  ]);
 
-  const blocksByWeekday = new Map<number, { start: string; end: string }[]>();
-  for (const block of availability ?? []) {
-    const list = blocksByWeekday.get(block.weekday) ?? [];
-    list.push({ start: block.start_time, end: block.end_time });
-    blocksByWeekday.set(block.weekday, list);
-  }
+  // Horários livres de hoje a hoje + 6, já sem as sessões marcadas.
+  const days = freeSlots.weeks[0] ?? [];
+  const hasFreeSlots = days.some((day) => day.slots.length > 0);
 
   const joinYear = new Date(interviewer.created_at).getFullYear();
   const sessionsCount = typeof completedSessions === "number" ? completedSessions : 0;
@@ -276,50 +263,64 @@ export default async function InterviewerProfilePage({
               <p className="font-heading text-4xl leading-none font-extrabold tabular-nums">
                 {formatPrice(interviewer.price_cents)}
               </p>
-              <span className="text-muted-foreground font-mono text-[13px]">sessão de 50 min</span>
+              <span className="text-muted-foreground font-mono text-[13px]">sessão de 1h</span>
             </div>
             <div className="border-border border-t-[1.5px] border-dashed" />
             <div className="flex items-center justify-between gap-3">
-              <h2 className="font-extrabold">Horários da semana</h2>
-              <span className="text-muted-foreground font-mono text-xs">Brasília</span>
+              <h2 className="font-extrabold">Horários livres</h2>
+              <span className="text-muted-foreground font-mono text-xs">
+                próximos 7 dias · Brasília
+              </span>
             </div>
 
-            {blocksByWeekday.size === 0 ? (
+            {freeSlots.error ? (
+              <p role="alert" className="text-muted-foreground text-sm">
+                Não deu para carregar os horários. O problema é do nosso lado. Recarregue a página
+                em alguns segundos.
+              </p>
+            ) : !freeSlots.hasBlocks ? (
+              <p className="text-muted-foreground text-sm">Nenhum horário aberto no momento.</p>
+            ) : !hasFreeSlots ? (
               <p className="text-muted-foreground text-sm">
-                Nenhum horário aberto no momento.
+                Sem horário livre nos próximos 7 dias. Veja a semana seguinte ao agendar.
               </p>
             ) : (
               <ul className="flex flex-col gap-2.5 font-mono text-[13px]">
-                {WEEK_ORDER.map((weekday) => {
-                  const blocks = blocksByWeekday.get(weekday) ?? [];
-                  return (
-                    <li key={weekday} className="flex items-start gap-2.5">
-                      <span
-                        className={`flex min-h-11 w-11 shrink-0 items-center ${
-                          blocks.length > 0 ? "font-bold" : "text-muted-foreground"
-                        }`}
-                      >
-                        {WEEKDAY_SHORT[weekday]}
-                      </span>
-                      {blocks.length > 0 ? (
-                        <div className="flex flex-wrap gap-1.5">
-                          {blocks.map((block) => (
-                            <span
-                              key={`${block.start}-${block.end}`}
-                              className="edge bg-card inline-flex min-h-11 items-center rounded-lg px-2.5"
-                            >
-                              {formatTime(block.start)} às {formatTime(block.end)}
+                {days.map((day) => (
+                  <li key={day.dayKey} className="flex items-start gap-2.5">
+                    <span
+                      className={`flex min-h-11 w-16 shrink-0 items-center ${
+                        day.slots.length > 0 ? "font-bold" : "text-muted-foreground"
+                      }`}
+                    >
+                      {WEEKDAY_SHORT[day.weekday]} {day.dayOfMonth}
+                    </span>
+                    {day.slots.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {day.slots.map((slot) =>
+                          isOwner ? (
+                            <span key={slot.startsAt} className={SLOT_CHIP}>
+                              {slot.hour}h
                             </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground flex min-h-11 items-center">
-                          sem horários
-                        </span>
-                      )}
-                    </li>
-                  );
-                })}
+                          ) : (
+                            <Link
+                              key={slot.startsAt}
+                              href={`/agendar/${id}?slot=${encodeURIComponent(slot.startsAt)}`}
+                              aria-label={`Agendar ${WEEKDAY_SHORT[day.weekday]} ${day.dayOfMonth} às ${slot.hour}h`}
+                              className={`${SLOT_CHIP} lift hover:bg-accent`}
+                            >
+                              {slot.hour}h
+                            </Link>
+                          ),
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground flex min-h-11 items-center">
+                        sem horários
+                      </span>
+                    )}
+                  </li>
+                ))}
               </ul>
             )}
 
