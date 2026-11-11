@@ -15,15 +15,25 @@ type Input = {
   livekit: `${ConnectionState}`;
   // Já ficou totalmente conectado alguma vez? Diferencia "Conectando..." de "Reconectando...".
   hasConnected: boolean;
+  // O Hocuspocus recusou o token: o editor e o quadro não sincronizam até entrar de novo.
+  collabDenied?: boolean;
 };
 
 export function isFullyConnected({ collab, livekit }: Pick<Input, "collab" | "livekit">): boolean {
   return livekit === "connected" && (collab === null || collab === "connected");
 }
 
-export function combineConnectionStatus({ collab, livekit, hasConnected }: Input): ConnectionSummary {
+export function combineConnectionStatus({
+  collab,
+  livekit,
+  hasConnected,
+  collabDenied = false,
+}: Input): ConnectionSummary {
   // O LiveKit só fica "disconnected" quando desistiu de reconectar (ou a pessoa saiu).
   if (livekit === "disconnected") return { label: "Desconectado", tone: "error" };
+
+  // Token recusado não se resolve esperando: o vídeo segue, mas código e quadro pararam.
+  if (collabDenied) return { label: "Editor sem acesso", tone: "error" };
 
   if (isFullyConnected({ collab, livekit })) return { label: "Conectado", tone: "ok" };
 

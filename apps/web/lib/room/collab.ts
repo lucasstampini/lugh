@@ -23,14 +23,19 @@ type CreateCollabOptions = {
   url: string;
   sessionId: string;
   user: CollabUser;
+  // Busca o JWT que o Hocuspocus exige (POST /api/collab/token). É função, e não o token
+  // pronto, porque o provider chama de novo a cada reconexão: assim ele nunca reconecta
+  // com um token vencido. Se lançar erro, o provider emite `authenticationFailed`.
+  token: () => Promise<string>;
 };
 
-export function createCollab({ url, sessionId, user }: CreateCollabOptions): Collab {
+export function createCollab({ url, sessionId, user, token }: CreateCollabOptions): Collab {
   const ydoc = new Y.Doc();
   const provider = new HocuspocusProvider({
     url,
     name: roomNameFor(sessionId),
     document: ydoc,
+    token,
   });
 
   // O awareness é o "quem está aqui e onde": não vai para o documento, só circula entre

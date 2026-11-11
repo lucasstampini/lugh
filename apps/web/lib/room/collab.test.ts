@@ -4,7 +4,8 @@
  * O que cobre: dois participantes conectados a um Hocuspocus de verdade (subido
  * dentro do teste, numa porta livre) compartilhando o documento da sessão:
  * código, linguagem, quadro (elementos e imagens) e awareness (nome e cor),
- * inclusive depois de o servidor cair e voltar.
+ * inclusive depois de o servidor cair e voltar. No fim, o mesmo com um servidor que
+ * exige o token da sessão (fase 5): entra quem tem, fica de fora quem não tem.
  *
  * Por que importa: é o coração da sala colaborativa. Os E2E (e2e/sala-editor.spec.ts e
  * e2e/sala-quadro.spec.ts) provam que Monaco e Excalidraw estão ligados ao documento; este prova que o documento de fato
@@ -16,10 +17,12 @@
 import type { Socket } from "node:net";
 
 import { Server } from "@hocuspocus/server";
+import { jwtVerify } from "jose";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { yjsToExcalidraw } from "y-excalidraw";
 import * as Y from "yjs";
 
+import { createCollabToken } from "./collab-token";
 import { createCollab, getBoard, getBoardAssets, getCode, getMeta, type Collab } from "./collab";
 import { getLanguage, setLanguage } from "./meta";
 
@@ -66,7 +69,13 @@ describe("createCollab", () => {
   let collabs: Collab[];
 
   function join(name: string, color = "#3b82f6") {
-    const collab = createCollab({ url, sessionId: "teste", user: { name, color } });
+    // Este servidor não exige autenticação: o token é ignorado.
+    const collab = createCollab({
+      url,
+      sessionId: "teste",
+      user: { name, color },
+      token: async () => "sem-autenticacao",
+    });
     collabs.push(collab);
     return collab;
   }
@@ -230,5 +239,88 @@ describe("createCollab", () => {
 
     await vi.waitFor(() => expect(boardIds(bruno)).toEqual(["do-bruno"]), WAIT);
     anaUndo.destroy();
+  });
+});
+
+// Servidor que exige token, com a mesma checagem do apps/collab (onAuthenticate):
+// assinatura válida e documento igual ao da sessão do token.
+describe("createCollab com servidor autenticado", () => {
+  const secret = new TextEncoder().encode("segredo-de-teste-com-pelo-menos-32-chars");
+  const SESSION_ID = "0b8f6c1e-4a57-4d0b-9c58-2f1f4f3f7a10";
+  const OTHER_SESSION_ID = "9a1b2c3d-0000-4111-8222-333344445555";
+
+  let server: Server;
+  let url: string;
+  let collabs: Collab[];
+
+  function tokenFor(sessionId: string, name: string) {
+    return createCollabToken({ sessionId, userId: `id-${name}`, name, role: "candidate" }, secret);
+  }
+
+  function join(sessionId: string, token: () => Promise<string>) {
+    const collab = createCollab({ url, sessionId, user: { name: "Ana", color: "#2EF58A" }, token });
+    collabs.push(collab);
+    return collab;
+  }
+
+  function waitForDenial(collab: Collab) {
+    return new Promise<void>((resolve) => collab.provider.on("authenticationFailed", () => resolve()));
+  }
+
+  beforeEach(async () => {
+    server = new Server({
+      port: 0,
+      address: "127.0.0.1",
+      quiet: true,
+      stopOnSignals: false,
+      async onAuthenticate({ token, documentName }) {
+        const { payload } = await jwtVerify(token, secret, { algorithms: ["HS256"] });
+        if (documentName !== `session-${payload.sessionId}`) throw new Error("Sem acesso a esta sessão");
+      },
+    });
+    await server.listen();
+    url = `ws://127.0.0.1:${server.address.port}`;
+    collabs = [];
+  });
+
+  afterEach(async () => {
+    collabs.forEach((collab) => collab.destroy());
+    await server.destroy();
+  });
+
+  it("dois participantes com token da sessão editam o mesmo documento", async () => {
+    const ana = join(SESSION_ID, () => tokenFor(SESSION_ID, "Ana"));
+    const bruno = join(SESSION_ID, () => tokenFor(SESSION_ID, "Bruno"));
+    await Promise.all([waitForSync(ana), waitForSync(bruno)]);
+
+    getCode(ana.ydoc).insert(0, "privado");
+
+    await vi.waitFor(() => expect(getCode(bruno.ydoc).toString()).toBe("privado"), WAIT);
+  });
+
+  it("recusa token de outra sessão", async () => {
+    const intruso = join(SESSION_ID, () => tokenFor(OTHER_SESSION_ID, "Intruso"));
+
+    await waitForDenial(intruso);
+
+    expect(intruso.provider.synced).toBe(false);
+  });
+
+  it("recusa token com assinatura inválida", async () => {
+    const intruso = join(SESSION_ID, async () => "token-inventado");
+
+    await waitForDenial(intruso);
+
+    expect(intruso.provider.synced).toBe(false);
+  });
+
+  it("avisa que o acesso foi negado quando não consegue buscar o token", async () => {
+    const semToken = join(SESSION_ID, async () => {
+      throw new Error("403 da rota de token");
+    });
+
+    await waitForDenial(semToken);
+
+    expect(semToken.provider.synced).toBe(false);
   });
 });

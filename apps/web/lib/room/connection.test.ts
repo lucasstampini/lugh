@@ -21,6 +21,17 @@ describe("combineConnectionStatus", () => {
     expect(result).toEqual({ label: "Conectado", tone: "ok" });
   });
 
+  it("avisa que o editor está sem acesso quando o collab recusa o token", () => {
+    const result = combineConnectionStatus({
+      collab: "connected",
+      livekit: "connected",
+      hasConnected: true,
+      collabDenied: true,
+    });
+
+    expect(result).toEqual({ label: "Editor sem acesso", tone: "error" });
+  });
+
   it("mostra Conectado só com o vídeo quando a colaboração não está configurada", () => {
     const result = combineConnectionStatus({ collab: null, livekit: "connected", hasConnected: true });
 

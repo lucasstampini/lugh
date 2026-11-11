@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
-import { TEST_SESSION_ID } from "@/lib/room/session";
+import { isTestRoomEnabled, TEST_SESSION_ID } from "@/lib/room/session";
 import type { Database } from "@/lib/supabase/database.types";
 
 const PROTECTED_PREFIXES = [
@@ -13,9 +13,10 @@ const PROTECTED_PREFIXES = [
 
 const SKIP_ROLE_CHECK_PREFIXES = ["/onboarding", "/auth", "/api", "/login"];
 
-// A sala de teste da fase 1 é aberta: sem login e sem perfil. Sai daqui na
-// fase 5, quando a sala passa a validar se o usuário é participante da sessão.
-const PUBLIC_PATHS = [`/sala/${TEST_SESSION_ID}`];
+// A sala de teste é aberta (sem login e sem perfil), mas só fora de produção:
+// serve para desenvolver e para os E2E. Toda outra sala exige login, e a página
+// confere se o usuário é participante da sessão.
+const PUBLIC_PATHS = isTestRoomEnabled() ? [`/sala/${TEST_SESSION_ID}`] : [];
 
 // Renova o cookie de sessão em cada request e protege rotas que exigem
 // login, redirecionando sem sessão ou sem role pro lugar certo.

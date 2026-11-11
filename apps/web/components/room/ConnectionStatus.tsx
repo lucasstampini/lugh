@@ -26,7 +26,12 @@ export function ConnectionStatus() {
   const [hasConnected, setHasConnected] = useState(false);
   if (!hasConnected && isFullyConnected({ collab, livekit })) setHasConnected(true);
 
-  const { label, tone } = combineConnectionStatus({ collab, livekit, hasConnected });
+  const { label, tone } = combineConnectionStatus({
+    collab,
+    livekit,
+    hasConnected,
+    collabDenied: collabState?.denied ?? false,
+  });
 
   return (
     <span
