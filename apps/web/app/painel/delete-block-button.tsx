@@ -4,12 +4,12 @@ import { X } from "lucide-react";
 import { useState, useTransition } from "react";
 import { deleteAvailabilityBlock } from "./actions";
 
-export function DeleteBlockButton({ id }: { id: string }) {
+export function DeleteBlockButton({ id, description }: { id: string; description: string }) {
   const [pending, startTransition] = useTransition();
   const [failed, setFailed] = useState(false);
   const label = failed
-    ? "Não deu para apagar o bloco. Tentar de novo"
-    : "Apagar bloco";
+    ? `Não deu para remover o bloco de ${description}. Tentar de novo`
+    : `Remover bloco de ${description}`;
 
   return (
     <button
@@ -23,11 +23,11 @@ export function DeleteBlockButton({ id }: { id: string }) {
           setFailed(Boolean(result.error));
         })
       }
-      className={`hover:text-destructive disabled:opacity-50 ${
-        failed ? "text-destructive" : "text-primary"
+      className={`hover:bg-card flex size-9 items-center justify-center rounded-[7px] disabled:opacity-50 ${
+        failed ? "text-destructive" : "text-foreground"
       }`}
     >
-      <X aria-hidden="true" size={14} />
+      <X aria-hidden="true" size={14} strokeWidth={2.4} />
     </button>
   );
 }

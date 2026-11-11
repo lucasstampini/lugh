@@ -1,52 +1,35 @@
 import Link from "next/link";
 
-const STEPS = [
+export const WIZARD_STEPS = [
   { number: "01", label: "Dados pessoais", href: "/perfil" },
-  { number: "02", label: "Objetivo profissional", href: "/perfil/objetivo" },
-  { number: "03", label: "Experiência e prática", href: "/perfil/experiencia" },
-  { number: "04", label: "Revisar perfil", href: "/perfil/revisar" },
+  { number: "02", label: "Objetivo", href: "/perfil/objetivo" },
+  { number: "03", label: "Experiência", href: "/perfil/experiencia" },
+  { number: "04", label: "Revisar", href: "/perfil/revisar" },
 ];
 
-// Fundo da lista é a sidebar Índigo (bg-primary). Etapa ativa vira cartão
-// branco; etapas concluídas mostram "✓" em vez do número (ambas em branco,
-// só a ativa fica em Índigo sobre fundo branco).
+// A etapa atual fica em verde e marcada com aria-current.
 export function ProfileWizardSteps({ activeStep }: { activeStep: number }) {
   return (
-    <div className="flex flex-col gap-3.5">
-      {STEPS.map((step, index) => {
-        const stepNumber = index + 1;
-        const isActive = stepNumber === activeStep;
-        const isDone = stepNumber < activeStep;
-
-        return (
-          <Link
-            key={step.number}
-            href={step.href}
-            className={`flex items-center gap-3 rounded-xl px-3 py-4 ${
-              isActive ? "bg-card" : ""
-            }`}
-          >
-            <span
-              className={`text-[14px] font-extrabold ${
-                isActive ? "text-primary" : isDone ? "text-lume" : "text-primary-foreground"
-              }`}
-            >
-              {isDone ? "✓" : step.number}
-            </span>
-            <span
-              className={`text-[13px] ${
-                isActive
-                  ? "text-primary font-extrabold"
-                  : isDone
-                    ? "text-lume font-bold"
-                    : "text-primary-foreground font-normal"
-              }`}
-            >
-              {step.label}
-            </span>
-          </Link>
-        );
-      })}
-    </div>
+    <nav aria-label="Etapas do perfil">
+      <ol className="flex flex-col gap-2">
+        {WIZARD_STEPS.map((step, index) => {
+          const isActive = index + 1 === activeStep;
+          return (
+            <li key={step.number}>
+              <Link
+                href={step.href}
+                aria-current={isActive ? "step" : undefined}
+                className={`edge text-foreground flex min-h-[52px] w-full items-center gap-3 rounded-xl px-3.5 ${
+                  isActive ? "bg-primary text-ink font-extrabold" : "bg-card hover:bg-accent font-bold"
+                }`}
+              >
+                <span className="font-mono text-[13px]">{step.number}</span>
+                <span>{step.label}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
   );
 }

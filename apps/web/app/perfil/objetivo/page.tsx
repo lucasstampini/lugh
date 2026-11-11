@@ -30,15 +30,7 @@ export default async function PerfilObjetivoPage() {
   }
 
   return (
-    <ProfileWizardShell
-      activeStep={2}
-      heroLines={["Diga", "pra onde você", "quer chegar."]}
-      dicaLabel="No seu tempo."
-      dicaText="Essas escolhas ajudam a encontrar profissionais alinhados ao seu momento."
-      stepLabel="Configuração do perfil · Etapa 2 de 4"
-      title="Objetivo profissional"
-      description="Conte o que você busca para encontrar o treino que faz sentido para você."
-    >
+    <ProfileWizardShell activeStep={2} title="Objetivo">
       <ObjetivoForm />
     </ProfileWizardShell>
   );
