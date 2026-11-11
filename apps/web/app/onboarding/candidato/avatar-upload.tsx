@@ -17,6 +17,7 @@ export function AvatarUpload({
   children,
   secondaryLabel,
   onUploaded,
+  help = "Opcional. JPG, PNG ou WEBP de até 4 MB.",
 }: {
   initialUrl: string | null;
   name: string;
@@ -30,6 +31,8 @@ export function AvatarUpload({
   secondaryLabel?: string;
   // Avisa quem usa o componente quando a foto nova foi salva (para prévias).
   onUploaded?: (url: string | null) => void;
+  // Texto de ajuda abaixo do botão.
+  help?: string;
 }) {
   const [url, setUrl] = useState(initialUrl);
   const [preview, setPreview] = useState<string | null>(null);
@@ -124,9 +127,7 @@ export function AvatarUpload({
         {error ? (
           <FieldError message={error} />
         ) : (
-          <p className="text-muted-foreground text-[13px]">
-            Opcional. JPG, PNG ou WEBP de até 4 MB.
-          </p>
+          <p className="text-muted-foreground text-[13px]">{help}</p>
         )}
       </div>
     </div>
