@@ -67,7 +67,7 @@ insert into public.sessions (
   'system_design',
   'completed',
   'Quero treinar pra uma vaga de backend sênior, foco em escalar um sistema do zero.',
-  'room-e0000000-0000-4000-8000-000000000001',
+  'session-e0000000-0000-4000-8000-000000000001',
   'session-e0000000-0000-4000-8000-000000000001'
 );
 

@@ -3,7 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { safeNextPath } from "@/lib/safe-next-path";
 import { createClient } from "@/lib/supabase/client";
+
+const GENERIC_ERROR = "Não deu para entrar com o Google agora. Tente de novo.";
 
 export function GoogleLoginButton({ next }: { next?: string }) {
   const [loading, setLoading] = useState(false);
@@ -24,10 +27,10 @@ export function GoogleLoginButton({ next }: { next?: string }) {
 
       setLoading(false);
       if (event.data.ok) {
-        router.push(next && next.startsWith("/") ? next : "/entrevistadores");
+        router.push(safeNextPath(next, "/entrevistadores"));
         router.refresh();
       } else {
-        setError("Não deu para entrar com o Google agora. Tente de novo.");
+        setError(GENERIC_ERROR);
       }
     }
 
@@ -70,8 +73,7 @@ export function GoogleLoginButton({ next }: { next?: string }) {
       });
 
       if (error || !data.url) {
-        console.error("signInWithOAuth retornou erro:", error);
-        setError("Não deu para entrar com o Google agora. Tente de novo.");
+        setError(GENERIC_ERROR);
         setLoading(false);
         return;
       }
@@ -82,30 +84,41 @@ export function GoogleLoginButton({ next }: { next?: string }) {
         "width=480,height=640,menubar=no,toolbar=no,status=no,location=no",
       );
 
-      // Bloqueador de popup: cai pro redirect de página cheia de antes.
+      // Bloqueador de popup: refaz o login como redirect de página cheia. Não
+      // dá pra reaproveitar data.url: ela volta pro callback com popup=1, que
+      // responde com a página que só avisa a janela-mãe e se fecha (e aqui não
+      // existe janela-mãe, a pessoa ficaria numa tela em branco).
       if (!popup) {
-        window.location.href = data.url;
+        callbackUrl.searchParams.delete("popup");
+        const { error: redirectError } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: callbackUrl.toString() },
+        });
+        if (redirectError) {
+          setError(GENERIC_ERROR);
+          setLoading(false);
+        }
         return;
       }
 
       popupRef.current = popup;
       popup.focus();
-    } catch (err) {
-      console.error("signInWithOAuth lançou exceção:", err);
-      setError("Não deu para entrar com o Google agora. Tente de novo.");
+    } catch {
+      setError(GENERIC_ERROR);
       setLoading(false);
     }
   }
 
   return (
     <div className="flex w-full flex-col gap-3">
-      {/* Cores e logo seguem o guia de marca do Google para "Sign in with Google",
-          por isso fogem do Índigo padrão do Lugh: é o botão de outra marca, não o nosso. */}
+      {/* O logo colorido é o do Google (guia de marca deles); o botão em si
+          segue o padrão secundário do Lugh. */}
       <Button
         onClick={handleClick}
         disabled={loading}
         variant="outline"
-        className="h-11 w-full border-[#DADCE0] bg-white font-medium text-[#3C4043] hover:bg-[#F7F8F8] disabled:opacity-60 dark:border-[#5F6368] dark:bg-[#131314] dark:text-[#E3E3E3] dark:hover:bg-[#1E1F20]"
+        size="lg"
+        className="w-full text-base"
       >
         <svg viewBox="0 0 18 18" aria-hidden="true">
           <path
@@ -125,9 +138,13 @@ export function GoogleLoginButton({ next }: { next?: string }) {
             d="M9 3.5795c1.3214 0 2.5077.4541 3.4405 1.346l2.5813-2.5814C13.4632.8918 11.426 0 9 0 5.4818 0 2.4382 2.0168.9574 4.9582L3.9641 7.29C4.6727 5.1627 6.6564 3.5795 9 3.5795z"
           />
         </svg>
-        {loading ? "Entrando..." : "Entrar com Google"}
+        {loading ? "Entrando..." : "Continuar com Google"}
       </Button>
-      {error ? <p className="text-destructive text-sm">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-destructive text-sm font-semibold">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

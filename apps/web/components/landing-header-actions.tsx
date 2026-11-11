@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { buttonVariants } from "./ui/button";
 
 // getUser() lê Date.now() antes do primeiro await (ver auth-header.tsx);
 // connection() evita que isso quebre a validação de prerender estático da
@@ -14,29 +15,20 @@ export async function LandingHeaderActions() {
 
   if (user) {
     return (
-      <Link
-        href="/entrevistadores"
-        className="bg-primary text-primary-foreground flex h-11 items-center rounded-lg px-5 text-sm font-semibold"
-      >
-        Entrevistadores
+      <Link href="/entrevistadores" className={buttonVariants({ className: "rounded-[10px]" })}>
+        Encontrar um entrevistador
       </Link>
     );
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <Link
-        href="/login"
-        className="text-primary hidden h-11 items-center rounded-lg px-4 text-sm font-semibold sm:flex"
-      >
+    <>
+      <Link href="/login" className="text-foreground inline-flex min-h-11 items-center">
         Entrar
       </Link>
-      <Link
-        href="/login"
-        className="bg-primary text-primary-foreground flex h-11 items-center rounded-lg px-5 text-sm font-semibold"
-      >
-        Cadastrar-se
+      <Link href="/entrevistadores" className={buttonVariants({ className: "rounded-[10px]" })}>
+        Encontrar um entrevistador
       </Link>
-    </div>
+    </>
   );
 }

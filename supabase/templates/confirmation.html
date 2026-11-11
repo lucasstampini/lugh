@@ -1,0 +1,9 @@
+<h2>Boas-vindas ao Lugh</h2>
+
+<p>Clique no botão abaixo para confirmar seu e-mail e entrar. O link vale por 1 hora e só pode ser usado uma vez.</p>
+
+<!-- Primeiro acesso por link mágico usa este template (não o magic_link).
+     Mesmo formato: token_hash, para funcionar em qualquer navegador. -->
+<p><a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email">Confirmar e entrar</a></p>
+
+<p>Se você não pediu este e-mail, pode ignorar.</p>
