@@ -166,7 +166,7 @@ export default async function SessionResultPage({
             <div className="flex flex-wrap gap-1.5">
               <span className={CHIP}>{formatSessionDate(session.starts_at)}</span>
               <span className={CHIP}>{sessionTypeLabel}</span>
-              <span className={CHIP}>50 min</span>
+              <span className={CHIP}>1h</span>
               {feedback?.would_hire ? (
                 <span className={`${CHIP} bg-primary text-ink font-bold`}>avançaria no processo</span>
               ) : null}

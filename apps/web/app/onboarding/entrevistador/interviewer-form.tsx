@@ -209,7 +209,7 @@ export function InterviewerForm({
         <Field
           label="Preço da sessão"
           htmlFor="price"
-          help="Valor de uma sessão de 50 minutos. Aceita centavos, como 100,50. Dá para mudar depois."
+          help="Valor de uma sessão de 1 hora. Aceita centavos, como 100,50. Dá para mudar depois."
           error={fieldErrors.price}
           className="max-w-[320px]"
         >
@@ -228,7 +228,7 @@ export function InterviewerForm({
               aria-invalid={fieldErrors.price ? true : undefined}
               className="placeholder:text-muted-foreground h-full min-w-0 flex-1 bg-transparent outline-none"
             />
-            <span className="text-muted-foreground text-[13px]">/ 50 min</span>
+            <span className="text-muted-foreground text-[13px]">/ 1h</span>
           </div>
         </Field>
 
@@ -338,7 +338,7 @@ export function InterviewerForm({
             ) : null}
             <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
               <span className="text-sm font-bold">
-                {preview.price.trim() ? `R$ ${preview.price.trim()}` : "R$ --"} · 50 min
+                {preview.price.trim() ? `R$ ${preview.price.trim()}` : "R$ --"} · 1h
               </span>
             </div>
           </div>
