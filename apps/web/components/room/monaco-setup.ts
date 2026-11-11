@@ -17,6 +17,26 @@ self.MonacoEnvironment = {
     new Worker(new URL("monaco-editor/esm/vs/editor/editor.worker.js", import.meta.url), { type: "module" }),
 };
 
+// Tema do editor (DESIGN.md, seção 8). Os hex ficam aqui porque o Monaco não lê
+// variáveis CSS: precisam ser os mesmos valores dos tokens `.dark` do globals.css.
+export const LUGH_THEME = "lugh-dark";
+
+monaco.editor.defineTheme(LUGH_THEME, {
+  base: "vs-dark",
+  inherit: true,
+  rules: [],
+  colors: {
+    "editor.background": "#0C1F17",
+    "editor.foreground": "#FFFFFF",
+    "editorCursor.foreground": "#FFFFFF",
+    "editor.lineHighlightBackground": "#17382A",
+    "editorLineNumber.foreground": "#6F8A7B",
+    "editorLineNumber.activeForeground": "#A9BDB2",
+    "editor.selectionBackground": "#2EF58A40",
+    "editorIndentGuide.background1": "#23402F",
+  },
+});
+
 loader.config({ monaco });
 
 export { monaco };
