@@ -1,4 +1,4 @@
-import { AccessToken } from "livekit-server-sdk";
+import { AccessToken, RoomServiceClient } from "livekit-server-sdk";
 
 import { roomNameFor } from "./session";
 
@@ -38,4 +38,23 @@ export async function createLivekitToken(
   });
 
   return token.toJwt();
+}
+
+// Fecha a sala de vídeo: o LiveKit desconecta todo mundo que ainda está nela. Usado quando
+// o entrevistador encerra a sessão, para o candidato também sair. A API do LiveKit fala
+// HTTP no mesmo host do WebSocket (wss:// vira https://).
+export async function closeLivekitRoom(
+  sessionId: string,
+  env: Record<string, string | undefined> = process.env,
+): Promise<void> {
+  const credentials = readLivekitCredentials(env);
+  const url = env.NEXT_PUBLIC_LIVEKIT_URL;
+  if (!credentials || !url) throw new Error("LiveKit não configurado");
+
+  const client = new RoomServiceClient(
+    url.replace(/^ws/, "http"),
+    credentials.apiKey,
+    credentials.apiSecret,
+  );
+  await client.deleteRoom(roomNameFor(sessionId));
 }

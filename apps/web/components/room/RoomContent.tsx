@@ -3,11 +3,14 @@
 import "@livekit/components-styles";
 
 import { LiveKitRoom, PreJoin, type LocalUserChoices } from "@livekit/components-react";
+import { DisconnectReason } from "livekit-client";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Eyebrow } from "@/components/eyebrow";
 
+import { colorForRole, colorFromName } from "@/lib/room/colors";
 import { participantNameSchema } from "@/lib/room/session";
 
 import { CollabProvider } from "./CollabProvider";
@@ -23,6 +26,17 @@ export default function RoomContent({ sessionId, session }: RoomProps) {
   const [joined, setJoined] = useState<JoinedState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // A sessão foi encerrada pelo entrevistador: esperando o servidor trocar a tela.
+  const [ended, setEnded] = useState(false);
+  const router = useRouter();
+
+  // Quem decide a tela é o servidor (page.tsx): depois de encerrada, o refresh troca a
+  // sala pela tela "sessão encerrada". Enquanto ele não chega, nada de voltar ao PreJoin.
+  function handleSessionEnded() {
+    setEnded(true);
+    setJoined(null);
+    router.refresh();
+  }
 
   async function handleJoin(choices: LocalUserChoices) {
     setError(null);
@@ -50,6 +64,10 @@ export default function RoomContent({ sessionId, session }: RoomProps) {
 
   if (!livekitUrl) {
     return <RoomMessage>Vídeo não configurado (NEXT_PUBLIC_LIVEKIT_URL).</RoomMessage>;
+  }
+
+  if (ended) {
+    return <RoomMessage>sessão encerrada. fechando a sala…</RoomMessage>;
   }
 
   if (!joined) {
@@ -121,13 +139,27 @@ export default function RoomContent({ sessionId, session }: RoomProps) {
       connect
       video={choices.videoEnabled ? { deviceId: choices.videoDeviceId } : false}
       audio={choices.audioEnabled ? { deviceId: choices.audioDeviceId } : false}
-      // "Sair" na barra de controles desconecta; voltamos ao PreJoin.
-      onDisconnected={() => setJoined(null)}
+      // "Sair da sala" desconecta e volta ao PreJoin. Se foi o entrevistador que encerrou
+      // (o servidor apaga a sala no LiveKit), o candidato cai aqui com ROOM_DELETED.
+      onDisconnected={(reason) => {
+        if (session && reason === DisconnectReason.ROOM_DELETED) {
+          handleSessionEnded();
+          return;
+        }
+        setJoined(null);
+        // Sessão real: confere no servidor se a sala ainda está aberta (o horário pode ter acabado).
+        if (session) router.refresh();
+      }}
       onError={() => setError("A conexão de vídeo falhou. Entre de novo.")}
     >
       {/* O CollabProvider envolve o layout inteiro: editor, quadro e indicador de conexão usam a mesma conexão. */}
-      <CollabProvider sessionId={sessionId} userName={name} sendName={!session}>
-        <RoomLayout />
+      <CollabProvider
+        sessionId={sessionId}
+        userName={name}
+        color={session ? colorForRole(session.role) : colorFromName(name)}
+        sendName={!session}
+      >
+        <RoomLayout session={session} onSessionEnded={handleSessionEnded} />
       </CollabProvider>
     </LiveKitRoom>
   );
