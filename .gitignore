@@ -2,6 +2,7 @@ DESIGN.md
 ANNOTATIONS.md
 CLAUDE.md
 PROJETO.md
+TAREFAS-MOACIR.md
 node_modules
 .env*
 !.env.example

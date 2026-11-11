@@ -26,10 +26,12 @@ test.describe("sala de vídeo", () => {
     await expect(page.getByRole("button", { name: "Entrar na sala" })).toBeDisabled();
   });
 
-  test("responde 404 para uma sala que não existe", async ({ page }) => {
-    const response = await page.goto("/sala/nao-existe");
+  // Só a sala de teste é aberta. Qualquer outra exige login (proxy.ts). O 404 para quem
+  // está logado mas não participa da sessão entra com a fase 5.
+  test("sem login, uma sala que não é a de teste manda para o login", async ({ page }) => {
+    await page.goto("/sala/nao-existe");
 
-    expect(response?.status()).toBe(404);
+    await expect(page).toHaveURL(/\/login\?next=%2Fsala%2Fnao-existe$/);
   });
 
   test("dois participantes se veem na mesma sala", async ({ browser }) => {

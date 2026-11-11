@@ -7,8 +7,10 @@ import dynamic from "next/dynamic";
 const RoomContent = dynamic(() => import("./RoomContent"), {
   ssr: false,
   loading: () => (
-    <main className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground">Carregando a sala...</p>
+    <main className="dark bg-background flex min-h-screen items-center justify-center">
+      <p role="status" className="text-muted-foreground font-mono text-[13px]">
+        carregando a sala…
+      </p>
     </main>
   ),
 });
