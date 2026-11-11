@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { createInterviewerProfile } from "@/app/onboarding/actions";
+import { AvatarUpload } from "@/app/onboarding/candidato/avatar-upload";
 import { Eyebrow } from "@/components/eyebrow";
 import {
   ChoicePill,
@@ -48,14 +49,15 @@ export function InterviewerForm({
   title,
   backHref,
   profileName,
-  avatarUrl,
+  avatarUrl: initialAvatarUrl,
 }: {
   defaultValues?: InterviewerFormDefaults;
   submitLabel?: string;
   title: string;
   backHref: string;
-  // Nome e foto da conta, só para a prévia do card.
+  // Nome da conta, só para a prévia do card.
   profileName: string;
+  // Foto atual da conta (no login com Google, vem a foto do Google).
   avatarUrl: string | null;
 }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(
@@ -63,6 +65,9 @@ export function InterviewerForm({
     null,
   );
   const [bioLength, setBioLength] = useState(defaultValues?.bio.length ?? 0);
+  // A foto é salva na hora pelo AvatarUpload (action própria), fora do envio
+  // deste formulário. O estado aqui só mantém a prévia do card em dia.
+  const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
   // Só alimenta a prévia ao lado: os campos continuam não controlados e quem
   // valida e salva é a action.
   const [preview, setPreview] = useState<Preview>({
@@ -114,6 +119,17 @@ export function InterviewerForm({
           />
         ) : null}
         {state?.error ? <FormAlert title={state.error} /> : null}
+
+        <AvatarUpload
+          initialUrl={initialAvatarUrl}
+          name={profileName}
+          size={96}
+          onUploaded={setAvatarUrl}
+          secondaryLabel={avatarUrl ? "Trocar foto" : "Enviar foto"}
+          help="Aparece no seu card e no seu perfil. JPG, PNG ou WEBP de até 4 MB."
+        >
+          <span className={LABEL_CLASS}>Foto</span>
+        </AvatarUpload>
 
         <Field
           label="Cargo atual"
