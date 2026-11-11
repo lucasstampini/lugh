@@ -1,15 +1,17 @@
 "use client";
 
-import { DisconnectButton } from "@livekit/components-react";
+import { useRoomContext } from "@livekit/components-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SESSION_TYPE_LABELS, type RoomSession } from "@/lib/room/session";
 
 import { useCollab } from "./CollabProvider";
 import { ConnectionStatus } from "./ConnectionStatus";
+import { EndSessionButton } from "./EndSessionButton";
 import { LanguageSelect } from "./LanguageSelect";
 import { RoomTimer } from "./RoomTimer";
 import { useLanguage } from "./useLanguage";
@@ -31,7 +33,16 @@ type Tab = "code" | "board";
 
 // Layout da sala (fase 1, bullet 6): cabeçalho fino, vídeo numa coluna lateral fixa e, na
 // área principal, as abas Código e Quadro. Precisa estar dentro de <LiveKitRoom> e do <CollabProvider>.
-export function RoomLayout() {
+type Props = {
+  // Sessão real: o cabeçalho mostra o outro participante, o tipo e o tempo marcado.
+  // Sem ela é a sala de teste.
+  session?: RoomSession;
+  // O entrevistador encerrou a sessão (o servidor já confirmou).
+  onSessionEnded: () => void;
+};
+
+export function RoomLayout({ session, onSessionEnded }: Props) {
+  const room = useRoomContext();
   // A aba é de cada participante (não sincroniza): um pode ler o código enquanto o outro desenha.
   const [tab, setTab] = useState<Tab>("code");
   // A linguagem mora aqui porque o seletor fica no cabeçalho, fora do painel do editor.
@@ -52,14 +63,36 @@ export function RoomLayout() {
             className="h-[26px] w-auto"
           />
           <span aria-hidden="true" className="bg-border h-6 w-[1.5px]" />
-          <p className="text-muted-foreground font-mono text-xs">sala de entrevista</p>
+          {session ? (
+            <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+              <p className="min-w-0 truncate text-[15px] font-extrabold">
+                <span className="sr-only">Sessão com </span>
+                {session.otherParticipantName}
+              </p>
+              <span className="edge rounded-[7px] px-2 py-0.5 font-mono text-xs">
+                {SESSION_TYPE_LABELS[session.type]}
+              </span>
+            </div>
+          ) : (
+            <p className="text-muted-foreground font-mono text-xs">sala de entrevista</p>
+          )}
         </div>
-        <RoomTimer />
-        <div className="flex items-center gap-4">
+        <RoomTimer startsAt={session?.startsAt} endsAt={session?.endsAt} />
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <ConnectionStatus />
-          {/* Sair desconecta do vídeo e volta para a tela de entrada. Fica longe dos
-              controles de mic e câmera para evitar clique acidental. */}
-          <DisconnectButton>Encerrar sessão</DisconnectButton>
+          {/* Sair desconecta do vídeo e volta para a tela de entrada: dá para entrar de novo
+              enquanto a sessão estiver aberta. Fica longe dos controles de mic e câmera
+              para evitar clique acidental. */}
+          <Button type="button" variant="outline" size="sm" onClick={() => room.disconnect()}>
+            Sair da sala
+          </Button>
+          {session?.role === "interviewer" ? (
+            <EndSessionButton
+              sessionId={session.id}
+              otherParticipantName={session.otherParticipantName}
+              onEnded={onSessionEnded}
+            />
+          ) : null}
         </div>
       </header>
 

@@ -1,7 +1,8 @@
 /**
  * Testes de lib/room/colors.ts
  *
- * O que cobre: a cor de cada participante, derivada do nome digitado no PreJoin.
+ * O que cobre: a cor de cada participante: pelo papel na sessão real e, na sala de
+ * teste, derivada do nome digitado no PreJoin.
  *
  * Por que importa: a cor identifica o cursor de cada pessoa no editor. Ela precisa
  * ser estável (recarregar a página não troca a cor) e sempre válida para o CSS.
@@ -10,7 +11,14 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { colorFromName, PARTICIPANT_COLORS } from "./colors";
+import { colorForRole, colorFromName, PARTICIPANT_COLORS } from "./colors";
+
+describe("colorForRole", () => {
+  it("entrevistador em Verde e candidato em branco, como no DESIGN.md", () => {
+    expect(colorForRole("interviewer")).toBe("#2EF58A");
+    expect(colorForRole("candidate")).toBe("#FFFFFF");
+  });
+});
 
 describe("colorFromName", () => {
   it("devolve sempre a mesma cor para o mesmo nome", () => {

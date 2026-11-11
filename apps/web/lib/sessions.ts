@@ -1,5 +1,5 @@
 import { UUID_RE, type RoomSession, type SessionType } from "@/lib/room/session";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 
 // Só servidor: lê a sessão com o login de quem faz o request.
 
@@ -63,4 +63,35 @@ export async function getSessionForUser(
     endsAt: session.ends_at,
     status: session.status,
   };
+}
+
+// As mudanças de status abaixo são do backend, com service role (sessions não aceita
+// escrita do client). Quem chama já conferiu login, participação e papel. O update é
+// condicional ao status de origem: duas chamadas ao mesmo tempo não se atropelam, e a
+// segunda simplesmente não encontra linha para mudar.
+
+// scheduled → in_progress: o primeiro participante entrou na sala. Para o segundo
+// (e para quem recarrega a página) não muda nada.
+export async function startSession(sessionId: string): Promise<void> {
+  const { error } = await createAdminClient()
+    .from("sessions")
+    .update({ status: "in_progress" })
+    .eq("id", sessionId)
+    .eq("status", "scheduled");
+
+  if (error) throw new Error(`Falha ao iniciar a sessão: ${error.message}`);
+}
+
+// in_progress → awaiting_feedback: o entrevistador encerrou. Devolve false quando a
+// sessão não estava em andamento (nada mudou).
+export async function endSession(sessionId: string): Promise<boolean> {
+  const { data, error } = await createAdminClient()
+    .from("sessions")
+    .update({ status: "awaiting_feedback" })
+    .eq("id", sessionId)
+    .eq("status", "in_progress")
+    .select("id");
+
+  if (error) throw new Error(`Falha ao encerrar a sessão: ${error.message}`);
+  return data.length > 0;
 }

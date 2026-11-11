@@ -1,10 +1,22 @@
 // Cor de cada participante na sala (cursor no editor e ponteiro no quadro).
-// Derivada do nome para ser estável: a mesma pessoa tem a mesma cor ao recarregar a página.
+//
+// Na sessão real a cor vem do papel, como no DESIGN.md: entrevistador em Verde, candidato
+// em branco. Na sala de teste ninguém tem papel, então a cor é derivada do nome, para ser
+// estável: a mesma pessoa tem a mesma cor ao recarregar a página.
 //
 // A paleta é a da identidade, toda em tons claros que aparecem bem no fundo escuro da
 // sala. Por isso o texto das etiquetas sobre essas cores é sempre Tinta (cursor-styles.ts).
-// Enquanto a sala não sabe o papel de cada um (fase 5), não dá para fixar "entrevistador
-// em verde, candidato em branco" como no DESIGN.md: a cor vem do nome.
+
+import type { SessionRole } from "./session";
+
+export const ROLE_COLORS: Record<SessionRole, string> = {
+  interviewer: "#2EF58A",
+  candidate: "#FFFFFF",
+};
+
+export function colorForRole(role: SessionRole): string {
+  return ROLE_COLORS[role];
+}
 
 export const PARTICIPANT_COLORS = [
   "#2EF58A",
