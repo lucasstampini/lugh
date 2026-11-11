@@ -106,11 +106,20 @@ export default async function InterviewerProfilePage({
     notFound();
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("name, avatar_url")
-    .eq("id", id)
-    .maybeSingle();
+  // profiles só deixa cada um ler a própria linha: nome e avatar públicos vêm
+  // da view interviewer_profiles (nunca o e-mail). O dono vendo o próprio
+  // perfil pausado não aparece na view, então lê a linha dele em profiles.
+  const { data: profile } = isVisible
+    ? await supabase
+        .from("interviewer_profiles")
+        .select("name, avatar_url")
+        .eq("id", id)
+        .maybeSingle()
+    : await supabase
+        .from("profiles")
+        .select("name, avatar_url")
+        .eq("id", id)
+        .maybeSingle();
 
   if (!profile) {
     notFound();
