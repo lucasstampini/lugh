@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { AbacatePayError, createSubAccount } from "@/lib/abacatepay";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { taxIdSchema } from "@/lib/tax-id";
 
 const START_HOUR_RE = /^([01]\d|2[0-3]):00$/;
 // O fim aceita 24:00 (meia-noite), senão o bloco 23:00 às 00:00 seria impossível.
@@ -112,6 +114,90 @@ export async function deleteAvailabilityBlock(id: string) {
 
   if (error) {
     return { error: "Não deu para apagar o bloco agora. Tente de novo." };
+  }
+
+  revalidatePath("/painel");
+  return { error: null };
+}
+
+export type PayoutAccountState = { error: string | null; fieldError?: string } | null;
+
+const PAYOUT_OUR_FAULT =
+  "Não deu para cadastrar agora. O problema é do nosso lado. Tente de novo em alguns segundos.";
+
+// Mensagens da AbacatePay que são culpa do documento digitado, e o que dizer em cada uma.
+// Qualquer outra (subcontas não liberadas na loja, chave recusada, rede) é problema nosso.
+const TAX_ID_ERRORS: [pattern: string, message: string][] = [
+  ["CPF ou CNPJ inválido", "CPF ou CNPJ inválido. Confira os números."],
+  ["da própria loja", "Esse documento é o da conta do Lugh. Use o seu CPF ou CNPJ."],
+];
+
+// Cria a subconta da AbacatePay que recebe a parte do entrevistador em cada PIX. O
+// documento vai direto para a AbacatePay e não é gravado no banco: aqui fica só o id.
+export async function registerPayoutAccount(
+  _prevState: PayoutAccountState,
+  formData: FormData,
+): Promise<PayoutAccountState> {
+  const parsed = taxIdSchema.safeParse(formData.get("taxId"));
+  if (!parsed.success) {
+    return { error: null, fieldError: parsed.error.issues[0].message };
+  }
+
+  const { supabase, userId } = await requireOwnerId();
+
+  const [{ data: interviewer, error: interviewerError }, { data: profile }] = await Promise.all([
+    supabase
+      .from("interviewers")
+      .select("abacate_subaccount_id")
+      .eq("profile_id", userId)
+      .maybeSingle(),
+    supabase.from("profiles").select("name").eq("id", userId).maybeSingle(),
+  ]);
+
+  if (interviewerError) {
+    return { error: PAYOUT_OUR_FAULT };
+  }
+  if (!interviewer) {
+    redirect("/onboarding/entrevistador");
+  }
+
+  // Segundo clique ou outra aba: a subconta já existe, não há o que criar.
+  if (interviewer.abacate_subaccount_id) {
+    revalidatePath("/painel");
+    return { error: null };
+  }
+
+  const name = profile?.name?.trim();
+  if (!name) {
+    return { error: "Seu perfil está sem nome. Preencha o nome no perfil e tente de novo." };
+  }
+
+  let subAccountId: string;
+  try {
+    // O limite da AbacatePay para o nome do titular é de 100 caracteres.
+    ({ id: subAccountId } = await createSubAccount({
+      name: name.slice(0, 100),
+      taxId: parsed.data,
+      profileId: userId,
+    }));
+  } catch (error) {
+    const known =
+      error instanceof AbacatePayError
+        ? TAX_ID_ERRORS.find(([pattern]) => error.message.includes(pattern))
+        : undefined;
+    return known ? { error: null, fieldError: known[1] } : { error: PAYOUT_OUR_FAULT };
+  }
+
+  // abacate_subaccount_id não aceita escrita do client (grant por coluna): é do backend.
+  // Condicional ao campo vazio para dois envios ao mesmo tempo não se atropelarem.
+  const { error: updateError } = await createAdminClient()
+    .from("interviewers")
+    .update({ abacate_subaccount_id: subAccountId })
+    .eq("profile_id", userId)
+    .is("abacate_subaccount_id", null);
+
+  if (updateError) {
+    return { error: PAYOUT_OUR_FAULT };
   }
 
   revalidatePath("/painel");
