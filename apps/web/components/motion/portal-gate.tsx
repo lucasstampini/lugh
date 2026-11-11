@@ -51,7 +51,10 @@ export function PortalGate({
         <div className="absolute bottom-0 left-1/2 h-[16%] w-[42%] -translate-x-1/2">
           <motion.div
             className="bg-lume absolute inset-0 rounded-t-full"
-            style={{ boxShadow: "0 0 56px 14px rgba(255,194,61,0.5)" }}
+            style={{
+              boxShadow:
+                "0 0 56px 14px color-mix(in srgb, var(--lume) 50%, transparent)",
+            }}
             animate={{ opacity: hover ? 1 : 0 }}
             transition={springGentle}
           />
@@ -70,8 +73,8 @@ export function PortalGate({
         <motion.span
           key={tag.label}
           style={{ top: tag.top, left: tag.left, right: tag.right }}
-          className="bg-card border-border absolute rounded-full border px-4 py-2 text-sm font-bold shadow-sm"
-          initial={{ opacity: 0, y: reduceMotion ? 0 : 16 }}
+          className="bg-card border-border absolute rounded-full border px-4 py-2 text-sm font-bold shadow-sm motion-reduce:transform-none!"
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: hover ? -6 : 0 }}
           transition={{
             opacity: { ...springGentle, delay: Math.min(index, 7) * 0.06 },

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import { spring } from "./springs";
 
@@ -13,12 +13,11 @@ export function HoverLift({
   children: ReactNode;
   className?: string;
 }) {
-  const reduceMotion = useReducedMotion();
-
   return (
     <motion.div
-      className={className}
-      whileHover={reduceMotion ? undefined : { y: -4 }}
+      // Com prefers-reduced-motion o CSS anula o deslocamento.
+      className={`motion-reduce:transform-none! ${className ?? ""}`}
+      whileHover={{ y: -4 }}
       transition={spring}
     >
       {children}
