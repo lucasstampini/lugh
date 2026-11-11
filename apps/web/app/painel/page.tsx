@@ -75,7 +75,7 @@ export default async function PainelPage() {
               {isLive ? <span className="bg-lume size-2 rounded-full" /> : null}
               <p className="font-heading text-xl font-bold">
                 {!interviewer.active
-                  ? "Aguardando aprovação"
+                  ? "Seu perfil está desativado"
                   : isLive
                     ? "Seu perfil está ativo"
                     : "Seu perfil está pausado"}
@@ -83,7 +83,7 @@ export default async function PainelPage() {
             </div>
             <p className="text-foreground/70 text-sm">
               {!interviewer.active
-                ? "Avisamos por e-mail quando seu perfil for aprovado pra aparecer no marketplace."
+                ? "Seu perfil foi retirado do marketplace pela equipe do Lugh. Fale com a gente para reativar."
                 : isLive
                   ? "Candidatos conseguem te encontrar e agendar sessões."
                   : "Seu perfil não aparece no marketplace enquanto estiver pausado."}

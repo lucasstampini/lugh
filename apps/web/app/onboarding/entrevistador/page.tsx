@@ -22,8 +22,8 @@ export default async function OnboardingEntrevistadorPage() {
             Seu perfil de entrevistador
           </h1>
           <p className="text-foreground/70 text-sm">
-            Depois de enviar, seu perfil fica em análise antes de aparecer no
-            marketplace.
+            Ao publicar, seu perfil já aparece no marketplace. Dá para pausar
+            quando quiser no painel.
           </p>
         </div>
         <InterviewerForm />

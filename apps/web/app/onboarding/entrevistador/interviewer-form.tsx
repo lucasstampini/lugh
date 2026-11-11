@@ -30,7 +30,7 @@ function FieldError({ message }: { message?: string }) {
 
 export function InterviewerForm({
   defaultValues,
-  submitLabel = "Enviar perfil pra análise",
+  submitLabel = "Publicar perfil",
 }: {
   defaultValues?: InterviewerFormDefaults;
   submitLabel?: string;
