@@ -4,6 +4,8 @@ import { useActionState, useState } from "react";
 import { createInterviewerProfile } from "@/app/onboarding/actions";
 import { Button } from "@/components/ui/button";
 import { AREA_OPTIONS, SENIORITY_OPTIONS } from "./schema";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 type FormState = {
   error?: string;
@@ -50,7 +52,7 @@ export function InterviewerForm({
         <label htmlFor="headline" className="text-sm font-medium">
           Headline
         </label>
-        <input
+        <Input
           id="headline"
           name="headline"
           maxLength={80}
@@ -65,7 +67,7 @@ export function InterviewerForm({
         <label htmlFor="company" className="text-sm font-medium">
           Empresa
         </label>
-        <input
+        <Input
           id="company"
           name="company"
           maxLength={60}
@@ -123,7 +125,7 @@ export function InterviewerForm({
         <label htmlFor="price" className="text-sm font-medium">
           Preço por sessão (R$)
         </label>
-        <input
+        <Input
           id="price"
           name="price"
           inputMode="decimal"
@@ -143,7 +145,7 @@ export function InterviewerForm({
             {bioLength}/500
           </span>
         </div>
-        <textarea
+        <Textarea
           id="bio"
           name="bio"
           maxLength={500}
@@ -159,7 +161,7 @@ export function InterviewerForm({
         <label htmlFor="linkedin" className="text-sm font-medium">
           LinkedIn
         </label>
-        <input
+        <Input
           id="linkedin"
           name="linkedin"
           defaultValue={defaultValues?.linkedin}
@@ -173,7 +175,7 @@ export function InterviewerForm({
         <label htmlFor="github" className="text-sm font-medium">
           GitHub (opcional)
         </label>
-        <input
+        <Input
           id="github"
           name="github"
           defaultValue={defaultValues?.github}

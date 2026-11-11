@@ -3,6 +3,7 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
 
 const DEFAULT_SKILLS = ["JavaScript", "Node.js", "SQL"];
 
@@ -36,7 +37,7 @@ export function ExperienciaForm() {
             <label htmlFor="course" className="text-xs font-bold">
               Curso
             </label>
-            <input
+            <Input
               id="course"
               name="course"
               placeholder="Sistemas de Informação"
@@ -48,7 +49,7 @@ export function ExperienciaForm() {
             <label htmlFor="institution" className="text-xs font-bold">
               Instituição de ensino
             </label>
-            <input
+            <Input
               id="institution"
               name="institution"
               placeholder="Faculdade Horizonte"
@@ -60,7 +61,7 @@ export function ExperienciaForm() {
             <label htmlFor="status" className="text-xs font-bold">
               Situação da formação
             </label>
-            <input
+            <Input
               id="status"
               name="status"
               placeholder="Cursando · 6º semestre"
@@ -72,7 +73,7 @@ export function ExperienciaForm() {
             <label htmlFor="graduation" className="text-xs font-bold">
               Conclusão prevista
             </label>
-            <input
+            <Input
               id="graduation"
               name="graduation"
               placeholder="Dezembro de 2027"
@@ -131,7 +132,7 @@ export function ExperienciaForm() {
           ))}
 
           {addingSkill ? (
-            <input
+            <Input
               autoFocus
               value={newSkill}
               onChange={(event) => setNewSkill(event.target.value)}
@@ -174,7 +175,7 @@ export function ExperienciaForm() {
             <label htmlFor="project" className="text-xs font-bold">
               Nome do projeto
             </label>
-            <input
+            <Input
               id="project"
               name="project"
               placeholder="API de organização de estudos"
@@ -186,7 +187,7 @@ export function ExperienciaForm() {
             <label htmlFor="projectLink" className="text-xs font-bold">
               Link do projeto ou portfólio
             </label>
-            <input
+            <Input
               id="projectLink"
               name="projectLink"
               placeholder="Adicionar link do GitHub ou portfólio"

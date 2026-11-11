@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { safeNextPath } from "@/lib/safe-next-path";
 import { createClient } from "@/lib/supabase/client";
 
@@ -59,7 +60,7 @@ export function MagicLinkForm({ next }: { next?: string }) {
         <label htmlFor="magic-link-email" className="sr-only">
           E-mail
         </label>
-        <input
+        <Input
           id="magic-link-email"
           name="email"
           type="email"

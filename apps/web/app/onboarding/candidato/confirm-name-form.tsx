@@ -2,6 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { confirmCandidate } from "@/app/onboarding/actions";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { AREA_OPTIONS } from "@/lib/interviewer-options";
 
 export function ConfirmNameForm({ initialName }: { initialName: string }) {
@@ -14,7 +16,7 @@ export function ConfirmNameForm({ initialName }: { initialName: string }) {
         <label htmlFor="name" className="text-sm font-bold">
           Seu nome
         </label>
-        <input
+        <Input
           id="name"
           name="name"
           defaultValue={initialName}
@@ -29,7 +31,7 @@ export function ConfirmNameForm({ initialName }: { initialName: string }) {
         <label htmlFor="preferredName" className="text-sm font-bold">
           Nome de preferência
         </label>
-        <input
+        <Input
           id="preferredName"
           name="preferredName"
           maxLength={60}
@@ -42,7 +44,7 @@ export function ConfirmNameForm({ initialName }: { initialName: string }) {
         <label htmlFor="experienceYears" className="text-sm font-bold">
           Experiência (anos)
         </label>
-        <input
+        <Input
           id="experienceYears"
           name="experienceYears"
           type="number"
@@ -72,7 +74,7 @@ export function ConfirmNameForm({ initialName }: { initialName: string }) {
         <label htmlFor="targetRole" className="text-sm font-bold">
           Vaga ou cargo alvo
         </label>
-        <input
+        <Input
           id="targetRole"
           name="targetRole"
           maxLength={80}
@@ -88,7 +90,7 @@ export function ConfirmNameForm({ initialName }: { initialName: string }) {
           </label>
           <span className="text-muted-foreground text-xs">{bioLength}/500</span>
         </div>
-        <textarea
+        <Textarea
           id="bio"
           name="bio"
           maxLength={500}
@@ -102,7 +104,7 @@ export function ConfirmNameForm({ initialName }: { initialName: string }) {
         <label htmlFor="linkedin" className="text-sm font-bold">
           LinkedIn
         </label>
-        <input
+        <Input
           id="linkedin"
           name="linkedin"
           placeholder="linkedin.com/in/seu-usuario"
@@ -114,7 +116,7 @@ export function ConfirmNameForm({ initialName }: { initialName: string }) {
         <label htmlFor="github" className="text-sm font-bold">
           GitHub
         </label>
-        <input
+        <Input
           id="github"
           name="github"
           placeholder="github.com/seu-usuario"

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { AvatarUpload } from "@/app/onboarding/candidato/avatar-upload";
 import { updateProfileStep1 } from "./actions";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export type ProfileStep1Defaults = {
   name: string;
@@ -61,7 +63,7 @@ export function ProfileStep1Form({
             <label htmlFor="name" className="text-xs font-bold">
               Nome completo *
             </label>
-            <input
+            <Input
               id="name"
               name="name"
               defaultValue={defaultValues.name}
@@ -75,7 +77,7 @@ export function ProfileStep1Form({
             <label htmlFor="preferredName" className="text-xs font-bold">
               Como quer ser chamada?
             </label>
-            <input
+            <Input
               id="preferredName"
               name="preferredName"
               defaultValue={defaultValues.preferredName}
@@ -89,7 +91,7 @@ export function ProfileStep1Form({
           <label htmlFor="email" className="text-xs font-bold">
             E-mail da sua conta
           </label>
-          <input
+          <Input
             id="email"
             value={defaultValues.email}
             disabled
@@ -113,7 +115,7 @@ export function ProfileStep1Form({
         </div>
 
         <div className="border-input flex flex-col gap-1.5 rounded-md border p-3.5">
-          <textarea
+          <Textarea
             id="bio"
             name="bio"
             maxLength={300}

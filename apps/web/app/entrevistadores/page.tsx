@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/site-header";
 import { InterviewerCard } from "@/components/interviewer-card";
 import { FadeIn } from "@/components/motion/fade-in";
 import { HoverLift } from "@/components/motion/hover-lift";
+import { Input } from "@/components/ui/input";
 import { AREA_OPTIONS, SENIORITY_OPTIONS } from "@/lib/interviewer-options";
 import { upcomingSlots } from "@/lib/availability";
 import { createClient } from "@/lib/supabase/server";
@@ -131,7 +132,7 @@ export default async function EntrevistadoresPage({
                   size={16}
                   className="text-muted-foreground absolute top-1/2 left-3.5 -translate-y-1/2"
                 />
-                <input
+                <Input
                   id="q"
                   name="q"
                   type="text"
