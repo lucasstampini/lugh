@@ -18,6 +18,8 @@ import {
   interviewerShare,
   paymentSecondsLeft,
   refreshPaymentStatus,
+  releasePayment,
+  sumEarnings,
 } from "./payments";
 
 type Call = {
@@ -31,6 +33,8 @@ type Result = { data?: unknown; error?: { code?: string; message: string } | nul
 const mocks = vi.hoisted(() => ({
   createPixCharge: vi.fn(),
   checkPixCharge: vi.fn(),
+  withdrawFromSubAccount: vi.fn(),
+  isTestMode: vi.fn(),
   respond: vi.fn(),
 }));
 
@@ -83,6 +87,8 @@ vi.mock("@/lib/abacatepay", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./abacatepay")>()),
   createPixCharge: mocks.createPixCharge,
   checkPixCharge: mocks.checkPixCharge,
+  withdrawFromSubAccount: mocks.withdrawFromSubAccount,
+  isTestMode: mocks.isTestMode,
 }));
 
 const SESSION_ID = "0b8f6c1e-4a57-4d0b-9c58-2f1f4f3f7a10";
@@ -127,6 +133,8 @@ beforeEach(() => {
   calls.length = 0;
   vi.clearAllMocks();
   mocks.createPixCharge.mockResolvedValue(charge);
+  mocks.isTestMode.mockReturnValue(false);
+  mocks.withdrawFromSubAccount.mockResolvedValue("COMPLETE");
 });
 
 describe("valores e prazo", () => {
@@ -392,6 +400,94 @@ describe("refreshPaymentStatus", () => {
     database({ "sessions.select": { data: null } });
 
     await expect(refreshPaymentStatus(SESSION_ID, NOW)).resolves.toBeNull();
+  });
+});
+
+describe("releasePayment", () => {
+  const paid = {
+    id: "pay-1",
+    status: "paid",
+    interviewer_share_cents: 8000,
+    sessions: { interviewer_id: INTERVIEWER_ID },
+  };
+
+  it("saca a parte do entrevistador e marca o pagamento como repassado", async () => {
+    database({
+      "payments.select": { data: paid },
+      "interviewers.select": { data: { abacate_subaccount_id: "sacc_1" } },
+    });
+
+    await expect(releasePayment(SESSION_ID, NOW)).resolves.toBe("released");
+
+    expect(mocks.withdrawFromSubAccount).toHaveBeenCalledWith({
+      subAccountId: "sacc_1",
+      amountCents: 8000,
+      externalId: `repasse-${SESSION_ID}`,
+      description: expect.any(String),
+    });
+    expect(callsTo("payments", "update")[0]).toMatchObject({
+      values: { status: "released", released_at: NOW.toISOString() },
+      filters: { id: "pay-1", status: "paid" },
+    });
+  });
+
+  it("no Modo Teste marca como repassado sem chamar o saque", async () => {
+    mocks.isTestMode.mockReturnValue(true);
+    database({ "payments.select": { data: paid } });
+
+    await expect(releasePayment(SESSION_ID, NOW)).resolves.toBe("released");
+
+    expect(mocks.withdrawFromSubAccount).not.toHaveBeenCalled();
+    expect(callsTo("payments", "update")).toHaveLength(1);
+  });
+
+  it("deixa o pagamento a receber quando o saque não completa", async () => {
+    mocks.withdrawFromSubAccount.mockResolvedValue("FAILED");
+    database({
+      "payments.select": { data: paid },
+      "interviewers.select": { data: { abacate_subaccount_id: "sacc_1" } },
+    });
+
+    await expect(releasePayment(SESSION_ID, NOW)).resolves.toBe("failed");
+    expect(callsTo("payments", "update")).toHaveLength(0);
+  });
+
+  it("não saca de novo um pagamento já repassado", async () => {
+    database({ "payments.select": { data: { ...paid, status: "released" } } });
+
+    await expect(releasePayment(SESSION_ID, NOW)).resolves.toBe("released");
+    expect(mocks.withdrawFromSubAccount).not.toHaveBeenCalled();
+    expect(callsTo("payments", "update")).toHaveLength(0);
+  });
+
+  it.each([
+    ["sem pagamento", null],
+    ["pagamento ainda pendente", { ...paid, status: "pending" }],
+    ["cobrança feita sem split", { ...paid, interviewer_share_cents: 0 }],
+  ])("não repassa nada: %s", async (_name, row) => {
+    database({ "payments.select": { data: row } });
+
+    await expect(releasePayment(SESSION_ID, NOW)).resolves.toBe("nothing_to_release");
+    expect(mocks.withdrawFromSubAccount).not.toHaveBeenCalled();
+    expect(callsTo("payments", "update")).toHaveLength(0);
+  });
+});
+
+describe("sumEarnings", () => {
+  it("separa o que falta receber do que já foi repassado", () => {
+    expect(
+      sumEarnings([
+        { status: "paid", interviewer_share_cents: 8000 },
+        { status: "paid", interviewer_share_cents: 4000 },
+        { status: "released", interviewer_share_cents: 2400 },
+        { status: "pending", interviewer_share_cents: 8000 },
+        { status: "refunded", interviewer_share_cents: 8000 },
+      ]),
+    ).toEqual({ pendingCents: 12000, releasedCents: 2400 });
+  });
+
+  it("zera sem pagamentos", () => {
+    expect(sumEarnings([])).toEqual({ pendingCents: 0, releasedCents: 0 });
   });
 });
 
