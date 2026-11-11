@@ -5,12 +5,14 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 
-const HOUR_RE = /^([01]\d|2[0-3]):00$/;
+const START_HOUR_RE = /^([01]\d|2[0-3]):00$/;
+// O fim aceita 24:00 (meia-noite), senão o bloco 23:00 às 00:00 seria impossível.
+const END_HOUR_RE = /^(0[1-9]|1\d|2[0-4]):00$/;
 
 const addBlockSchema = z.object({
   weekday: z.coerce.number().int().min(0).max(6),
-  start: z.string().regex(HOUR_RE, "Escolha uma hora cheia."),
-  end: z.string().regex(HOUR_RE, "Escolha uma hora cheia."),
+  start: z.string().regex(START_HOUR_RE, "Escolha uma hora cheia."),
+  end: z.string().regex(END_HOUR_RE, "Escolha uma hora cheia."),
 });
 
 async function requireOwnerId() {

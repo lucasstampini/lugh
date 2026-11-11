@@ -4,10 +4,11 @@ import { useActionState } from "react";
 import { WEEKDAY_LABELS } from "@/lib/interviewer-options";
 import { addAvailabilityBlock } from "./actions";
 
-const HOURS = Array.from({ length: 24 }, (_, hour) => {
-  const value = `${hour.toString().padStart(2, "0")}:00`;
-  return value;
-});
+const formatHour = (hour: number) => `${hour.toString().padStart(2, "0")}:00`;
+
+const START_HOURS = Array.from({ length: 24 }, (_, hour) => formatHour(hour));
+// O fim vai de 01:00 a 24:00 (meia-noite), pra permitir o bloco 23:00 às 00:00.
+const END_HOURS = Array.from({ length: 24 }, (_, hour) => formatHour(hour + 1));
 
 export function AddBlockForm() {
   const [state, formAction, pending] = useActionState(addAvailabilityBlock, null);
@@ -41,7 +42,7 @@ export function AddBlockForm() {
           defaultValue="09:00"
           className="border-input bg-background h-11 rounded-md border px-3 text-sm"
         >
-          {HOURS.map((hour) => (
+          {START_HOURS.map((hour) => (
             <option key={hour} value={hour}>
               {hour}
             </option>
@@ -59,9 +60,9 @@ export function AddBlockForm() {
           defaultValue="10:00"
           className="border-input bg-background h-11 rounded-md border px-3 text-sm"
         >
-          {HOURS.map((hour) => (
+          {END_HOURS.map((hour) => (
             <option key={hour} value={hour}>
-              {hour}
+              {hour === "24:00" ? "00:00 (meia-noite)" : hour}
             </option>
           ))}
         </select>
