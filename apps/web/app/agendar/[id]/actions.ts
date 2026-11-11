@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { ensurePayment, expireUnpaidSessions } from "@/lib/payments";
 import { roomNameFor } from "@/lib/room/session";
 import { bookingSchema, findSlotWeek, getFreeSlots, sessionEnd } from "@/lib/slots";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
@@ -71,6 +72,10 @@ export async function createSession(
     return { error: "Esse horário não está mais disponível. Escolha outro." };
   }
 
+  // Sessão que passou do prazo de pagamento ainda segura a trava de double booking até
+  // ser marcada como expirada: marca agora, para o horário liberado poder ser vendido.
+  await expireUnpaidSessions();
+
   // sessions não aceita escrita do client (grant revogado): o insert é do
   // backend, com service role, depois de todas as checagens acima.
   const sessionId = crypto.randomUUID();
@@ -85,9 +90,8 @@ export async function createSession(
       starts_at: new Date(startsAt).toISOString(),
       ends_at: sessionEnd(startsAt),
       type,
-      // Nasce confirmada até existir pagamento (fase 7 do PROJETO.md); depois
-      // disso passa a nascer pending_payment.
-      status: "scheduled",
+      // Segura o horário por 30 minutos; vira scheduled quando o PIX é confirmado.
+      status: "pending_payment",
       candidate_notes: notes || null,
       livekit_room: roomName,
       collab_doc_name: roomName,
@@ -97,8 +101,16 @@ export async function createSession(
     return { error: insertError.code === EXCLUSION_VIOLATION ? SLOT_TAKEN : OUR_FAULT };
   }
 
+  // Já deixa a cobrança criada para a tela de pagamento abrir com o QR code. Se a
+  // AbacatePay falhar aqui, a sessão continua reservada e a tela tenta de novo.
+  try {
+    await ensurePayment(sessionId);
+  } catch {
+    // Segue para o pagamento, que mostra o erro e o botão de tentar de novo.
+  }
+
   revalidatePath("/sessoes");
   revalidatePath(`/agendar/${interviewerId}`);
   revalidatePath(`/entrevistadores/${interviewerId}`);
-  redirect(`/sessoes?agendada=${sessionId}`);
+  redirect(`/agendar/${interviewerId}?pagar=${sessionId}`);
 }
