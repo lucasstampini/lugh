@@ -98,3 +98,83 @@ export async function createSubAccount(
   }
   return { id: data.id };
 }
+
+export type PixCharge = {
+  id: string;
+  status: string;
+  // PIX copia e cola.
+  brCode: string;
+  // QR code em PNG, já como data URI ("data:image/png;base64,...").
+  brCodeBase64: string;
+  expiresAt: string;
+};
+
+export type PixChargeInput = {
+  amountCents: number;
+  description: string;
+  // Validade em segundos. A AbacatePay recusa menos de 300.
+  expiresInSeconds: number;
+  // Id da sessão: identifica a cobrança no nosso lado e serve de idempotência.
+  externalId: string;
+  // Parte que vai para a subconta do entrevistador. Sem split, o valor fica com o Lugh.
+  split?: { subAccountId: string; amountCents: number };
+};
+
+// Cria a cobrança PIX do checkout transparente (QR code na nossa tela).
+export async function createPixCharge(input: PixChargeInput, env?: Env): Promise<PixCharge> {
+  const data = await request<Record<string, unknown>>({
+    method: "POST",
+    path: "/transparents/create",
+    body: {
+      method: "PIX",
+      data: {
+        amount: input.amountCents,
+        description: input.description,
+        expiresIn: input.expiresInSeconds,
+        externalId: input.externalId,
+        metadata: { sessionId: input.externalId },
+        ...(input.split
+          ? { splits: [{ subAccountId: input.split.subAccountId, amount: input.split.amountCents }] }
+          : {}),
+      },
+    },
+    env,
+  });
+
+  const { id, status, brCode, brCodeBase64, expiresAt } = data;
+  if (
+    typeof id !== "string" ||
+    typeof status !== "string" ||
+    typeof brCode !== "string" ||
+    typeof brCodeBase64 !== "string" ||
+    typeof expiresAt !== "string"
+  ) {
+    throw new AbacatePayError("Cobrança incompleta na resposta da AbacatePay", 200);
+  }
+  return { id, status, brCode, brCodeBase64, expiresAt };
+}
+
+// A loja não tem split liberado (a liberação é feita conta a conta pelo suporte da
+// AbacatePay). Quem chama decide se cobra sem split.
+export function isSplitUnavailable(error: unknown): boolean {
+  return (
+    error instanceof AbacatePayError &&
+    /Split para subcontas não está (habilitado|disponível)/.test(error.message)
+  );
+}
+
+// Consulta o status atual de uma cobrança PIX direto na AbacatePay. PIX pago vem "PAID";
+// os outros valores (PENDING, EXPIRED, CANCELLED, REFUNDED...) não confirmam nada.
+export async function checkPixCharge(chargeId: string, env?: Env): Promise<string> {
+  const data = await request<{ status?: unknown }>({
+    method: "GET",
+    path: "/transparents/check",
+    query: { id: chargeId },
+    env,
+  });
+
+  if (typeof data.status !== "string") {
+    throw new AbacatePayError("Cobrança sem status na resposta da AbacatePay", 200);
+  }
+  return data.status;
+}

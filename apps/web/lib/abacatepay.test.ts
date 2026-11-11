@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { AbacatePayError, createSubAccount } from "./abacatepay";
+import {
+  AbacatePayError,
+  checkPixCharge,
+  createPixCharge,
+  createSubAccount,
+  isSplitUnavailable,
+} from "./abacatepay";
 
 const env = { ABACATEPAY_API_KEY: "abc_dev_test" };
 const input = { name: "Camila Souza", taxId: "11144477735", profileId: "profile-1" };
@@ -77,5 +83,82 @@ describe("createSubAccount", () => {
 
     await expect(createSubAccount(input, {})).rejects.toBeInstanceOf(AbacatePayError);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("createPixCharge", () => {
+  const charge = {
+    id: "pix_char_1",
+    status: "PENDING",
+    brCode: "000201...",
+    brCodeBase64: "data:image/png;base64,AAAA",
+    expiresAt: "2026-11-12T12:30:00.000Z",
+  };
+  const chargeInput = {
+    amountCents: 10000,
+    description: "Mock interview no Lugh",
+    expiresInSeconds: 1800,
+    externalId: "session-1",
+  };
+
+  it("cria a cobrança PIX com o split da subconta", async () => {
+    const fetchMock = mockFetch(200, { data: { ...charge, platformFee: 80 }, success: true });
+
+    await expect(
+      createPixCharge({ ...chargeInput, split: { subAccountId: "sacc_1", amountCents: 8000 } }, env),
+    ).resolves.toEqual(charge);
+
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [URL, RequestInit];
+    expect(String(url)).toBe("https://api.abacatepay.com/v2/transparents/create");
+    expect(JSON.parse(String(init.body))).toEqual({
+      method: "PIX",
+      data: {
+        amount: 10000,
+        description: "Mock interview no Lugh",
+        expiresIn: 1800,
+        externalId: "session-1",
+        metadata: { sessionId: "session-1" },
+        splits: [{ subAccountId: "sacc_1", amount: 8000 }],
+      },
+    });
+  });
+
+  it("não manda splits quando a cobrança é sem split", async () => {
+    const fetchMock = mockFetch(200, { data: charge, success: true });
+
+    await createPixCharge(chargeInput, env);
+
+    const [, init] = fetchMock.mock.calls[0] as unknown as [URL, RequestInit];
+    expect(JSON.parse(String(init.body)).data).not.toHaveProperty("splits");
+  });
+
+  it("vira erro quando a resposta vem sem o código do PIX", async () => {
+    mockFetch(200, { data: { id: "pix_char_1", status: "PENDING" }, success: true });
+
+    await expect(createPixCharge(chargeInput, env)).rejects.toBeInstanceOf(AbacatePayError);
+  });
+});
+
+describe("isSplitUnavailable", () => {
+  it("reconhece só os erros de split não liberado na loja", () => {
+    const error = (message: string) => new AbacatePayError(message, 200);
+
+    expect(isSplitUnavailable(error("Split para subcontas não está habilitado para esta loja"))).toBe(true);
+    expect(isSplitUnavailable(error("Split para subcontas não está disponível para esta loja"))).toBe(true);
+    expect(isSplitUnavailable(error("A soma dos splits passa do valor líquido da cobrança"))).toBe(false);
+    expect(isSplitUnavailable(new Error("Split para subcontas não está habilitado"))).toBe(false);
+  });
+});
+
+describe("checkPixCharge", () => {
+  it("consulta a cobrança pelo id e devolve o status", async () => {
+    const fetchMock = mockFetch(200, { data: { id: "pix_char_1", status: "PAID" }, success: true });
+
+    await expect(checkPixCharge("pix_char_1", env)).resolves.toBe("PAID");
+
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [URL, RequestInit];
+    expect(String(url)).toBe("https://api.abacatepay.com/v2/transparents/check?id=pix_char_1");
+    expect(init.method).toBe("GET");
+    expect(init.body).toBeUndefined();
   });
 });
