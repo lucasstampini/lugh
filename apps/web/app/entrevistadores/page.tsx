@@ -45,7 +45,7 @@ export default async function EntrevistadoresPage({
   // entrevistador vem da view interviewer_profiles (só essas duas colunas,
   // nunca email), buscada à parte porque o PostgREST não embeda views.
   const profileIds = interviewers?.map((i) => i.profile_id) ?? [];
-  const [{ data: profiles }, { data: availability }] = profileIds.length
+  const [{ data: profiles }, { data: availability }, { data: ratings }] = profileIds.length
     ? await Promise.all([
         supabase
           .from("interviewer_profiles")
@@ -55,8 +55,9 @@ export default async function EntrevistadoresPage({
           .from("availability")
           .select("interviewer_id, weekday, start_time")
           .in("interviewer_id", profileIds),
+        supabase.rpc("interviewer_ratings", { interviewer_ids: profileIds }),
       ])
-    : [{ data: [] }, { data: [] }];
+    : [{ data: [] }, { data: [] }, { data: [] }];
 
   const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
   const blocksByInterviewer = new Map<string, { weekday: number; start_time: string }[]>();
@@ -65,11 +66,15 @@ export default async function EntrevistadoresPage({
     list.push({ weekday: block.weekday, start_time: block.start_time });
     blocksByInterviewer.set(block.interviewer_id, list);
   }
+  const ratingByInterviewer = new Map(
+    (ratings ?? []).map((r) => [r.interviewer_id, { average: r.average, reviewCount: r.review_count }]),
+  );
 
   const results = (interviewers ?? [])
     .map((interviewer) => ({
       interviewer,
       profile: profileById.get(interviewer.profile_id),
+      rating: ratingByInterviewer.get(interviewer.profile_id) ?? null,
       slots: upcomingSlots(
         blocksByInterviewer.get(interviewer.profile_id) ?? [],
         3,
@@ -243,7 +248,7 @@ export default async function EntrevistadoresPage({
             </div>
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {results.map(({ interviewer, profile, slots }, index) => (
+              {results.map(({ interviewer, profile, rating, slots }, index) => (
                 <FadeIn key={interviewer.profile_id} index={index}>
                   <HoverLift className="h-full">
                     <InterviewerCard
@@ -257,6 +262,8 @@ export default async function EntrevistadoresPage({
                       priceCents={interviewer.price_cents}
                       avatarUrl={profile?.avatar_url ?? null}
                       slots={slots}
+                      rating={rating?.average ?? null}
+                      reviewCount={rating?.reviewCount ?? 0}
                     />
                   </HoverLift>
                 </FadeIn>

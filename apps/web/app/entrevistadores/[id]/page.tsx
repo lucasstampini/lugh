@@ -116,7 +116,7 @@ export default async function InterviewerProfilePage({
     notFound();
   }
 
-  const [{ data: availability }, { data: completedSessions }] =
+  const [{ data: availability }, { data: completedSessions }, { data: ratings }] =
     await Promise.all([
       supabase
         .from("availability")
@@ -125,6 +125,7 @@ export default async function InterviewerProfilePage({
         .order("weekday")
         .order("start_time"),
       supabase.rpc("interviewer_completed_sessions", { interviewer: id }),
+      supabase.rpc("interviewer_ratings", { interviewer_ids: [id] }),
     ]);
 
   const blocksByWeekday = new Map<number, { start: string; end: string }[]>();
@@ -137,6 +138,7 @@ export default async function InterviewerProfilePage({
   const nextSlot = nextAvailableSlot(availability ?? []);
   const joinYear = new Date(interviewer.created_at).getFullYear();
   const sessionsCount = typeof completedSessions === "number" ? completedSessions : 0;
+  const rating = ratings?.[0] ?? null;
 
   return (
     <main className="flex min-h-screen flex-col">
@@ -186,6 +188,16 @@ export default async function InterviewerProfilePage({
               <span className="text-lume font-bold">{sessionsCount}</span>{" "}
               {sessionsCount === 1 ? "sessão" : "sessões"} na Lugh
             </span>
+            {rating && rating.review_count > 0 ? (
+              <span>
+                <span className="text-lume">★</span>{" "}
+                <span className="font-bold">
+                  {rating.average.toFixed(1).replace(".", ",")}
+                </span>{" "}
+                · {rating.review_count}{" "}
+                {rating.review_count === 1 ? "avaliação" : "avaliações"}
+              </span>
+            ) : null}
             <span>
               {interviewer.areas.length}{" "}
               {interviewer.areas.length === 1 ? "área" : "áreas"} de atuação
@@ -309,9 +321,8 @@ export default async function InterviewerProfilePage({
               )}
             </FadeIn>
 
-            {/* Sem tabela de avaliações ainda (reviews está só no
-                PROJETO.md, nunca foi migrada). Estado vazio, sem inventar
-                review de ninguém. */}
+            {/* Comentário de review continua privado aos dois participantes
+                (RLS de public.reviews), só a média/contagem é pública. */}
             <FadeIn
               index={3}
               className="border-border bg-card flex flex-col gap-3 rounded-[20px] border p-7"
@@ -319,10 +330,21 @@ export default async function InterviewerProfilePage({
               <h2 className="font-heading text-xl font-bold">
                 Quem treinou, conta
               </h2>
-              <p className="text-muted-foreground text-sm">
-                Ainda sem avaliações. As primeiras sessões concluídas
-                aparecem aqui.
-              </p>
+              {rating && rating.review_count > 0 ? (
+                <p className="text-foreground/70 text-sm">
+                  Nota média de{" "}
+                  <span className="text-lume font-bold">
+                    {rating.average.toFixed(1).replace(".", ",")}
+                  </span>{" "}
+                  em {rating.review_count}{" "}
+                  {rating.review_count === 1 ? "avaliação" : "avaliações"}.
+                </p>
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  Ainda sem avaliações. As primeiras sessões concluídas
+                  aparecem aqui.
+                </p>
+              )}
             </FadeIn>
 
             <FadeIn
