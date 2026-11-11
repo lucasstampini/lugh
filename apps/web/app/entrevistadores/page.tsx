@@ -167,7 +167,7 @@ export default async function EntrevistadoresPage({
                 Entrevistadores
               </h1>
               <p className="text-muted-foreground max-w-[52ch]">
-                Profissionais de tecnologia que fazem entrevistas simuladas de 50 minutos. Cada um
+                Profissionais de tecnologia que fazem entrevistas simuladas de 1 hora. Cada um
                 define o próprio preço.
               </p>
             </div>

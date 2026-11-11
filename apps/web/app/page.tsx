@@ -166,13 +166,13 @@ export default function Home() {
           <div className="flex min-w-0 flex-[1_1_380px] flex-col items-start gap-6">
             <span className="edge bg-card inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-mono text-[13px] font-medium">
               <LiveDot />
-              entrevista simulada · 50 min
+              entrevista simulada · 1h
             </span>
             <h1 className="font-heading text-[clamp(36px,4.8vw,62px)] leading-[1.04] font-extrabold tracking-[-0.025em]">
               Treine entrevista técnica com quem já trabalha na área
             </h1>
             <p className="text-muted-foreground max-w-[52ch] text-[clamp(16px,1.4vw,19px)]">
-              Uma entrevista simulada de 50 minutos com um profissional de tecnologia. Você
+              Uma entrevista simulada de 1 hora com um profissional de tecnologia. Você
               programa, desenha a arquitetura e sai com nota por competência.
             </p>
             <Link href="/entrevistadores" className={buttonVariants({ size: "lg", className: "h-[54px] px-[26px]" })}>
@@ -502,7 +502,7 @@ export default function Home() {
                 <div className="min-w-0 flex-[1_1_180px]">
                   <p className="font-extrabold">Resultado da sessão</p>
                   <p className="text-muted-foreground font-mono text-xs">
-                    Camila Ribeiro · qua, 18 nov · 50 min
+                    Camila Ribeiro · qua, 18 nov · 1h
                   </p>
                 </div>
                 <span className="bg-accent rounded-[7px] px-[9px] py-1 font-mono text-xs">exemplo</span>
@@ -590,7 +590,7 @@ export default function Home() {
                   <span className="edge rounded-[7px] px-2 py-0.5">system design</span>
                 </div>
                 <div className="mt-auto flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
-                  <span className="text-sm font-bold">R$ 100 · 50 min</span>
+                  <span className="text-sm font-bold">R$ 100 · 1h</span>
                   <span className="edge bg-primary rounded-[7px] px-2 py-0.5 font-bold">
                     qua, 18 nov · 19h
                   </span>
@@ -602,14 +602,14 @@ export default function Home() {
                   {
                     name: "Rafael Nascimento",
                     role: "Front-end sênior · Plataforma de educação",
-                    price: "R$ 80 · 50 min",
+                    price: "R$ 80 · 1h",
                     slot: "qui, 19 nov · 18h",
                     image: "/illustrations/rafael.svg",
                   },
                   {
                     name: "Beatriz Costa",
                     role: "Dados sênior · Varejo online",
-                    price: "R$ 120 · 50 min",
+                    price: "R$ 120 · 1h",
                     slot: "sex, 20 nov · 10h",
                     image: "/illustrations/beatriz.svg",
                   },

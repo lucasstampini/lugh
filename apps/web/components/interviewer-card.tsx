@@ -100,7 +100,7 @@ export function InterviewerCard({
       <div className="flex min-w-0 flex-[0_1_200px] flex-col items-start gap-2">
         <p className="font-heading text-2xl leading-none font-extrabold tabular-nums">
           {formatPrice(priceCents)}{" "}
-          <span className="text-muted-foreground font-mono text-xs font-medium">/ 50 min</span>
+          <span className="text-muted-foreground font-mono text-xs font-medium">/ 1h</span>
         </p>
         {nextSlot ? (
           <span className="edge bg-primary text-ink rounded-[7px] px-2 py-0.5 font-mono text-xs font-bold lowercase">
