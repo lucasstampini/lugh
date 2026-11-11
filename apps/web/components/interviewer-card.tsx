@@ -2,7 +2,6 @@ import { Building2, CalendarDays } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { AREA_OPTIONS, SENIORITY_OPTIONS } from "@/lib/interviewer-options";
-import { getPlaceholderRating } from "@/lib/placeholder-rating";
 
 const priceFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -34,6 +33,8 @@ export function InterviewerCard({
   priceCents,
   avatarUrl,
   slots,
+  rating,
+  reviewCount,
 }: {
   profileId: string;
   name: string;
@@ -45,9 +46,9 @@ export function InterviewerCard({
   priceCents: number;
   avatarUrl: string | null;
   slots: string[];
+  rating: number | null;
+  reviewCount: number;
 }) {
-  const { rating, reviewCount } = getPlaceholderRating(profileId);
-
   return (
     <Link
       href={`/entrevistadores/${profileId}`}
@@ -72,10 +73,12 @@ export function InterviewerCard({
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div className="flex items-center gap-1.5">
             <p className="truncate font-bold">{name}</p>
-            <span className="text-muted-foreground flex shrink-0 items-center gap-0.5 text-xs">
-              <span className="text-lume">★</span>
-              {rating} · {reviewCount}
-            </span>
+            {reviewCount > 0 ? (
+              <span className="text-muted-foreground flex shrink-0 items-center gap-0.5 text-xs">
+                <span className="text-lume">★</span>
+                {rating?.toFixed(1).replace(".", ",")} · {reviewCount}
+              </span>
+            ) : null}
           </div>
           <p className="text-muted-foreground truncate text-sm">{headline}</p>
           <div className="flex min-w-0 items-center gap-2">

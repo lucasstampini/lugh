@@ -211,6 +211,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      reviews: {
+        Row: {
+          comment: string | null;
+          created_at: string;
+          id: string;
+          rating: number;
+          session_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          comment?: string | null;
+          created_at?: string;
+          id?: string;
+          rating: number;
+          session_id: string;
+        };
+        Update: {
+          comment?: string | null;
+          created_at?: string;
+          id?: string;
+          rating?: number;
+          session_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reviews_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: true;
+            referencedRelation: "sessions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       sessions: {
         Row: {
           candidate_id: string;
@@ -297,6 +330,10 @@ export type Database = {
     };
     Functions: {
       interviewer_completed_sessions: { Args: { interviewer: string }; Returns: number };
+      interviewer_ratings: {
+        Args: { interviewer_ids: string[] };
+        Returns: { interviewer_id: string; average: number; review_count: number }[];
+      };
     };
     Enums: {
       [_ in never]: never;
