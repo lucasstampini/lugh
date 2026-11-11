@@ -12,7 +12,7 @@ export type ProfileStep1Defaults = {
   bio: string;
 };
 
-// Cidade e estado saíram por enquanto (migration 20261109190000 ainda não
+// Cidade e estado saíram por enquanto (migration 20261109200000 ainda não
 // rodou no projeto Supabase). Volta a incluir depois de aplicar a migration.
 //
 // Cada bloco é um cartão branco separado (bg-card, border-border,
