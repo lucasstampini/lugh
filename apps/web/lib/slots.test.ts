@@ -6,6 +6,7 @@ import {
   computeFreeSlots,
   findSlotWeek,
   sessionEnd,
+  upcomingSlotLabels,
 } from "./slots";
 
 // Quarta, 11 nov 2026, 10h em Brasília (13h UTC).
@@ -167,5 +168,47 @@ describe("bookingSchema", () => {
     expect(bookingSchema.safeParse({ ...valid, startsAt: "" }).success).toBe(false);
     expect(bookingSchema.safeParse({ ...valid, type: "outro" }).success).toBe(false);
     expect(bookingSchema.safeParse({ ...valid, notes: "a".repeat(501) }).success).toBe(false);
+  });
+});
+
+describe("upcomingSlotLabels", () => {
+  it("lista os próximos horários livres em ordem, com hoje e amanhã por nome", () => {
+    const weeks = computeAllWeeks({
+      blocks: [
+        { weekday: 3, start_time: "13:00:00", end_time: "15:00:00" },
+        { weekday: 4, start_time: "09:00:00", end_time: "10:00:00" },
+        { weekday: 5, start_time: "09:00:00", end_time: "10:00:00" },
+      ],
+      booked: [],
+      now: NOW,
+    });
+
+    expect(upcomingSlotLabels(weeks, 4)).toEqual([
+      "Hoje, 13h",
+      "Hoje, 14h",
+      "Amanhã, 9h",
+      "Sex 13, 9h",
+    ]);
+  });
+
+  it("não promete para hoje um horário sem a antecedência mínima", () => {
+    // 10h agora e bloco de hoje às 11h: o próximo livre é só na outra quarta.
+    const weeks = computeAllWeeks({
+      blocks: [{ weekday: 3, start_time: "11:00:00", end_time: "12:00:00" }],
+      booked: [],
+      now: NOW,
+    });
+
+    expect(upcomingSlotLabels(weeks, 3)).toEqual(["Qua 18, 11h"]);
+  });
+
+  it("pula o horário que já tem sessão marcada", () => {
+    const weeks = computeAllWeeks({
+      blocks: [{ weekday: 4, start_time: "09:00:00", end_time: "11:00:00" }],
+      booked: [{ starts_at: "2026-11-12T12:00:00+00:00", ends_at: "2026-11-12T13:00:00+00:00" }],
+      now: NOW,
+    });
+
+    expect(upcomingSlotLabels(weeks, 1)).toEqual(["Amanhã, 10h"]);
   });
 });

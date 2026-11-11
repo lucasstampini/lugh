@@ -5,8 +5,14 @@ import { Eyebrow } from "@/components/eyebrow";
 import { InterviewerCard } from "@/components/interviewer-card";
 import { SiteHeader } from "@/components/site-header";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { upcomingSlots } from "@/lib/availability";
 import { AREA_OPTIONS, SENIORITY_OPTIONS } from "@/lib/interviewer-options";
+import {
+  type AvailabilityBlock,
+  type BookedRange,
+  bookingWindow,
+  computeAllWeeks,
+  upcomingSlotLabels,
+} from "@/lib/slots";
 import { createClient } from "@/lib/supabase/server";
 
 const CHIP =
@@ -49,7 +55,10 @@ export default async function EntrevistadoresPage({
   // entrevistador vem da view interviewer_profiles (só essas duas colunas,
   // nunca email), buscada à parte porque o PostgREST não embeda views.
   const profileIds = interviewers?.map((i) => i.profile_id) ?? [];
-  const [{ data: profiles }, { data: availability }, { data: ratings }] = profileIds.length
+  const now = new Date();
+  const { from, to } = bookingWindow(now);
+  const [{ data: profiles }, { data: availability }, { data: ratings }, bookedByInterviewer] =
+    profileIds.length
     ? await Promise.all([
         supabase
           .from("interviewer_profiles")
@@ -57,17 +66,33 @@ export default async function EntrevistadoresPage({
           .in("id", profileIds),
         supabase
           .from("availability")
-          .select("interviewer_id, weekday, start_time")
+          .select("interviewer_id, weekday, start_time, end_time")
           .in("interviewer_id", profileIds),
         supabase.rpc("interviewer_ratings", { interviewer_ids: profileIds }),
+        // Sessões já marcadas, para o "próximo horário" do card ser um que
+        // ainda dá para agendar. Uma chamada por entrevistador da página.
+        Promise.all(
+          profileIds.map(async (interviewerId) => {
+            const { data } = await supabase.rpc("interviewer_booked_slots", {
+              interviewer: interviewerId,
+              from_ts: from.toISOString(),
+              to_ts: to.toISOString(),
+            });
+            return [interviewerId, data ?? []] as const;
+          }),
+        ).then((entries) => new Map(entries)),
       ])
-    : [{ data: [] }, { data: [] }, { data: [] }];
+    : [{ data: [] }, { data: [] }, { data: [] }, new Map<string, BookedRange[]>()];
 
   const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
-  const blocksByInterviewer = new Map<string, { weekday: number; start_time: string }[]>();
+  const blocksByInterviewer = new Map<string, AvailabilityBlock[]>();
   for (const block of availability ?? []) {
     const list = blocksByInterviewer.get(block.interviewer_id) ?? [];
-    list.push({ weekday: block.weekday, start_time: block.start_time });
+    list.push({
+      weekday: block.weekday,
+      start_time: block.start_time,
+      end_time: block.end_time,
+    });
     blocksByInterviewer.set(block.interviewer_id, list);
   }
   const ratingByInterviewer = new Map(
@@ -79,8 +104,12 @@ export default async function EntrevistadoresPage({
       interviewer,
       profile: profileById.get(interviewer.profile_id),
       rating: ratingByInterviewer.get(interviewer.profile_id) ?? null,
-      slots: upcomingSlots(
-        blocksByInterviewer.get(interviewer.profile_id) ?? [],
+      slots: upcomingSlotLabels(
+        computeAllWeeks({
+          blocks: blocksByInterviewer.get(interviewer.profile_id) ?? [],
+          booked: bookedByInterviewer.get(interviewer.profile_id) ?? [],
+          now,
+        }),
         3,
       ),
     }))

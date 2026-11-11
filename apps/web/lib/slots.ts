@@ -192,3 +192,26 @@ export async function getFreeSlots(
     error: false,
   };
 }
+
+const WEEKDAY_LABEL = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"] as const;
+
+// Os próximos horários livres em texto curto, para o card do marketplace:
+// "Hoje, 14h", "Amanhã, 9h" e, daí em diante, "Qua 18, 9h". Sai das mesmas
+// semanas que a tela de agendar usa, para o card nunca prometer um horário
+// que não dá mais para marcar.
+export function upcomingSlotLabels(weeks: SlotDay[][], count: number): string[] {
+  return weeks
+    .flat()
+    .flatMap((day, index) =>
+      day.slots.map((slot) => {
+        if (index === 0) {
+          return `Hoje, ${slot.hour}h`;
+        }
+        if (index === 1) {
+          return `Amanhã, ${slot.hour}h`;
+        }
+        return `${WEEKDAY_LABEL[day.weekday]} ${day.dayOfMonth}, ${slot.hour}h`;
+      }),
+    )
+    .slice(0, count);
+}
