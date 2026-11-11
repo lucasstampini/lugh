@@ -177,7 +177,7 @@ export default async function InterviewerProfilePage({
               <p className="text-lg opacity-90">{interviewer.headline}</p>
               <p className="text-sm opacity-80">{interviewer.company}</p>
               {!isVisible ? (
-                <span className="bg-lume text-foreground mt-1 w-fit rounded-full px-2.5 py-1 text-xs font-semibold">
+                <span className="bg-primary text-foreground mt-1 w-fit rounded-full px-2.5 py-1 text-xs font-semibold">
                   {interviewer.active
                     ? "Perfil pausado (visível só pra você)"
                     : "Aguardando aprovação (visível só pra você)"}
@@ -188,12 +188,12 @@ export default async function InterviewerProfilePage({
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm opacity-90">
             <span>
-              <span className="text-lume font-bold">{sessionsCount}</span>{" "}
+              <span className="text-primary font-bold">{sessionsCount}</span>{" "}
               {sessionsCount === 1 ? "sessão" : "sessões"} na Lugh
             </span>
             {rating && rating.review_count > 0 ? (
               <span>
-                <span className="text-lume">★</span>{" "}
+                <span className="text-primary">★</span>{" "}
                 <span className="font-bold">
                   {rating.average.toFixed(1).replace(".", ",")}
                 </span>{" "}
@@ -336,7 +336,7 @@ export default async function InterviewerProfilePage({
               {rating && rating.review_count > 0 ? (
                 <p className="text-foreground/70 text-sm">
                   Nota média de{" "}
-                  <span className="text-lume font-bold">
+                  <span className="text-primary font-bold">
                     {rating.average.toFixed(1).replace(".", ",")}
                   </span>{" "}
                   em {rating.review_count}{" "}
@@ -417,14 +417,14 @@ export default async function InterviewerProfilePage({
                 </div>
 
                 {nextSlot ? (
-                  <div className="bg-lume flex flex-col gap-1 rounded-xl p-4">
-                    <p className="text-lume-foreground text-[10px] font-extrabold tracking-[0.06em] uppercase">
+                  <div className="bg-primary flex flex-col gap-1 rounded-xl p-4">
+                    <p className="text-primary-foreground text-[10px] font-extrabold tracking-[0.06em] uppercase">
                       Próximo horário
                     </p>
-                    <p className="text-lume-foreground text-sm font-bold">
+                    <p className="text-primary-foreground text-sm font-bold">
                       {nextSlot}
                     </p>
-                    <p className="text-lume-foreground text-xs">
+                    <p className="text-primary-foreground text-xs">
                       Horário de Brasília.
                     </p>
                   </div>

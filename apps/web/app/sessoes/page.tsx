@@ -25,8 +25,8 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_BADGE_CLASS: Record<string, string> = {
-  scheduled: "bg-lume text-lume-foreground",
-  in_progress: "bg-lume text-lume-foreground",
+  scheduled: "bg-primary text-primary-foreground",
+  in_progress: "bg-primary text-primary-foreground",
 };
 
 const UPCOMING_STATUSES = new Set([

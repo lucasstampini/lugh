@@ -285,7 +285,7 @@ export default async function EntrevistadoresPage({
                 >
                   Anterior
                 </button>
-                <span className="bg-lume text-lume-foreground flex size-10 items-center justify-center rounded-xl text-sm font-bold">
+                <span className="bg-primary text-primary-foreground flex size-10 items-center justify-center rounded-xl text-sm font-bold">
                   1
                 </span>
                 <button
@@ -300,8 +300,8 @@ export default async function EntrevistadoresPage({
           </>
         )}
 
-        <div className="bg-secondary border-lume flex flex-wrap items-center gap-4 rounded-xl border-l-4 p-5">
-          <Compass aria-hidden="true" size={24} className="text-lume shrink-0" />
+        <div className="bg-secondary border-primary flex flex-wrap items-center gap-4 rounded-xl border-l-4 p-5">
+          <Compass aria-hidden="true" size={24} className="text-primary shrink-0" />
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <p className="text-sm font-bold">Ainda não sabe por onde começar?</p>
             <p className="text-foreground/70 text-sm">

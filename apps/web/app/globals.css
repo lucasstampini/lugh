@@ -10,12 +10,21 @@
   --font-sans: var(--font-manrope);
   --font-heading: var(--font-display);
   --font-mono: var(--font-jetbrains);
-  --color-lume: var(--lume);
-  --color-indigo: var(--indigo);
-  --color-indigo-light: var(--indigo-light);
-  --color-lume-foreground: var(--lume-foreground);
+  --color-brand-deep: var(--brand-deep);
+  --color-ink: var(--ink);
+  --color-border-soft: var(--border-soft);
+  --color-border-dashed: var(--border-dashed);
+  --color-skeleton: var(--skeleton);
+  --color-code: var(--code);
+  --color-code-foreground: var(--code-foreground);
+  --color-code-muted: var(--code-muted);
+  --color-code-string: var(--code-string);
+  --color-code-line: var(--code-line);
+  --color-code-border: var(--code-border);
+  --color-destructive-soft: var(--destructive-soft);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -56,83 +65,175 @@
 
 :root {
   --radius: 0.75rem;
-  --background: #F7F5F0;          /* Calcário */
-  --foreground: #1C1A33;          /* Megálito */
+  --background: #FFFFFF;
+  --foreground: #0F1A14;          /* Tinta */
   --card: #FFFFFF;
-  --card-foreground: #1C1A33;
+  --card-foreground: #0F1A14;
   --popover: #FFFFFF;
-  --popover-foreground: #1C1A33;
-  --primary: #4B3CF0;             /* Índigo */
-  --primary-foreground: #FFFFFF;
-  --secondary: #ECEAFE;           /* Névoa */
-  --secondary-foreground: #3328B8;
-  --muted: #EFECE5;
-  --muted-foreground: #5F5E70;
-  --accent: #ECEAFE;
-  --accent-foreground: #1C1A33;
-  --destructive: #C8322F;
-  --border: #E5E2DA;
-  --input: #E5E2DA;
-  --ring: #4B3CF0;
-  --lume: #FFC23D;
-  --lume-foreground: #1C1A33;
-  /* Índigo da marca, igual nos dois modos (no escuro --primary vira Lume).
-     Índigo claro: links, texto e cursores Índigo sobre fundo escuro. */
-  --indigo: #4B3CF0;
-  --indigo-light: #8F86FF;
-  --success: #167A54;
-  --warning: #9A5B00;
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --popover-foreground: #0F1A14;
+  --primary: #2EF58A;             /* Verde: CTA, destaque, selecionado */
+  --primary-foreground: #0F1A14;
+  --secondary: #F4F7F5;           /* Superfície suave */
+  --secondary-foreground: #0F1A14;
+  --muted: #F4F7F5;
+  --muted-foreground: #55635B;
+  --accent: #E6F4EC;              /* Verde claro: hover e chips */
+  --accent-foreground: #0F1A14;
+  --destructive: #B3261E;
+  --destructive-soft: #FFF1EE;
+  --border: #0F1A14;              /* Bordas são tinta, com 1,5 px (utilitário edge) */
+  --input: #0F1A14;
+  --ring: #0B7A4B;
+  /* Tinta fixa: não inverte no modo escuro (texto sobre verde, selos). */
+  --ink: #0F1A14;
+  /* Verde escuro: links, eyebrow e foco sobre fundo claro. */
+  --brand-deep: #0B7A4B;
+  --border-soft: #DDE5E0;
+  --border-dashed: #AEBBB3;
+  --skeleton: #E3EAE6;
+  --dots: #C3CFC8;
+  /* Bloco de código / terminal: escuro nos dois modos. */
+  --code: #0C1F17;
+  --code-foreground: #FFFFFF;
+  --code-muted: #8FA398;
+  --code-string: #8FE9B7;
+  --code-line: #17382A;
+  --code-border: #23402F;
+  --success: #0B7A4B;
+  --warning: #7A5200;
+  --warning-soft: #FEEDBA;
+  --chart-1: #2EF58A;
+  --chart-2: #0B7A4B;
+  --chart-3: #55635B;
+  --chart-4: #AEBBB3;
+  --chart-5: #0F1A14;
+  --sidebar: #F4F7F5;
+  --sidebar-foreground: #0F1A14;
+  --sidebar-primary: #2EF58A;
+  --sidebar-primary-foreground: #0F1A14;
+  --sidebar-accent: #E6F4EC;
+  --sidebar-accent-foreground: #0F1A14;
+  --sidebar-border: #0F1A14;
+  --sidebar-ring: #0B7A4B;
 }
 
+/* Modo escuro: só a sala usa. */
 .dark {
-  --background: #13122A;          /* Noite */
-  --foreground: #F7F5F0;
-  --card: #1C1A33;
-  --card-foreground: #F7F5F0;
-  --popover: #1C1A33;
-  --popover-foreground: #F7F5F0;
-  --primary: #FFC23D;             /* Lume vira o CTA no escuro */
-  --primary-foreground: #1C1A33;
-  --secondary: #2A2850;
-  --secondary-foreground: #F7F5F0;
-  --muted: #24223F;
-  --muted-foreground: #A6A4BC;
-  --accent: #2A2850;
-  --accent-foreground: #F7F5F0;
-  --destructive: #F07A72;
-  --border: rgb(247 245 240 / 0.10);
-  --input: rgb(247 245 240 / 0.15);
-  --ring: #8F86FF;
-  --lume: #FFC23D;
-  --lume-foreground: #1C1A33;
-  --success: #4FD1A0;
-  --warning: #FFC23D;
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #0C1F17;
+  --foreground: #FFFFFF;
+  --card: #142B21;
+  --card-foreground: #FFFFFF;
+  --popover: #142B21;
+  --popover-foreground: #FFFFFF;
+  --primary: #2EF58A;
+  --primary-foreground: #0F1A14;
+  --secondary: #1B3A2C;
+  --secondary-foreground: #FFFFFF;
+  --muted: #17382A;
+  --muted-foreground: #A9BDB2;
+  --accent: #17382A;
+  --accent-foreground: #FFFFFF;
+  --destructive: #FFB4A6;
+  --destructive-soft: #142B21;
+  --border: #2B4A39;
+  --input: #5F7A6B;
+  --ring: #2EF58A;
+  --ink: #0F1A14;
+  --brand-deep: #2EF58A;
+  --border-soft: #23402F;
+  --border-dashed: #5F7A6B;
+  --skeleton: #1B3A2C;
+  --dots: #23402F;
+  --code: #0C1F17;
+  --code-foreground: #FFFFFF;
+  --code-muted: #6F8A7B;
+  --code-string: #8FE9B7;
+  --code-line: #17382A;
+  --code-border: #2B4A39;
+  --success: #2EF58A;
+  --warning: #FEEDBA;
+  --warning-soft: #142B21;
+  --chart-1: #2EF58A;
+  --chart-2: #8FE9B7;
+  --chart-3: #A9BDB2;
+  --chart-4: #5F7A6B;
+  --chart-5: #FFFFFF;
+  --sidebar: #142B21;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #2EF58A;
+  --sidebar-primary-foreground: #0F1A14;
+  --sidebar-accent: #17382A;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #2B4A39;
+  --sidebar-ring: #2EF58A;
+}
+
+/* Borda padrão da identidade: 1,5 px na cor de borda do modo. */
+@utility edge {
+  border: 1.5px solid var(--border);
+}
+@utility edge-b {
+  border-bottom: 1.5px solid var(--border);
+}
+@utility edge-t {
+  border-top: 1.5px solid var(--border);
+}
+@utility edge-l {
+  border-left: 1.5px solid var(--border);
+}
+@utility edge-dashed {
+  border: 1.5px dashed var(--border);
+}
+
+/* Textura de pontos (login, 404, quadro). É textura, não degradê de cor. */
+@utility bg-dots {
+  background-image: radial-gradient(var(--dots) 1.2px, transparent 1.2px);
+  background-size: 22px 22px;
+}
+
+/* Mola que passa do ponto: hover levanta 2 px, clique encolhe. */
+@utility lift {
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 0.2s;
+  &:hover {
+    transform: translateY(-2px);
+  }
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Entrada padrão em Server Components (sem JS): opacidade + y 14. */
+@utility pop {
+  animation: pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes pulse-live {
+  50% {
+    opacity: 0.35;
+  }
+}
+@utility caret {
+  animation: blink 1s steps(1) infinite;
+}
+@utility live {
+  animation: pulse-live 1.6s ease-in-out infinite;
 }
 
 @layer base {
@@ -144,5 +245,17 @@
   }
   html {
     @apply font-sans;
+  }
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+    }
   }
 }

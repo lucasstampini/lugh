@@ -50,16 +50,16 @@ export function PortalGate({
             (compositor, sem repaint) e a forma sólida só escala (transform). */}
         <div className="absolute bottom-0 left-1/2 h-[16%] w-[42%] -translate-x-1/2">
           <motion.div
-            className="bg-lume absolute inset-0 rounded-t-full"
+            className="bg-primary absolute inset-0 rounded-t-full"
             style={{
               boxShadow:
-                "0 0 56px 14px color-mix(in srgb, var(--lume) 50%, transparent)",
+                "0 0 56px 14px color-mix(in srgb, var(--primary) 50%, transparent)",
             }}
             animate={{ opacity: hover ? 1 : 0 }}
             transition={springGentle}
           />
           <motion.div
-            className="bg-lume absolute inset-0 rounded-t-full"
+            className="bg-primary absolute inset-0 rounded-t-full"
             animate={{ scale: hover ? 1.12 : 1 }}
             transition={springGentle}
           />

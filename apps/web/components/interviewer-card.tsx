@@ -69,7 +69,7 @@ export function InterviewerCard({
             <p className="truncate font-bold">{name}</p>
             {reviewCount > 0 ? (
               <span className="text-muted-foreground flex shrink-0 items-center gap-0.5 text-xs">
-                <span className="text-lume">★</span>
+                <span className="text-primary">★</span>
                 {rating?.toFixed(1).replace(".", ",")} · {reviewCount}
               </span>
             ) : null}

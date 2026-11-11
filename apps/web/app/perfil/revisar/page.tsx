@@ -26,7 +26,7 @@ function SummaryCard({
         </h3>
         <div className="flex items-center gap-3">
           {badge ? (
-            <span className="bg-lume text-lume-foreground rounded-full px-2.5 py-1 text-xs font-bold whitespace-nowrap">
+            <span className="bg-primary text-primary-foreground rounded-full px-2.5 py-1 text-xs font-bold whitespace-nowrap">
               {badge}
             </span>
           ) : null}

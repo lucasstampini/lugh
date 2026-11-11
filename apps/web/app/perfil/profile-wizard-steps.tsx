@@ -28,7 +28,7 @@ export function ProfileWizardSteps({ activeStep }: { activeStep: number }) {
           >
             <span
               className={`text-[14px] font-extrabold ${
-                isActive ? "text-primary" : isDone ? "text-lume" : "text-primary-foreground"
+                isActive ? "text-primary" : isDone ? "text-primary" : "text-primary-foreground"
               }`}
             >
               {isDone ? "✓" : step.number}
@@ -38,7 +38,7 @@ export function ProfileWizardSteps({ activeStep }: { activeStep: number }) {
                 isActive
                   ? "text-primary font-extrabold"
                   : isDone
-                    ? "text-lume font-bold"
+                    ? "text-primary font-bold"
                     : "text-primary-foreground font-normal"
               }`}
             >

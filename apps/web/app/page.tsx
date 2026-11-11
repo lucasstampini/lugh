@@ -241,7 +241,7 @@ export default function Home() {
                 </div>
                 <MotionLink
                   href="/login"
-                  className="bg-lume text-foreground flex h-10 items-center rounded-lg px-4 text-sm font-extrabold"
+                  className="bg-primary text-foreground flex h-10 items-center rounded-lg px-4 text-sm font-extrabold"
                 >
                   Reservar · R$ 100
                 </MotionLink>
@@ -307,7 +307,7 @@ export default function Home() {
         <div className="mx-auto max-w-[1440px] px-6 py-14">
           <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-[5fr_7fr]">
             <div className="flex items-center gap-2.5">
-              <span className="bg-lume h-2 w-8 rounded-full" />
+              <span className="bg-primary h-2 w-8 rounded-full" />
               <span className="text-primary text-sm font-extrabold tracking-[0.08em] uppercase">
                 Formatos
               </span>
@@ -326,7 +326,7 @@ export default function Home() {
                   Editor ao vivo pra resolver problema, escrever e rodar código junto com o
                   entrevistador, igual numa entrevista técnica de verdade.
                 </p>
-                <span className="bg-lume text-lume-foreground mt-auto w-fit rounded-md px-3 py-1.5 text-xs font-bold">
+                <span className="bg-primary text-primary-foreground mt-auto w-fit rounded-md px-3 py-1.5 text-xs font-bold">
                   O formato mais pedido
                 </span>
               </HoverLift>
@@ -360,7 +360,7 @@ export default function Home() {
         <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="flex max-w-2xl flex-col gap-4">
             <div className="flex items-center gap-2.5">
-              <span className="bg-lume h-2 w-8 rounded-full" />
+              <span className="bg-primary h-2 w-8 rounded-full" />
               <span className="text-primary text-sm font-extrabold tracking-[0.08em] uppercase">
                 Profissionais e preço
               </span>
@@ -371,7 +371,7 @@ export default function Home() {
             <p className="text-foreground/70 max-w-prose">
               Sem mensalidade, sem taxa de cadastro. Você paga só a sessão, direto pro
               profissional escolhido, a partir de{" "}
-              <span className="bg-lume text-lume-foreground rounded-md px-1.5 py-0.5 font-bold">
+              <span className="bg-primary text-primary-foreground rounded-md px-1.5 py-0.5 font-bold">
                 R$ 30,00
               </span>
               .
@@ -401,7 +401,7 @@ export default function Home() {
                     <div className="flex flex-col gap-0.5">
                       <p className="font-bold">{person.name}</p>
                       <p className="text-muted-foreground text-sm">
-                        <span className="text-lume">★</span> {person.rating} · {person.reviews}{" "}
+                        <span className="text-primary">★</span> {person.rating} · {person.reviews}{" "}
                         avaliações
                       </p>
                     </div>
@@ -469,7 +469,7 @@ export default function Home() {
                 const Icon = benefit.icon;
                 return (
                   <FadeIn key={benefit.title} index={index + 2} className="flex gap-4">
-                    <Icon aria-hidden="true" size={22} className="mt-0.5 shrink-0 text-lume" />
+                    <Icon aria-hidden="true" size={22} className="mt-0.5 shrink-0 text-primary" />
                     <div className="flex flex-col gap-1">
                       <p className="font-semibold">{benefit.title}</p>
                       <p className="text-muted-foreground text-sm">{benefit.description}</p>
@@ -531,7 +531,7 @@ export default function Home() {
                         <span
                           key={i}
                           className={`h-1.5 flex-1 rounded-full ${
-                            i < item.score ? "bg-lume" : "bg-muted"
+                            i < item.score ? "bg-primary" : "bg-muted"
                           }`}
                         />
                       ))}
@@ -598,7 +598,7 @@ export default function Home() {
           large
           className="mx-auto flex max-w-3xl flex-col items-center gap-5 px-6 py-16 text-center"
         >
-          <span className="bg-lume text-lume-foreground w-fit rounded-full px-3.5 py-2 text-sm font-bold">
+          <span className="bg-primary text-primary-foreground w-fit rounded-full px-3.5 py-2 text-sm font-bold">
             Prove que já sabe.
           </span>
           <h2 className="font-heading text-5xl font-extrabold tracking-[-0.03em] text-primary-foreground">

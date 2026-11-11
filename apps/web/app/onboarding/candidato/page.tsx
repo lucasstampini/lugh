@@ -27,7 +27,7 @@ export default async function OnboardingCandidatoPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-6 py-16">
       <FadeIn className="flex w-full max-w-sm flex-col items-center gap-6">
-        <p className="bg-lume text-lume-foreground rounded-full px-3 py-1 text-xs font-bold tracking-[0.08em] uppercase">
+        <p className="bg-primary text-primary-foreground rounded-full px-3 py-1 text-xs font-bold tracking-[0.08em] uppercase">
           Passo 2 de 2
         </p>
 

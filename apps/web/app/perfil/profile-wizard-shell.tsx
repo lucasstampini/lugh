@@ -49,7 +49,7 @@ export function ProfileWizardShell({
             <ProfileWizardSteps activeStep={activeStep} />
           </div>
 
-          <div className="bg-lume text-foreground flex flex-col gap-2.5 rounded-[20px] p-5">
+          <div className="bg-primary text-foreground flex flex-col gap-2.5 rounded-[20px] p-5">
             <span className="text-[10px] font-extrabold tracking-[0.13em] uppercase">
               {dicaLabel}
             </span>

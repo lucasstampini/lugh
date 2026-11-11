@@ -15,7 +15,7 @@ export function WanderingCursor({
   delay = 0,
 }: {
   points: { x: number; y: number }[];
-  // Cor CSS: passe um token (ex: "var(--lume)"), nunca hex solto.
+  // Cor CSS: passe um token (ex: "var(--primary)"), nunca hex solto.
   color: string;
   label?: string;
   // DESIGN.md: texto sobre Lume é sempre Megálito, nunca branco.

@@ -92,7 +92,7 @@ export function RoomPreview() {
             <span className="font-mono text-xs font-bold text-muted-foreground">
               {"</>"} solucao.js
             </span>
-            <span className="text-xs font-medium text-indigo-light">JavaScript</span>
+            <span className="text-xs font-medium text-brand-deep">JavaScript</span>
           </div>
 
           <div className="flex flex-col gap-0.5 overflow-x-auto px-5 py-4 font-mono text-[11px] leading-[19px]">
@@ -100,7 +100,7 @@ export function RoomPreview() {
               <FadeIn key={index} index={index} large>
                 <div
                   className={`flex gap-4 rounded px-2 ${
-                    line.active ? "bg-indigo/25" : ""
+                    line.active ? "bg-brand-deep/25" : ""
                   }`}
                 >
                   <span className="w-3 shrink-0 text-right text-muted-foreground/60">
@@ -155,15 +155,15 @@ export function RoomPreview() {
             <FadeIn
               index={1}
               large
-              className="bg-indigo relative rounded-xl p-3.5"
+              className="bg-brand-deep relative rounded-xl p-3.5"
             >
               <p className="font-heading text-sm font-bold text-foreground">API</p>
               <p className="text-[11px] text-foreground">Serviço de aplicação</p>
 
-              <span className="absolute top-1/2 -right-7 hidden -translate-y-1/2 text-indigo-light sm:block">
+              <span className="absolute top-1/2 -right-7 hidden -translate-y-1/2 text-brand-deep sm:block">
                 →
               </span>
-              <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 text-indigo-light">
+              <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 text-brand-deep">
                 ↓
               </span>
             </FadeIn>
@@ -182,15 +182,15 @@ export function RoomPreview() {
           <div className="pointer-events-none absolute inset-0">
             <WanderingCursor
               points={CAMILA_CURSOR_PATH}
-              color="var(--indigo-light)"
+              color="var(--brand-deep)"
               label="Camila"
               duration={9}
             />
             <WanderingCursor
               points={CANDIDATE_CURSOR_PATH}
-              color="var(--lume)"
+              color="var(--primary)"
               label="Você"
-              labelTextColor="var(--lume-foreground)"
+              labelTextColor="var(--primary-foreground)"
               duration={7}
               delay={1.2}
             />
@@ -198,7 +198,7 @@ export function RoomPreview() {
         </div>
 
         <div className="flex items-center justify-end text-xs text-muted-foreground">
-          <span className="font-bold text-indigo-light">− 100% +</span>
+          <span className="font-bold text-brand-deep">− 100% +</span>
         </div>
       </div>
     </div>

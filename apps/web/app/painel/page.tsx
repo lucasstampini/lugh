@@ -72,7 +72,7 @@ export default async function PainelPage() {
         <section className="border-border bg-card flex flex-wrap items-center justify-between gap-4 rounded-[20px] border p-6">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
-              {isLive ? <span className="bg-lume size-2 rounded-full" /> : null}
+              {isLive ? <span className="bg-primary size-2 rounded-full" /> : null}
               <p className="font-heading text-xl font-bold">
                 {!interviewer.active
                   ? "Seu perfil está desativado"
