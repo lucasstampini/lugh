@@ -85,7 +85,7 @@ export function ReviewForm({
         htmlFor="comment"
         counter={`${comment.length}/${REVIEW_COMMENT_MAX_LENGTH}`}
         error={fieldErrors.comment}
-        help="Opcional. Só você e quem entrevistou leem o comentário."
+        help={`Opcional. A nota e o comentário ficam públicos no perfil de ${interviewerName}, com o seu primeiro nome.`}
       >
         <Textarea
           id="comment"

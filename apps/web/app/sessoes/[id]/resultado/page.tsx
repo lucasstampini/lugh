@@ -134,8 +134,9 @@ export default async function SessionResultPage({
   const codeLanguage = LANGUAGES.find((language) => language.id === snapshot?.language)?.label;
   const boardElements = snapshot?.boardElements ?? [];
 
-  // Avaliação que o candidato deu ao entrevistador (uma por sessão). A RLS de reviews
-  // só mostra a linha para os dois participantes.
+  // Avaliação que o candidato deu ao entrevistador (uma por sessão). Aqui a linha vem pela
+  // RLS de reviews (só os dois participantes); no perfil do entrevistador ela é pública,
+  // pela função interviewer_reviews.
   const { data: review } =
     session.status === "completed"
       ? await supabase
