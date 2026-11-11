@@ -7,6 +7,7 @@ import { Eyebrow } from "@/components/eyebrow";
 import { ScoreBar } from "@/components/score-bar";
 import { SiteHeader } from "@/components/site-header";
 import { buttonVariants } from "@/components/ui/button";
+import { SCORE_LABELS } from "@/lib/feedback";
 import { initials } from "@/lib/initials";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,12 +19,6 @@ const SESSION_TYPE_LABELS: Record<string, string> = {
   coding: "código ao vivo",
   system_design: "system design",
   behavioral: "comportamental",
-};
-
-const SCORE_LABELS: Record<string, string> = {
-  comunicacao: "Comunicação",
-  tecnica: "Técnica",
-  resolucao: "Resolução de problemas",
 };
 
 // "qui, 5 nov · 20h", no horário de Brasília.
