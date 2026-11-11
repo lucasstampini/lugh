@@ -5,6 +5,7 @@ import { CodeAccent, CodeBlock, CodeMuted } from "@/components/code-block";
 import { Eyebrow } from "@/components/eyebrow";
 import { SiteHeader } from "@/components/site-header";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { canSendFeedback } from "@/lib/feedback";
 import { formatSessionDate } from "@/lib/format-session-date";
 import { initials } from "@/lib/initials";
 import { ROOM_OPENS_BEFORE_MINUTES, roomAccess } from "@/lib/room/session";
@@ -152,7 +153,15 @@ export default async function SessionsPage({ searchParams }: PageProps<"/sessoes
           </div>
         </div>
 
-        {ROOM_STATUSES.has(session.status) ? (
+        {/* Antes da sala: sessão em andamento com o horário vencido já pede o feedback. */}
+        {!isCandidate && canSendFeedback(session.status, session.ends_at) ? (
+          <Link
+            href={`/sessoes/${session.id}/feedback`}
+            className={buttonVariants({ className: "h-12 px-5" })}
+          >
+            Preencher feedback
+          </Link>
+        ) : ROOM_STATUSES.has(session.status) ? (
           access === "open" ? (
             <Link
               href={`/sala/${session.id}`}
@@ -180,12 +189,12 @@ export default async function SessionsPage({ searchParams }: PageProps<"/sessoes
               </span>
             </div>
           )
-        ) : isCandidate && session.status === "completed" ? (
+        ) : session.status === "completed" ? (
           <Link
             href={`/sessoes/${session.id}/resultado`}
             className={buttonVariants({ variant: "outline", className: "h-12 px-5" })}
           >
-            Ver resultado
+            {isCandidate ? "Ver resultado" : "Ver feedback"}
           </Link>
         ) : null}
       </li>

@@ -6,6 +6,7 @@ import { notFound, redirect } from "next/navigation";
 import { Eyebrow } from "@/components/eyebrow";
 import { Room } from "@/components/room/Room";
 import { buttonVariants } from "@/components/ui/button";
+import { canSendFeedback } from "@/lib/feedback";
 import { formatSessionDate } from "@/lib/format-session-date";
 import {
   isTestRoomEnabled,
@@ -80,19 +81,28 @@ export default async function SalaPage({ params }: PageProps<"/sala/[sessionId]"
   }
 
   if (entry === "ended") {
-    const hasResult = session.role === "candidate" && session.status === "completed";
+    const isInterviewer = session.role === "interviewer";
+    // É para cá que o entrevistador volta depois de clicar em "Encerrar sessão".
+    const owesFeedback = isInterviewer && canSendFeedback(session.status, session.endsAt);
 
     return (
       <RoomState
         eyebrow="sessão encerrada"
         title="Esta sessão já terminou"
         action={
-          hasResult
-            ? { href: `/sessoes/${session.id}/resultado`, label: "Ver resultado" }
-            : { href: "/sessoes", label: "Ver minhas sessões" }
+          owesFeedback
+            ? { href: `/sessoes/${session.id}/feedback`, label: "Preencher feedback" }
+            : session.status === "completed"
+              ? {
+                  href: `/sessoes/${session.id}/resultado`,
+                  label: isInterviewer ? "Ver feedback" : "Ver resultado",
+                }
+              : { href: "/sessoes", label: "Ver minhas sessões" }
         }
       >
-        A sala da sua sessão com {session.otherParticipantName} já fechou.
+        {owesFeedback
+          ? `A sala da sua sessão com ${session.otherParticipantName} já fechou. Falta o seu feedback.`
+          : `A sala da sua sessão com ${session.otherParticipantName} já fechou.`}
       </RoomState>
     );
   }
