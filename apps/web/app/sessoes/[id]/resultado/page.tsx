@@ -13,6 +13,7 @@ import { initials } from "@/lib/initials";
 import { LANGUAGES } from "@/lib/room/languages";
 import { getSessionSnapshot, type SessionSnapshot } from "@/lib/room/snapshot";
 import { createClient } from "@/lib/supabase/server";
+import { ReviewForm } from "./review-form";
 
 export const instant = false;
 
@@ -133,6 +134,17 @@ export default async function SessionResultPage({
   const codeLanguage = LANGUAGES.find((language) => language.id === snapshot?.language)?.label;
   const boardElements = snapshot?.boardElements ?? [];
 
+  // Avaliação que o candidato deu ao entrevistador (uma por sessão). A RLS de reviews
+  // só mostra a linha para os dois participantes.
+  const { data: review } =
+    session.status === "completed"
+      ? await supabase
+          .from("reviews")
+          .select("rating, comment")
+          .eq("session_id", id)
+          .maybeSingle()
+      : { data: null };
+
   const interviewerName = interviewerProfile?.name ?? "Entrevistador";
   const sessionTypeLabel = SESSION_TYPE_LABELS[session.type] ?? session.type;
   const scores = (feedback?.scores as Record<string, number> | undefined) ?? {};
@@ -219,6 +231,31 @@ export default async function SessionResultPage({
                 <section className="flex flex-col gap-3">
                   <h2 className={H2}>O que melhorar</h2>
                   <FeedbackList items={improvements} tone="neutral" />
+                </section>
+              ) : null}
+
+              {review ? (
+                <section className="flex flex-col gap-3">
+                  <h2 className={H2}>{isCandidate ? "Sua avaliação" : "Avaliação do candidato"}</h2>
+                  <div className="edge flex flex-col gap-2 rounded-2xl p-5">
+                    <div className="flex justify-between gap-3 text-[15px] font-bold">
+                      <span>
+                        {isCandidate ? `Nota para ${interviewerName}` : "Nota que você recebeu"}
+                      </span>
+                      <span className="font-mono tabular-nums">{review.rating}/5</span>
+                    </div>
+                    <ScoreBar score={review.rating} />
+                    {review.comment ? (
+                      <p className="text-muted-foreground pt-1 break-words whitespace-pre-line">
+                        {review.comment}
+                      </p>
+                    ) : null}
+                  </div>
+                </section>
+              ) : isCandidate && session.status === "completed" ? (
+                <section className="flex flex-col gap-3">
+                  <h2 className={H2}>Avalie {interviewerName}</h2>
+                  <ReviewForm sessionId={session.id} interviewerName={interviewerName} />
                 </section>
               ) : null}
 
