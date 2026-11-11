@@ -47,7 +47,12 @@ export default function RoomContent({ sessionId }: Props) {
 
   if (!joined) {
     return (
-      <div data-lk-theme="default" className="flex min-h-screen flex-col items-center justify-center gap-4 p-4">
+      <div
+        data-lk-theme="default"
+        // `dark`: a sala é sempre escura (DESIGN.md), inclusive a tela de entrada. Sem isto o
+        // título, que herda o branco do tema do LiveKit, some no fundo claro do app.
+        className="dark bg-background flex min-h-screen flex-col items-center justify-center gap-4 p-4"
+      >
         <h1 className="text-2xl font-semibold">Sala de entrevista</h1>
         <PreJoin
           className="w-full max-w-md"
