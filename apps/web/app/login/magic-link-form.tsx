@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { safeNextPath } from "@/lib/safe-next-path";
 import { createClient } from "@/lib/supabase/client";
 
 export function MagicLinkForm({ next }: { next?: string }) {
@@ -16,10 +17,10 @@ export function MagicLinkForm({ next }: { next?: string }) {
     setLoading(true);
 
     const supabase = createClient();
+    // "next" vai sempre na URL: o template do e-mail acrescenta
+    // "&token_hash=..." no fim, então a URL precisa já ter uma query.
     const callbackUrl = new URL("/auth/callback", window.location.origin);
-    if (next) {
-      callbackUrl.searchParams.set("next", next);
-    }
+    callbackUrl.searchParams.set("next", safeNextPath(next, "/entrevistadores"));
 
     try {
       const { error } = await supabase.auth.signInWithOtp({
@@ -30,7 +31,6 @@ export function MagicLinkForm({ next }: { next?: string }) {
       });
 
       if (error) {
-        console.error("signInWithOtp retornou erro:", error);
         setError("Não deu para enviar o link agora. Tente de novo.");
         setLoading(false);
         return;
@@ -38,8 +38,7 @@ export function MagicLinkForm({ next }: { next?: string }) {
 
       setSent(true);
       setLoading(false);
-    } catch (err) {
-      console.error("signInWithOtp lançou exceção:", err);
+    } catch {
       setError("Não deu para enviar o link agora. Tente de novo.");
       setLoading(false);
     }
