@@ -12,7 +12,13 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { NAME_MAX_LENGTH, participantNameSchema, roomNameFor, tokenQuerySchema } from "./session";
+import {
+  NAME_MAX_LENGTH,
+  participantNameSchema,
+  roomAccess,
+  roomNameFor,
+  tokenQuerySchema,
+} from "./session";
 
 describe("tokenQuerySchema", () => {
   it("aceita a sala de teste com um nome válido", () => {
@@ -53,5 +59,23 @@ describe("participantNameSchema", () => {
 describe("roomNameFor", () => {
   it("segue o padrão session-<id>, o mesmo do documento Yjs", () => {
     expect(roomNameFor("teste")).toBe("session-teste");
+  });
+});
+
+describe("roomAccess", () => {
+  const startsAt = "2026-11-12T21:00:00.000Z";
+  const endsAt = "2026-11-12T22:00:00.000Z";
+
+  it("fica fechada até 10 minutos antes do início", () => {
+    expect(roomAccess(startsAt, endsAt, new Date("2026-11-12T20:49:59.000Z"))).toBe("early");
+  });
+
+  it("abre 10 minutos antes e segue aberta até o fim da sessão", () => {
+    expect(roomAccess(startsAt, endsAt, new Date("2026-11-12T20:50:00.000Z"))).toBe("open");
+    expect(roomAccess(startsAt, endsAt, new Date("2026-11-12T21:59:59.000Z"))).toBe("open");
+  });
+
+  it("fecha quando a sessão termina", () => {
+    expect(roomAccess(startsAt, endsAt, new Date("2026-11-12T22:00:00.000Z"))).toBe("ended");
   });
 });
