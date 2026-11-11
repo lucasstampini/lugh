@@ -10,7 +10,7 @@ import {
 } from "@livekit/components-react";
 import { Track } from "livekit-client";
 
-// Vídeo dos participantes + barra de controles (mic, câmera, sair).
+// Vídeo dos participantes + barra de controles (mic, câmera). Sair fica no cabeçalho da sala.
 // Precisa estar dentro de <LiveKitRoom>, que fornece a conexão via contexto.
 export function VideoPanel() {
   // Uma "track" por câmera; withPlaceholder mostra o tile mesmo com a câmera desligada.
@@ -19,23 +19,23 @@ export function VideoPanel() {
   });
 
   return (
-    <div className="flex h-full flex-col gap-2">
+    <div className="flex h-full flex-col gap-3">
       {/* Lista vertical em vez do GridLayout: o grid pagina quando falta espaço e,
           numa entrevista, os dois participantes precisam estar sempre visíveis. */}
-      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
         <TrackLoop tracks={tracks}>
           <ParticipantTile className="aspect-video w-full shrink-0" />
         </TrackLoop>
       </div>
       {/* Quando o navegador bloqueia o som automático, o LiveKit mostra um botão para liberar.
-          O da ControlBar não cabe na coluna de 320px e ficava escondido atrás do editor, então
+          O da ControlBar não cabe na coluna de 280px e ficava escondido atrás do editor, então
           ele é escondido lá e mostrado aqui, numa linha própria (some sozinho quando não precisa).
           Abaixo de 600px o CSS do LiveKit o fixa no centro da tela, onde o editor o cobre: mantemos no fluxo. */}
       <StartMediaButton label="Ativar som" className="w-full shrink-0 max-[600px]:static! max-[600px]:transform-none!" />
       <ControlBar
         className="[&_.lk-start-audio-button]:hidden!"
         variation="minimal"
-        controls={{ microphone: true, camera: true, leave: true, screenShare: false, chat: false }}
+        controls={{ microphone: true, camera: true, leave: false, screenShare: false, chat: false }}
       />
       {/* Sem isto ninguém ouve ninguém: toca o áudio de todos os participantes remotos. */}
       <RoomAudioRenderer />

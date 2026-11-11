@@ -3,7 +3,10 @@
 import "@livekit/components-styles";
 
 import { LiveKitRoom, PreJoin, type LocalUserChoices } from "@livekit/components-react";
+import Image from "next/image";
 import { useState } from "react";
+
+import { Eyebrow } from "@/components/eyebrow";
 
 import { participantNameSchema } from "@/lib/room/session";
 
@@ -49,27 +52,50 @@ export default function RoomContent({ sessionId }: Props) {
     return (
       <div
         data-lk-theme="default"
-        // `dark`: a sala é sempre escura (DESIGN.md), inclusive a tela de entrada. Sem isto o
-        // título, que herda o branco do tema do LiveKit, some no fundo claro do app.
-        className="dark bg-background flex min-h-screen flex-col items-center justify-center gap-4 p-4"
+        // `dark`: a sala é sempre escura (DESIGN.md), inclusive a tela de entrada.
+        className="dark flex min-h-screen flex-col"
       >
-        <h1 className="text-2xl font-semibold">Sala de entrevista</h1>
-        <PreJoin
-          className="w-full max-w-md"
-          joinLabel={loading ? "Entrando..." : "Entrar na sala"}
-          userLabel="Seu nome"
-          micLabel="Microfone"
-          camLabel="Câmera"
-          persistUserChoices
-          onValidate={(values) => !loading && participantNameSchema.safeParse(values.username).success}
-          onSubmit={handleJoin}
-          onError={() => setError("Não conseguimos acessar câmera ou microfone. Você ainda pode entrar sem eles.")}
-        />
-        {error && (
-          <p role="alert" className="text-destructive text-sm">
-            {error}
-          </p>
-        )}
+        <header className="px-[clamp(20px,4vw,40px)] py-[18px]">
+          <Image
+            src="/brand/lugh-logo-dark-bg.svg"
+            alt="Lugh"
+            width={87}
+            height={30}
+            priority
+            className="h-[30px] w-auto"
+          />
+        </header>
+        <main className="flex flex-1 items-center justify-center px-[clamp(20px,4vw,40px)] pt-6 pb-16">
+          <div className="pop flex w-full max-w-md flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <Eyebrow>sala de entrevista</Eyebrow>
+              <h1 className="font-heading text-[clamp(30px,3.4vw,44px)] leading-[1.05] font-extrabold tracking-[-0.02em]">
+                Pronto para entrar?
+              </h1>
+            </div>
+            <PreJoin
+              // A prop className substitui a classe padrão do LiveKit: sem repetir
+              // `lk-prejoin` aqui, o CSS do PreJoin (coluna, prévia da câmera) não vale.
+              className="lk-prejoin w-full"
+              joinLabel={loading ? "Entrando..." : "Entrar na sala"}
+              userLabel="Seu nome"
+              micLabel="Microfone"
+              camLabel="Câmera"
+              persistUserChoices
+              onValidate={(values) => !loading && participantNameSchema.safeParse(values.username).success}
+              onSubmit={handleJoin}
+              onError={() => setError("Não conseguimos acessar câmera ou microfone. Você ainda pode entrar sem eles.")}
+            />
+            {error && (
+              <p role="alert" className="text-destructive text-sm font-semibold">
+                {error}
+              </p>
+            )}
+            <p className="text-muted-foreground text-[13px]">
+              A sala funciona no navegador do computador. Não precisa instalar nada.
+            </p>
+          </div>
+        </main>
       </div>
     );
   }
@@ -79,7 +105,8 @@ export default function RoomContent({ sessionId }: Props) {
   return (
     <LiveKitRoom
       data-lk-theme="default"
-      className="p-2"
+      // `dark` aqui (e não só no layout) para o tema do LiveKit pegar a paleta da sala.
+      className="dark"
       // Inline porque o CSS do LiveKit (.lk-room-container { height: 100% }) vence a classe do Tailwind.
       style={{ height: "100dvh" }}
       serverUrl={livekitUrl}
@@ -101,8 +128,8 @@ export default function RoomContent({ sessionId }: Props) {
 
 function RoomMessage({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex min-h-screen items-center justify-center p-4 text-center">
-      <p className="text-muted-foreground">{children}</p>
+    <main className="dark bg-background flex min-h-screen items-center justify-center p-4 text-center">
+      <p className="text-muted-foreground font-mono text-[13px]">{children}</p>
     </main>
   );
 }
