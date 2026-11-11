@@ -30,15 +30,7 @@ export default async function PerfilExperienciaPage() {
   }
 
   return (
-    <ProfileWizardShell
-      activeStep={3}
-      heroLines={["Seu ponto", "de partida", "já conta."]}
-      dicaLabel="Começar também é experiência."
-      dicaText="Projeto de faculdade e experiência pessoal também valem. Ninguém começa pronto."
-      stepLabel="Configuração do perfil · Etapa 3 de 4"
-      title="Experiência e prática"
-      description="Você não precisa ter trabalhado na área para começar a praticar."
-    >
+    <ProfileWizardShell activeStep={3} title="Experiência">
       <ExperienciaForm />
     </ProfileWizardShell>
   );

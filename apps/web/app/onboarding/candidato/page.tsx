@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
-import { FadeIn } from "@/components/motion/fade-in";
+import { StepHeader } from "@/components/step-header";
 import { createClient } from "@/lib/supabase/server";
-import { AvatarUpload } from "./avatar-upload";
 import { ConfirmNameForm } from "./confirm-name-form";
 
 export const instant = false;
@@ -22,28 +21,15 @@ export default async function OnboardingCandidatoPage() {
     .eq("id", user.id)
     .single();
 
-  const name = profile?.name ?? "";
-
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-6 py-16">
-      <FadeIn className="flex w-full max-w-sm flex-col items-center gap-6">
-        <p className="bg-lume text-lume-foreground rounded-full px-3 py-1 text-xs font-bold tracking-[0.08em] uppercase">
-          Passo 2 de 2
-        </p>
-
-        <AvatarUpload initialUrl={profile?.avatar_url ?? null} name={name} />
-
-        <div className="flex flex-col gap-2 text-center">
-          <h1 className="font-heading text-3xl font-extrabold tracking-[-0.03em]">
-            Complete seu perfil.
-          </h1>
-          <p className="text-foreground/70">
-            É assim que os entrevistadores vão te conhecer.
-          </p>
-        </div>
-
-        <ConfirmNameForm initialName={name} />
-      </FadeIn>
-    </main>
+    <div className="flex min-h-screen flex-col">
+      <StepHeader label="passo 2 de 2 · candidato" />
+      <main className="mx-auto box-border w-full max-w-[1040px] px-[clamp(20px,5vw,48px)] pt-[clamp(28px,5vw,56px)] pb-[72px]">
+        <ConfirmNameForm
+          initialName={profile?.name ?? ""}
+          initialAvatarUrl={profile?.avatar_url ?? null}
+        />
+      </main>
+    </div>
   );
 }

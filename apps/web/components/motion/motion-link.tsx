@@ -8,7 +8,7 @@ import { spring } from "./springs";
 const MotionNextLink = motion.create(Link);
 
 // CTA com feedback tátil de clique: explica que o clique foi registrado,
-// sem floreio (sem bounce, sem giro). Respeita prefers-reduced-motion por CSS
+// levanta 2 px no hover e encolhe no clique. Respeita prefers-reduced-motion por CSS
 // (motion-reduce:): decidir no render mudava os atributos do link entre
 // servidor e navegador (o whileTap acrescenta tabindex) e quebrava a hidratação.
 // Props tipadas explicitamente (não ComponentProps<typeof Link>): o motion
@@ -27,7 +27,7 @@ export function MotionLink({
     <MotionNextLink
       href={href}
       className={`motion-reduce:transform-none! ${className ?? ""}`}
-      whileHover={{ scale: 1.02 }}
+      whileHover={{ y: -2 }}
       whileTap={{ scale: 0.97 }}
       transition={spring}
     >
