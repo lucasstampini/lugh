@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { spring } from "./springs";
 
 // Feedback de hover do mouse em cards: levanta levemente, explica que ali
-// tem algo pra olhar com mais atenção. Sem giro, sem bounce.
+// tem algo pra olhar com mais atenção. Sem giro.
 export function HoverLift({
   children,
   className,
@@ -17,7 +17,7 @@ export function HoverLift({
     <motion.div
       // Com prefers-reduced-motion o CSS anula o deslocamento.
       className={`motion-reduce:transform-none! ${className ?? ""}`}
-      whileHover={{ y: -4 }}
+      whileHover={{ y: -3 }}
       transition={spring}
     >
       {children}
