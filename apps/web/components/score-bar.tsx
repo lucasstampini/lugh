@@ -1,14 +1,16 @@
+// Barra de nota (0 a max): trilho com borda de tinta e preenchimento verde.
+// O número fica ao lado, no texto: a barra sozinha não diz o valor.
 export function ScoreBar({ score, max = 5 }: { score: number; max?: number }) {
+  const percent = Math.min(Math.max(score / max, 0), 1) * 100;
+
   return (
-    <div className="flex items-center gap-1.5">
-      {Array.from({ length: max }).map((_, index) => (
-        <span
-          key={index}
-          className={`h-1.5 flex-1 rounded-full ${
-            index < score ? "bg-primary" : "bg-border"
-          }`}
+    <div aria-hidden="true" className="edge bg-secondary h-3 overflow-hidden rounded-full">
+      {percent > 0 ? (
+        <div
+          className="bar-grow bg-primary border-border h-full border-r-[1.5px]"
+          style={{ width: `${percent}%` }}
         />
-      ))}
+      ) : null}
     </div>
   );
 }

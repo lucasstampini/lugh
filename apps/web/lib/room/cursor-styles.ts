@@ -11,7 +11,10 @@ import { NAME_MAX_LENGTH } from "./session";
 
 export type RemoteCursor = { clientId: number; name: unknown; color: unknown };
 
-const FALLBACK_COLOR = "#64748b";
+// Cinza claro da sala: também precisa contrastar com o texto Tinta da etiqueta.
+const FALLBACK_COLOR = "#A9BDB2";
+// Texto das etiquetas: as cores dos participantes são todas claras.
+const LABEL_TEXT_COLOR = "#0F1A14";
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
 export function safeColor(color: unknown): string {
@@ -39,7 +42,7 @@ export function remoteCursorCss(cursors: RemoteCursor[]): string {
       return `
 .yRemoteSelection-${clientId} { background-color: ${hex}40; }
 .yRemoteSelectionHead-${clientId} { position: absolute; height: 100%; box-sizing: border-box; border-left: 2px solid ${hex}; }
-.yRemoteSelectionHead-${clientId}::after { content: "${cssStringEscape(safeName(name))}"; position: absolute; top: -1.3em; left: -2px; z-index: 10; padding: 0 4px; border-radius: 3px; background-color: ${hex}; color: #fff; font-size: 11px; line-height: 1.3em; white-space: nowrap; pointer-events: none; }`;
+.yRemoteSelectionHead-${clientId}::after { content: "${cssStringEscape(safeName(name))}"; position: absolute; top: -1.3em; left: -2px; z-index: 10; padding: 0 4px; border-radius: 5px; background-color: ${hex}; color: ${LABEL_TEXT_COLOR}; font-size: 11px; font-weight: 700; line-height: 1.3em; white-space: nowrap; pointer-events: none; }`;
     })
     .join("\n");
 }
