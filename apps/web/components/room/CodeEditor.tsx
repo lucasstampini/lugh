@@ -8,7 +8,7 @@ import { getCode } from "@/lib/room/collab";
 import type { LanguageId } from "@/lib/room/languages";
 
 import { useCollab } from "./CollabProvider";
-import "./monaco-setup";
+import { LUGH_THEME } from "./monaco-setup";
 import { RemoteCursorStyles } from "./RemoteCursorStyles";
 
 type MonacoEditor = Parameters<OnMount>[0];
@@ -41,12 +41,12 @@ export default function CodeEditor({ language }: { language: LanguageId }) {
   return (
     <section aria-label="Editor de código" className="flex min-h-0 flex-1 flex-col">
       {collab?.provider.awareness && <RemoteCursorStyles awareness={collab.provider.awareness} />}
-      <div className="min-h-0 flex-1 overflow-hidden rounded-lg border">
+      <div className="min-h-0 flex-1 overflow-hidden">
         <Editor
           language={language}
-          theme="vs-dark"
+          theme={LUGH_THEME}
           onMount={setEditor}
-          loading={<p className="text-muted-foreground p-4 text-sm">Carregando o editor...</p>}
+          loading={<p className="text-muted-foreground p-4 font-mono text-[13px]">carregando o editor…</p>}
           options={{ minimap: { enabled: false }, fontSize: 14, automaticLayout: true, scrollBeyondLastLine: false }}
         />
       </div>

@@ -38,3 +38,19 @@ describe("interviewerFormSchema: preço", () => {
     },
   );
 });
+
+describe("interviewerFormSchema: LinkedIn", () => {
+  it("é opcional e vira null quando vazio", () => {
+    const result = interviewerFormSchema.safeParse({ ...base, price: "100", linkedin: "" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.linkedin).toBeNull();
+  });
+
+  it("completa o https e recusa outro domínio", () => {
+    const ok = interviewerFormSchema.safeParse({ ...base, price: "100" });
+    expect(ok.success && ok.data.linkedin).toBe("https://linkedin.com/in/fulana");
+    expect(
+      interviewerFormSchema.safeParse({ ...base, price: "100", linkedin: "google.com" }).success,
+    ).toBe(false);
+  });
+});

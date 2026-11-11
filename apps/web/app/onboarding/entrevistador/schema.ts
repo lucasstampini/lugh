@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { AREA_OPTIONS, SENIORITY_OPTIONS } from "@/lib/interviewer-options";
-import { optionalSocialUrl, requiredSocialUrl } from "@/lib/social-url";
+import { optionalSocialUrl } from "@/lib/social-url";
 
 export { AREA_OPTIONS, SENIORITY_OPTIONS };
 
@@ -65,9 +65,8 @@ export const interviewerFormSchema = z.object({
     .max(500, "Até 500 caracteres.")
     .optional()
     .or(z.literal("")),
-  linkedin: requiredSocialUrl(
+  linkedin: optionalSocialUrl(
     "linkedin.com",
-    "LinkedIn é obrigatório pra quem entrevista.",
     "Precisa ser uma URL do linkedin.com.",
   ),
   github: optionalSocialUrl("github.com", "Precisa ser uma URL do github.com."),

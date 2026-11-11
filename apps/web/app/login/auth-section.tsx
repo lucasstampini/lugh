@@ -1,8 +1,10 @@
-import { GoogleLoginButton } from "./google-login-button";
-import { MagicLinkForm } from "./magic-link-form";
+import { LoginPanel } from "./login-panel";
 
-const CALLBACK_ERROR_MESSAGES: Record<string, string> = {
-  callback_failed: "O login não foi concluído. Tente de novo.",
+const CALLBACK_ERRORS: Record<string, { title: string; body: string }> = {
+  callback_failed: {
+    title: "O login não foi concluído",
+    body: "O link pode ter expirado ou já ter sido usado. Peça um novo link abaixo para entrar.",
+  },
 };
 
 // searchParams é uma API de request-time: fica isolado aqui e dentro de
@@ -14,21 +16,8 @@ export async function AuthSection({
 }) {
   const { error, next } = await searchParams;
   const errorKey = Array.isArray(error) ? error[0] : error;
-  const message = errorKey ? CALLBACK_ERROR_MESSAGES[errorKey] : null;
+  const callbackError = errorKey ? (CALLBACK_ERRORS[errorKey] ?? null) : null;
   const nextPath = Array.isArray(next) ? next[0] : next;
 
-  return (
-    <div className="flex w-full flex-col gap-4">
-      {message ? <p className="text-destructive text-sm">{message}</p> : null}
-      <GoogleLoginButton next={nextPath} />
-
-      <div className="flex items-center gap-3">
-        <div className="bg-border h-px flex-1" />
-        <span className="text-muted-foreground text-xs">ou</span>
-        <div className="bg-border h-px flex-1" />
-      </div>
-
-      <MagicLinkForm next={nextPath} />
-    </div>
-  );
+  return <LoginPanel next={nextPath} callbackError={callbackError} />;
 }
