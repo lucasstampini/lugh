@@ -2,8 +2,13 @@
 -- guarda a foto que veio do Google). Caminho do arquivo é "<user_id>/avatar",
 -- então a policy de escrita só precisa comparar o primeiro segmento do
 -- caminho com auth.uid(), sem precisar de tabela extra.
-insert into storage.buckets (id, name, public)
-values ('avatars', 'avatars', true)
+-- Limite de tamanho e tipos aceitos valem no próprio bucket: a Server Action
+-- valida o mesmo, mas a policy de escrita permite upload direto pelo client.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'avatars', 'avatars', true, 4194304,
+  array['image/jpeg', 'image/png', 'image/webp']
+)
 on conflict (id) do nothing;
 
 create policy "avatars: public read" on storage.objects
