@@ -15,7 +15,8 @@ create table public.sessions (
   candidate_notes text,
   livekit_room text,
   collab_doc_name text,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  check (ends_at > starts_at)
 );
 
 alter table public.sessions enable row level security;
