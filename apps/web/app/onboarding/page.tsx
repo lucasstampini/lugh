@@ -55,13 +55,13 @@ export default async function OnboardingPage() {
           <HoverLift className="h-full">
             <Link
               href="/onboarding/candidato"
-              className="bg-primary flex h-full flex-col gap-4 rounded-[20px] p-8 text-white"
+              className="bg-primary flex h-full flex-col gap-4 rounded-[20px] p-8 text-primary-foreground"
             >
               <Target aria-hidden="true" size={28} />
               <span className="font-heading text-2xl font-bold">
                 Quero treinar
               </span>
-              <span className="text-white/80">
+              <span className="text-primary-foreground/80">
                 Praticar entrevistas com quem já está lá dentro.
               </span>
               <span className="mt-auto flex items-center gap-1.5 text-sm font-bold">

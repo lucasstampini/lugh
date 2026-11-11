@@ -44,7 +44,7 @@ export function PreferenceToggles() {
                 on ? "bg-primary justify-end" : "bg-muted justify-start"
               }`}
             >
-              <span className="size-[18px] rounded-full bg-white" />
+              <span className="size-[18px] bg-card rounded-full" />
             </button>
           </div>
         );

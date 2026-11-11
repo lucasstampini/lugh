@@ -11,6 +11,8 @@
   --font-heading: var(--font-display);
   --font-mono: var(--font-jetbrains);
   --color-lume: var(--lume);
+  --color-indigo: var(--indigo);
+  --color-indigo-light: var(--indigo-light);
   --color-lume-foreground: var(--lume-foreground);
   --color-success: var(--success);
   --color-warning: var(--warning);
@@ -74,6 +76,10 @@
   --ring: #4B3CF0;
   --lume: #FFC23D;
   --lume-foreground: #1C1A33;
+  /* Índigo da marca, igual nos dois modos (no escuro --primary vira Lume).
+     Índigo claro: links, texto e cursores Índigo sobre fundo escuro. */
+  --indigo: #4B3CF0;
+  --indigo-light: #8F86FF;
   --success: #167A54;
   --warning: #9A5B00;
   --chart-1: oklch(0.87 0 0);

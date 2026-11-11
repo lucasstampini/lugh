@@ -142,10 +142,7 @@ export default function Home() {
       <header className="border-border bg-card sticky top-0 z-10 border-b">
         <div className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/brand/lugh-symbol.svg" alt="" width={32} height={32} />
-            <span className="font-heading text-primary text-2xl font-extrabold tracking-[-0.02em]">
-              lugh
-            </span>
+            <Image src="/brand/lugh-logo.svg" alt="Lugh" width={92} height={32} />
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex">
@@ -181,7 +178,7 @@ export default function Home() {
           large
           className="bg-primary flex flex-col justify-between gap-12 px-8 py-12 sm:px-12 lg:px-16 lg:py-16"
         >
-          <h1 className="font-heading text-[clamp(2.25rem,6vw,5.5rem)] leading-[0.98] font-extrabold tracking-[-0.04em] text-white">
+          <h1 className="font-heading text-[clamp(2.25rem,6vw,5.5rem)] leading-[0.98] font-extrabold tracking-[-0.04em] text-primary-foreground">
             Chegue
             <br />
             <span className="pl-[8%]">preparado pra</span>
@@ -190,11 +187,11 @@ export default function Home() {
           </h1>
 
           <div className="flex flex-col gap-6">
-            <div className="h-px bg-[#ECEAFE] opacity-35" />
+            <div className="bg-secondary h-px opacity-35" />
             <div className="flex gap-7">
-              <span className="font-bold text-[#ECEAFE]">›</span>
+              <span className="text-secondary font-bold">›</span>
               <div className="flex flex-col gap-3.5">
-                <p className="font-heading text-2xl leading-[1.12] font-bold tracking-[-0.01em] text-white sm:text-3xl">
+                <p className="font-heading text-2xl leading-[1.12] font-bold tracking-[-0.01em] text-primary-foreground sm:text-3xl">
                   Treine com quem já trabalha onde você quer entrar.
                 </p>
               </div>
@@ -261,9 +258,9 @@ export default function Home() {
             <FadeIn
               key={item}
               index={index}
-              className="flex items-center gap-2 text-white"
+              className="flex items-center gap-2 text-primary-foreground"
             >
-              <Check aria-hidden="true" size={16} className="shrink-0 text-white" />
+              <Check aria-hidden="true" size={16} className="shrink-0 text-primary-foreground" />
               <span className="text-sm font-bold">{item}</span>
             </FadeIn>
           ))}
@@ -293,7 +290,7 @@ export default function Home() {
               index={index}
               className="relative flex gap-6 pb-2"
             >
-              <span className="bg-primary relative z-10 flex size-14 shrink-0 items-center justify-center rounded-full font-heading text-xl font-extrabold text-white">
+              <span className="bg-primary relative z-10 flex size-14 shrink-0 items-center justify-center rounded-full font-heading text-xl font-extrabold text-primary-foreground">
                 {index + 1}
               </span>
               <div className="flex flex-col gap-2 pt-2">
@@ -322,10 +319,10 @@ export default function Home() {
 
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <FadeIn index={0} className="md:row-span-2">
-              <HoverLift className="bg-primary flex h-full flex-col gap-4 rounded-[20px] p-8 text-white">
+              <HoverLift className="bg-primary flex h-full flex-col gap-4 rounded-[20px] p-8 text-primary-foreground">
                 <Code2 aria-hidden="true" size={28} />
                 <h3 className="font-heading text-2xl font-bold">Técnica com código</h3>
-                <p className="text-white/80">
+                <p className="text-primary-foreground/80">
                   Editor ao vivo pra resolver problema, escrever e rodar código junto com o
                   entrevistador, igual numa entrevista técnica de verdade.
                 </p>
@@ -453,13 +450,13 @@ export default function Home() {
       </section>
 
       {/* Prática e evolução: a sala tem identidade própria, modo escuro sempre. */}
-      <section className="bg-[#13122A] text-white">
+      <section className="dark bg-background text-foreground">
         <div className="mx-auto grid max-w-[1440px] grid-cols-1 items-center gap-10 px-6 py-16 md:grid-cols-[7fr_5fr]">
           <RoomPreview />
 
           <div className="flex flex-col gap-8">
             <FadeIn large index={1} className="flex flex-col gap-4">
-              <span className="w-fit rounded-full bg-[#2A2850] px-3.5 py-2 text-sm font-bold text-white">
+              <span className="w-fit rounded-full bg-secondary px-3.5 py-2 text-sm font-bold">
                 A sala
               </span>
               <h2 className="font-heading text-4xl font-extrabold tracking-[-0.03em] md:text-5xl">
@@ -475,7 +472,7 @@ export default function Home() {
                     <Icon aria-hidden="true" size={22} className="mt-0.5 shrink-0 text-lume" />
                     <div className="flex flex-col gap-1">
                       <p className="font-semibold">{benefit.title}</p>
-                      <p className="text-sm text-[#C9C7DB]">{benefit.description}</p>
+                      <p className="text-muted-foreground text-sm">{benefit.description}</p>
                     </div>
                   </FadeIn>
                 );
@@ -604,7 +601,7 @@ export default function Home() {
           <span className="bg-lume text-lume-foreground w-fit rounded-full px-3.5 py-2 text-sm font-bold">
             Prove que já sabe.
           </span>
-          <h2 className="font-heading text-5xl font-extrabold tracking-[-0.03em] text-white">
+          <h2 className="font-heading text-5xl font-extrabold tracking-[-0.03em] text-primary-foreground">
             Pronto pra treinar antes da entrevista real?
           </h2>
           <MotionLink
@@ -621,9 +618,7 @@ export default function Home() {
         <div className="mx-auto flex max-w-[1440px] flex-col gap-8 px-6 py-10">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
             <div className="flex flex-col gap-2">
-              <span className="font-heading text-primary text-xl font-extrabold tracking-[-0.02em]">
-                lugh
-              </span>
+              <Image src="/brand/lugh-logo.svg" alt="Lugh" width={92} height={32} />
               <p className="text-muted-foreground text-sm">Treine. Prove. Entre.</p>
             </div>
 

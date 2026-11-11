@@ -208,7 +208,7 @@ export default async function InterviewerProfilePage({
             <span>No Lugh desde {joinYear}</span>
           </div>
 
-          <div className="h-px bg-white/25" />
+          <div className="h-px bg-primary-foreground/25" />
 
           <div className="flex flex-wrap gap-2">
             {interviewer.areas.map((area) => (

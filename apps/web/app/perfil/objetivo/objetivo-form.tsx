@@ -3,6 +3,7 @@
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
 
 const LEVEL_OPTIONS = ["Estágio", "Júnior", "Os dois"];
 const COMPANY_OPTIONS = ["Fintech de grande porte", "Big tech", "Empresa em crescimento"];
@@ -36,7 +37,7 @@ export function ObjetivoForm() {
             <label htmlFor="area" className="text-xs font-bold">
               Área de interesse *
             </label>
-            <input
+            <Input
               id="area"
               name="area"
               placeholder="Engenharia de software"
@@ -48,7 +49,7 @@ export function ObjetivoForm() {
             <label htmlFor="role" className="text-xs font-bold">
               Função que você busca
             </label>
-            <input
+            <Input
               id="role"
               name="role"
               placeholder="Desenvolvedora back-end"
@@ -121,7 +122,7 @@ export function ObjetivoForm() {
                     selected ? "bg-primary" : "bg-card border-border border"
                   }`}
                 >
-                  {selected ? <Check aria-hidden="true" size={12} className="text-white" /> : null}
+                  {selected ? <Check aria-hidden="true" size={12} className="text-primary-foreground" /> : null}
                 </span>
                 {option}
               </button>
@@ -166,7 +167,7 @@ export function ObjetivoForm() {
                     }`}
                   >
                     {selected ? (
-                      <Check aria-hidden="true" size={12} className="text-white" />
+                      <Check aria-hidden="true" size={12} className="text-primary-foreground" />
                     ) : null}
                   </span>
                   {option.label}

@@ -12,21 +12,18 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
               <Image
-                src="/brand/lugh-symbol-dark-bg.svg"
-                alt=""
-                width={28}
-                height={28}
+                src="/brand/lugh-logo-dark-bg.svg"
+                alt="Lugh"
+                width={92}
+                height={32}
               />
-              <span className="font-heading text-xl font-extrabold tracking-[-0.02em] text-white">
-                lugh
-              </span>
             </Link>
             <span className="bg-lume text-lume-foreground rounded-full px-2.5 py-1 text-[11px] font-bold tracking-[0.12em] uppercase">
               Hack Brasil 2026
             </span>
           </div>
 
-          <h1 className="font-heading text-[clamp(2.75rem,9vw,8.75rem)] leading-[0.98] font-extrabold tracking-[-0.04em] text-white">
+          <h1 className="font-heading text-[clamp(2.75rem,9vw,8.75rem)] leading-[0.98] font-extrabold tracking-[-0.04em] text-primary-foreground">
             Prove
             <br />
             <span className="pl-[8%]">que já</span>
@@ -36,16 +33,16 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
         </div>
 
         <div className="flex flex-col gap-6">
-          <div className="h-px bg-[#ECEAFE] opacity-35" />
+          <div className="bg-secondary h-px opacity-35" />
           <div className="flex gap-7">
             <span className="text-lume font-bold">›</span>
             <div className="flex flex-col gap-3.5">
-              <p className="font-heading text-2xl leading-[1.12] font-bold tracking-[-0.01em] text-white sm:text-3xl">
+              <p className="font-heading text-2xl leading-[1.12] font-bold tracking-[-0.01em] text-primary-foreground sm:text-3xl">
                 Pronto pra provar que já sabe o que faz?
               </p>
               <Link
                 href="/#como-funciona"
-                className="text-sm text-[#ECEAFE] hover:underline"
+                className="text-secondary text-sm hover:underline"
               >
                 Como funciona
               </Link>
