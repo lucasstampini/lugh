@@ -1,17 +1,13 @@
+import { authorizeRoomEntry } from "@/lib/room/access";
 import { createLivekitToken, readLivekitCredentials } from "@/lib/room/livekit-token";
-import { tokenQuerySchema } from "@/lib/room/session";
 
-// GET /api/livekit/token?room=teste&name=Ana
-// Devolve o token de vídeo da sala. O segredo do LiveKit só existe aqui no servidor.
-export async function GET(request: Request) {
-  const params = Object.fromEntries(new URL(request.url).searchParams);
-  const parsed = tokenQuerySchema.safeParse(params);
-
-  if (!parsed.success) {
-    return Response.json(
-      { error: parsed.error.issues[0]?.message ?? "Parâmetros inválidos" },
-      { status: 400 },
-    );
+// POST /api/livekit/token  { sessionId }
+// Devolve o token de vídeo da sala, só para participante da sessão e na janela de horário.
+// O segredo do LiveKit só existe aqui no servidor.
+export async function POST(request: Request) {
+  const entry = await authorizeRoomEntry(request);
+  if (!entry.ok) {
+    return Response.json({ error: entry.error }, { status: entry.status });
   }
 
   const credentials = readLivekitCredentials();
@@ -22,6 +18,9 @@ export async function GET(request: Request) {
     );
   }
 
-  const token = await createLivekitToken(parsed.data, credentials);
+  const token = await createLivekitToken(
+    { sessionId: entry.sessionId, identity: entry.identity, name: entry.name },
+    credentials,
+  );
   return Response.json({ token });
 }

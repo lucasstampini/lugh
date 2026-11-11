@@ -1,6 +1,6 @@
 import { AccessToken } from "livekit-server-sdk";
 
-import { roomNameFor, type TokenQuery } from "./session";
+import { roomNameFor } from "./session";
 
 // Só servidor: usa o segredo do LiveKit. Nunca importar em componente "use client".
 
@@ -15,21 +15,24 @@ export function readLivekitCredentials(
   return { apiKey, apiSecret };
 }
 
+type LivekitTokenInput = {
+  sessionId: string;
+  // Id do usuário logado. O LiveKit aceita uma conexão por identity: a mesma pessoa em
+  // duas abas derruba a primeira.
+  identity: string;
+  name: string;
+};
+
 // Gera o JWT que autoriza o navegador a entrar na sala de vídeo.
-// A identity é aleatória porque ainda não há login: duas abas com o mesmo nome não colidem.
 export async function createLivekitToken(
-  { room, name }: TokenQuery,
+  { sessionId, identity, name }: LivekitTokenInput,
   { apiKey, apiSecret }: LivekitCredentials,
 ): Promise<string> {
-  const token = new AccessToken(apiKey, apiSecret, {
-    identity: crypto.randomUUID(),
-    name,
-    ttl: "2h",
-  });
+  const token = new AccessToken(apiKey, apiSecret, { identity, name, ttl: "2h" });
 
   token.addGrant({
     roomJoin: true,
-    room: roomNameFor(room),
+    room: roomNameFor(sessionId),
     canPublish: true,
     canSubscribe: true,
   });
