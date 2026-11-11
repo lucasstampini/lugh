@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
+import { initials } from "@/lib/initials";
 import { createClient } from "@/lib/supabase/server";
 
 export const instant = false;
@@ -34,13 +35,6 @@ const UPCOMING_STATUSES = new Set([
   "in_progress",
   "awaiting_feedback",
 ]);
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
-  return (first + last).toUpperCase();
-}
 
 function formatSessionDate(iso: string) {
   const parts = new Intl.DateTimeFormat("pt-BR", {

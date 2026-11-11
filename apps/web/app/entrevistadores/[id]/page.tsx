@@ -13,6 +13,7 @@ import { FadeIn } from "@/components/motion/fade-in";
 import { HoverLift } from "@/components/motion/hover-lift";
 import { SiteHeader } from "@/components/site-header";
 import { nextAvailableSlot } from "@/lib/availability";
+import { initials } from "@/lib/initials";
 import {
   AREA_OPTIONS,
   SENIORITY_OPTIONS,
@@ -61,13 +62,6 @@ const INCLUSIONS = [
   "Feedback estruturado após a sessão",
   "Horário sempre em fuso de Brasília",
 ];
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
-  return (first + last).toUpperCase();
-}
 
 function formatTime(time: string) {
   return time.slice(0, 5);

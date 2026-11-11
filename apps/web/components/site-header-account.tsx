@@ -5,15 +5,9 @@ import { Bell, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { initials } from "@/lib/initials";
 import { createClient } from "@/lib/supabase/client";
 import { springSoft } from "./motion/springs";
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
-  return (first + last || "?").toUpperCase();
-}
 
 // Sino e avatar+nome+chevron do cabeçalho logado (Figma node 47:2,
 // "Account"). O sino é só visual por enquanto: não existe sistema de

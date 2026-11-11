@@ -1,6 +1,7 @@
 import { Building2, CalendarDays } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { initials } from "@/lib/initials";
 import { AREA_OPTIONS, SENIORITY_OPTIONS } from "@/lib/interviewer-options";
 
 const priceFormatter = new Intl.NumberFormat("pt-BR", {
@@ -14,13 +15,6 @@ const areaLabels = Object.fromEntries(
 const seniorityLabels = Object.fromEntries(
   SENIORITY_OPTIONS.map((option) => [option.value, option.label]),
 );
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
-  return (first + last).toUpperCase();
-}
 
 export function InterviewerCard({
   profileId,

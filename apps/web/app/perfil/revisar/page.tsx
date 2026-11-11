@@ -1,17 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { initials } from "@/lib/initials";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileWizardShell } from "../profile-wizard-shell";
 import { PreferenceToggles } from "./preference-toggles";
 
 export const instant = false;
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
-  return (first + last || "?").toUpperCase();
-}
 
 function SummaryCard({
   title,

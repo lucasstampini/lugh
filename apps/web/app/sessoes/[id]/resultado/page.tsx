@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { ScoreBar } from "@/components/score-bar";
+import { initials } from "@/lib/initials";
 import { createClient } from "@/lib/supabase/server";
 
 export const instant = false;
@@ -53,13 +54,6 @@ const EXAMPLE_MATERIALS = [
   { icon: PanelsTopLeft, title: "Quadro branco", description: "Mapa de raciocínio da sessão" },
   { icon: FileText, title: "Anotações do entrevistador", description: "Resumo e casos de teste" },
 ];
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
-  return (first + last).toUpperCase();
-}
 
 function formatSessionDate(iso: string) {
   const parts = new Intl.DateTimeFormat("pt-BR", {
