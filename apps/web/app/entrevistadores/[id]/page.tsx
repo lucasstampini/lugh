@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Tag } from "@/components/tag";
 import { buttonVariants } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format-price";
+import { ScoreBar } from "@/components/score-bar";
 import { initials } from "@/lib/initials";
 import { AREA_OPTIONS, SENIORITY_OPTIONS } from "@/lib/interviewer-options";
 import { getFreeSlots } from "@/lib/slots";
@@ -25,6 +26,19 @@ const seniorityLabels: Record<string, string> = Object.fromEntries(
 
 // weekday 0 = domingo, igual ao banco.
 const WEEKDAY_SHORT = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+
+// "18 nov 2026", no horário de Brasília.
+function formatReviewDate(iso: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  })
+    .format(new Date(iso))
+    .replace(/ de /g, " ")
+    .replace(".", "");
+}
 
 const H2 = "font-heading text-2xl font-bold";
 const EXTERNAL_LINK = "text-brand-deep inline-flex min-h-11 items-center gap-1 font-bold underline";
@@ -83,11 +97,15 @@ export default async function InterviewerProfilePage({
     notFound();
   }
 
-  const [freeSlots, { data: completedSessions }, { data: ratings }] = await Promise.all([
-    getFreeSlots(supabase, id),
-    supabase.rpc("interviewer_completed_sessions", { interviewer: id }),
-    supabase.rpc("interviewer_ratings", { interviewer_ids: [id] }),
-  ]);
+  const [freeSlots, { data: completedSessions }, { data: ratings }, { data: reviews }] =
+    await Promise.all([
+      getFreeSlots(supabase, id),
+      supabase.rpc("interviewer_completed_sessions", { interviewer: id }),
+      supabase.rpc("interviewer_ratings", { interviewer_ids: [id] }),
+      // Nota, comentário e primeiro nome de quem avaliou. Se falhar, a seção some
+      // e o resto do perfil segue.
+      supabase.rpc("interviewer_reviews", { interviewer: id }),
+    ]);
 
   // Horários livres de hoje a hoje + 6, já sem as sessões marcadas.
   const days = freeSlots.weeks[0] ?? [];
@@ -233,8 +251,6 @@ export default async function InterviewerProfilePage({
                 )}
               </div>
 
-              {/* O comentário de cada avaliação é privado aos dois participantes
-                  (RLS de public.reviews): aqui só entram contagem e média. */}
               <div className="flex min-w-0 flex-[1_1_260px] flex-col gap-3">
                 <h2 className={H2}>No Lugh</h2>
                 <ul className="flex flex-col gap-2">
@@ -253,6 +269,46 @@ export default async function InterviewerProfilePage({
                 </ul>
               </div>
             </section>
+
+            {/* Avaliações públicas: saem pela função interviewer_reviews, que só entrega
+                nota, comentário, data e o primeiro nome de quem avaliou. */}
+            {reviews && reviews.length > 0 ? (
+              <section className="flex flex-col gap-3">
+                <div className="flex items-baseline gap-2.5">
+                  <h2 className={H2}>Avaliações</h2>
+                  <span className="text-muted-foreground font-mono text-[13px] tabular-nums">
+                    {reviews.length}
+                  </span>
+                </div>
+                <ul className="flex flex-col gap-3">
+                  {reviews.map((review, index) => (
+                    <li key={index} className="edge flex flex-col gap-2 rounded-2xl p-4">
+                      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                        <p className="font-extrabold break-words">
+                          {review.reviewer_first_name ?? "Candidato"}
+                        </p>
+                        <span className="text-muted-foreground font-mono text-xs">
+                          {formatReviewDate(review.created_at)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="max-w-[180px] flex-1">
+                          <ScoreBar score={review.rating} />
+                        </div>
+                        <span className="font-mono text-sm font-bold tabular-nums">
+                          {review.rating}/5
+                        </span>
+                      </div>
+                      {review.comment ? (
+                        <p className="max-w-[68ch] break-words whitespace-pre-line">
+                          {review.comment}
+                        </p>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
           </div>
 
           <aside
