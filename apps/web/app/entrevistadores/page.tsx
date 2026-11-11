@@ -57,9 +57,9 @@ export default async function EntrevistadoresPage({
   const profileIds = interviewers?.map((i) => i.profile_id) ?? [];
   const now = new Date();
   const { from, to } = bookingWindow(now);
-  const [{ data: profiles }, { data: availability }, { data: ratings }, bookedByInterviewer] =
+  const [{ data: profiles }, { data: availability }, { data: ratings }, { data: booked }] =
     profileIds.length
-    ? await Promise.all([
+      ? await Promise.all([
         supabase
           .from("interviewer_profiles")
           .select("id, name, avatar_url")
@@ -70,19 +70,14 @@ export default async function EntrevistadoresPage({
           .in("interviewer_id", profileIds),
         supabase.rpc("interviewer_ratings", { interviewer_ids: profileIds }),
         // Sessões já marcadas, para o "próximo horário" do card ser um que
-        // ainda dá para agendar. Uma chamada por entrevistador da página.
-        Promise.all(
-          profileIds.map(async (interviewerId) => {
-            const { data } = await supabase.rpc("interviewer_booked_slots", {
-              interviewer: interviewerId,
-              from_ts: from.toISOString(),
-              to_ts: to.toISOString(),
-            });
-            return [interviewerId, data ?? []] as const;
-          }),
-        ).then((entries) => new Map(entries)),
+        // ainda dá para agendar.
+        supabase.rpc("interviewers_booked_slots", {
+          interviewer_ids: profileIds,
+          from_ts: from.toISOString(),
+          to_ts: to.toISOString(),
+        }),
       ])
-    : [{ data: [] }, { data: [] }, { data: [] }, new Map<string, BookedRange[]>()];
+      : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }];
 
   const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
   const blocksByInterviewer = new Map<string, AvailabilityBlock[]>();
@@ -94,6 +89,12 @@ export default async function EntrevistadoresPage({
       end_time: block.end_time,
     });
     blocksByInterviewer.set(block.interviewer_id, list);
+  }
+  const bookedByInterviewer = new Map<string, BookedRange[]>();
+  for (const range of booked ?? []) {
+    const list = bookedByInterviewer.get(range.interviewer_id) ?? [];
+    list.push({ starts_at: range.starts_at, ends_at: range.ends_at });
+    bookedByInterviewer.set(range.interviewer_id, list);
   }
   const ratingByInterviewer = new Map(
     (ratings ?? []).map((r) => [r.interviewer_id, { average: r.average, reviewCount: r.review_count }]),
