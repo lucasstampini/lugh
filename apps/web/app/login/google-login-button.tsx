@@ -3,7 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { safeNextPath } from "@/lib/safe-next-path";
 import { createClient } from "@/lib/supabase/client";
+
+const GENERIC_ERROR = "Não deu para entrar com o Google agora. Tente de novo.";
 
 export function GoogleLoginButton({ next }: { next?: string }) {
   const [loading, setLoading] = useState(false);
@@ -24,10 +27,10 @@ export function GoogleLoginButton({ next }: { next?: string }) {
 
       setLoading(false);
       if (event.data.ok) {
-        router.push(next && next.startsWith("/") ? next : "/entrevistadores");
+        router.push(safeNextPath(next, "/entrevistadores"));
         router.refresh();
       } else {
-        setError("Não deu para entrar com o Google agora. Tente de novo.");
+        setError(GENERIC_ERROR);
       }
     }
 
@@ -70,8 +73,7 @@ export function GoogleLoginButton({ next }: { next?: string }) {
       });
 
       if (error || !data.url) {
-        console.error("signInWithOAuth retornou erro:", error);
-        setError("Não deu para entrar com o Google agora. Tente de novo.");
+        setError(GENERIC_ERROR);
         setLoading(false);
         return;
       }
@@ -82,17 +84,27 @@ export function GoogleLoginButton({ next }: { next?: string }) {
         "width=480,height=640,menubar=no,toolbar=no,status=no,location=no",
       );
 
-      // Bloqueador de popup: cai pro redirect de página cheia de antes.
+      // Bloqueador de popup: refaz o login como redirect de página cheia. Não
+      // dá pra reaproveitar data.url: ela volta pro callback com popup=1, que
+      // responde com a página que só avisa a janela-mãe e se fecha (e aqui não
+      // existe janela-mãe, a pessoa ficaria numa tela em branco).
       if (!popup) {
-        window.location.href = data.url;
+        callbackUrl.searchParams.delete("popup");
+        const { error: redirectError } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: callbackUrl.toString() },
+        });
+        if (redirectError) {
+          setError(GENERIC_ERROR);
+          setLoading(false);
+        }
         return;
       }
 
       popupRef.current = popup;
       popup.focus();
-    } catch (err) {
-      console.error("signInWithOAuth lançou exceção:", err);
-      setError("Não deu para entrar com o Google agora. Tente de novo.");
+    } catch {
+      setError(GENERIC_ERROR);
       setLoading(false);
     }
   }
