@@ -2,28 +2,49 @@
 
 import { useEffect, useState } from "react";
 
-const SESSION_MINUTES = 50;
+import { formatClock, sessionClock } from "@/lib/room/timer";
 
-// Tempo desde que este participante entrou na sala. É só local: a sala ainda não conhece
-// o horário real da sessão (fase 5), então cada um vê o próprio relógio.
-export function RoomTimer() {
-  const [seconds, setSeconds] = useState(0);
+const TEST_ROOM_SECONDS = 60 * 60;
+
+type Props = {
+  // Horário marcado da sessão. Sem eles (sala de teste) o relógio conta desde a entrada.
+  startsAt?: string;
+  endsAt?: string;
+};
+
+// Cronômetro do cabeçalho da sala. Na sessão real parte do horário marcado, então os dois
+// participantes veem o mesmo tempo; passou do fim, fica em tom de aviso.
+export function RoomTimer({ startsAt, endsAt }: Props) {
+  // Guardado no primeiro render para o relógio da sala de teste não reiniciar a cada tick.
+  const [joinedAt] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
-    const startedAt = Date.now();
-    const id = setInterval(() => setSeconds(Math.floor((Date.now() - startedAt) / 1000)), 1000);
+    const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
-  const ss = String(seconds % 60).padStart(2, "0");
+  const clock =
+    startsAt && endsAt
+      ? sessionClock(startsAt, endsAt, new Date(now))
+      : {
+          elapsedSeconds: Math.max(0, Math.floor((now - joinedAt) / 1000)),
+          totalSeconds: TEST_ROOM_SECONDS,
+          overtime: false,
+        };
 
   return (
-    <div role="timer" aria-label="Tempo na sala" className="font-mono text-lg font-bold tabular-nums">
-      <span className="text-primary">
-        {mm}:{ss}
+    <div
+      role="timer"
+      aria-label={clock.overtime ? "Tempo de sessão, horário encerrado" : "Tempo de sessão"}
+      className="font-mono text-lg font-bold tabular-nums"
+    >
+      <span className={clock.overtime ? "text-destructive" : "text-primary"}>
+        {formatClock(clock.elapsedSeconds)}
       </span>{" "}
-      <span className="text-muted-foreground text-[13px] font-normal">/ {SESSION_MINUTES}:00</span>
+      <span className="text-muted-foreground text-[13px] font-normal">
+        / {formatClock(clock.totalSeconds)}
+      </span>
     </div>
   );
 }

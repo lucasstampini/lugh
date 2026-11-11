@@ -54,7 +54,7 @@ test.describe("sala de vídeo", () => {
     const bruno = await joinRoom(browser, "Bruno Entrevistador");
     await expect(bruno.locator(".lk-participant-tile")).toHaveCount(2);
 
-    await ana.locator(".lk-disconnect-button").click();
+    await ana.getByRole("button", { name: "Sair da sala" }).click();
 
     await expect(ana.getByRole("button", { name: "Entrar na sala" })).toBeVisible();
     await expect(bruno.locator(".lk-participant-tile")).toHaveCount(1);

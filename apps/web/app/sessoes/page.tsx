@@ -86,24 +86,16 @@ export default async function SessionsPage({ searchParams }: PageProps<"/sessoes
 
   const isInterviewer = profile?.role === "interviewer";
 
-  const interviewerIds = Array.from(
-    new Set(
-      (sessions ?? [])
-        .filter((s) => s.candidate_id === userId)
-        .map((s) => s.interviewer_id),
-    ),
-  );
+  // Nome dos dois lados de cada sessão. profiles não tem leitura pública, então
+  // o nome do candidato (e o do entrevistador) sai pela função, que só responde
+  // para quem participa da sessão. Se ela falhar, a lista segue com o rótulo genérico.
+  const sessionIds = (sessions ?? []).map((s) => s.id);
 
-  const { data: interviewerProfiles } = interviewerIds.length
-    ? await supabase
-        .from("interviewer_profiles")
-        .select("id, name")
-        .in("id", interviewerIds)
+  const { data: participantNames } = sessionIds.length
+    ? await supabase.rpc("session_participant_names", { session_ids: sessionIds })
     : { data: [] };
 
-  const interviewerNameById = new Map(
-    (interviewerProfiles ?? []).map((p) => [p.id, p.name]),
-  );
+  const namesBySessionId = new Map((participantNames ?? []).map((p) => [p.session_id, p]));
 
   // Próximas em ordem de data (a mais perto primeiro); passadas da mais recente.
   const upcoming = (sessions ?? []).filter((s) => UPCOMING_STATUSES.has(s.status)).reverse();
@@ -116,9 +108,10 @@ export default async function SessionsPage({ searchParams }: PageProps<"/sessoes
 
   function SessionRow({ session, muted }: { session: SessionRowData; muted?: boolean }) {
     const isCandidate = session.candidate_id === userId;
+    const names = namesBySessionId.get(session.id);
     const title = isCandidate
-      ? (interviewerNameById.get(session.interviewer_id) ?? "Entrevistador")
-      : "Sessão com candidato";
+      ? names?.interviewer_name?.trim() || "Entrevistador"
+      : names?.candidate_name?.trim() || "Candidato";
     const { day, time } = formatSessionDate(session.starts_at);
     const access = roomAccess(session.starts_at, session.ends_at);
 

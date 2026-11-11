@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
-import { colorFromName } from "@/lib/room/colors";
 import { createCollab, getMeta, type Collab, type CollabStatus } from "@/lib/room/collab";
 import { ensureDefaultLanguage } from "@/lib/room/meta";
 
@@ -22,6 +21,8 @@ export function useCollab(): CollabContextValue {
 type Props = {
   sessionId: string;
   userName: string;
+  // Cor do cursor e do ponteiro deste participante.
+  color: string;
   // Só a sala de teste manda o nome para o servidor; na sessão real ele vem do perfil.
   sendName: boolean;
   children: React.ReactNode;
@@ -42,7 +43,7 @@ async function fetchCollabToken(sessionId: string, name: string | undefined): Pr
   return body.token;
 }
 
-export function CollabProvider({ sessionId, userName, sendName, children }: Props) {
+export function CollabProvider({ sessionId, userName, color, sendName, children }: Props) {
   const [value, setValue] = useState<CollabContextValue>(null);
 
   useEffect(() => {
@@ -51,7 +52,7 @@ export function CollabProvider({ sessionId, userName, sendName, children }: Prop
     const collab = createCollab({
       url: collabUrl,
       sessionId,
-      user: { name: userName, color: colorFromName(userName) },
+      user: { name: userName, color },
       token: () => fetchCollabToken(sessionId, sendName ? userName : undefined),
     });
 
@@ -85,7 +86,7 @@ export function CollabProvider({ sessionId, userName, sendName, children }: Prop
       collab.destroy();
       setValue(null);
     };
-  }, [sessionId, userName, sendName]);
+  }, [sessionId, userName, color, sendName]);
 
   return (
     <CollabContext.Provider value={value}>
