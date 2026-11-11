@@ -33,8 +33,10 @@ describe("readLivekitCredentials", () => {
 });
 
 describe("createLivekitToken", () => {
-  it("gera um JWT válido para a sala session-teste com permissão de publicar e assistir", async () => {
-    const jwt = await createLivekitToken({ room: "teste", name: "Ana" }, credentials);
+  const input = { sessionId: "teste", identity: "user-1", name: "Ana" };
+
+  it("gera um JWT válido para a sala session-<id> com permissão de publicar e assistir", async () => {
+    const jwt = await createLivekitToken(input, credentials);
 
     // Verifica a assinatura com o mesmo segredo, exatamente como o LiveKit Cloud faria.
     const claims = await new TokenVerifier(credentials.apiKey, credentials.apiSecret).verify(jwt);
@@ -47,19 +49,15 @@ describe("createLivekitToken", () => {
     });
   });
 
-  it("usa uma identity aleatória (UUID) diferente a cada token", async () => {
-    const verifier = new TokenVerifier(credentials.apiKey, credentials.apiSecret);
+  it("usa como identity o id recebido (o usuário logado)", async () => {
+    const jwt = await createLivekitToken(input, credentials);
 
-    const first = await verifier.verify(await createLivekitToken({ room: "teste", name: "Ana" }, credentials));
-    const second = await verifier.verify(await createLivekitToken({ room: "teste", name: "Ana" }, credentials));
-
-    // Sem login, duas abas com o mesmo nome precisam de identities diferentes para não se derrubarem.
-    expect(first.sub).toMatch(/^[0-9a-f-]{36}$/);
-    expect(first.sub).not.toBe(second.sub);
+    const claims = await new TokenVerifier(credentials.apiKey, credentials.apiSecret).verify(jwt);
+    expect(claims.sub).toBe("user-1");
   });
 
   it("não é aceito se assinado com outro segredo", async () => {
-    const jwt = await createLivekitToken({ room: "teste", name: "Ana" }, credentials);
+    const jwt = await createLivekitToken(input, credentials);
 
     const verifier = new TokenVerifier(credentials.apiKey, "outro-segredo-com-pelo-menos-32-chars");
 

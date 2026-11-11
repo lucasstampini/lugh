@@ -11,16 +11,15 @@ import { Eyebrow } from "@/components/eyebrow";
 import { participantNameSchema } from "@/lib/room/session";
 
 import { CollabProvider } from "./CollabProvider";
+import type { RoomProps } from "./Room";
 import { RoomLayout } from "./RoomLayout";
 
-type Props = { sessionId: string };
-
-type JoinedState = { choices: LocalUserChoices; token: string };
+type JoinedState = { choices: LocalUserChoices; token: string; name: string };
 
 const livekitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL;
 
-// Fluxo da sala: PreJoin (nome + câmera/mic) → busca token → conecta no LiveKit.
-export default function RoomContent({ sessionId }: Props) {
+// Fluxo da sala: PreJoin (câmera/mic, e o nome na sala de teste) → busca token → conecta no LiveKit.
+export default function RoomContent({ sessionId, session }: RoomProps) {
   const [joined, setJoined] = useState<JoinedState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -29,14 +28,19 @@ export default function RoomContent({ sessionId }: Props) {
     setError(null);
     setLoading(true);
     try {
-      const query = new URLSearchParams({ room: sessionId, name: choices.username.trim() });
-      const response = await fetch(`/api/livekit/token?${query}`);
+      // Na sessão real o servidor ignora qualquer nome enviado e usa o do perfil.
+      const name = session ? session.userName : choices.username.trim();
+      const response = await fetch("/api/livekit/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId, name: session ? undefined : name }),
+      });
       const body: { token?: string; error?: string } = await response.json();
       if (!response.ok || !body.token) {
         setError(body.error ?? "Não foi possível entrar na sala");
         return;
       }
-      setJoined({ choices, token: body.token });
+      setJoined({ choices, token: body.token, name });
     } catch {
       setError("Falha de rede ao entrar na sala. Tente de novo.");
     } finally {
@@ -76,13 +80,16 @@ export default function RoomContent({ sessionId }: Props) {
             <PreJoin
               // A prop className substitui a classe padrão do LiveKit: sem repetir
               // `lk-prejoin` aqui, o CSS do PreJoin (coluna, prévia da câmera) não vale.
-              className="lk-prejoin w-full"
+              // Na sessão real o nome vem do perfil: o campo do PreJoin some e só fica o botão.
+              className={`lk-prejoin w-full ${session ? "[&_#username]:hidden" : ""}`}
               joinLabel={loading ? "Entrando..." : "Entrar na sala"}
               userLabel="Seu nome"
               micLabel="Microfone"
               camLabel="Câmera"
               persistUserChoices
-              onValidate={(values) => !loading && participantNameSchema.safeParse(values.username).success}
+              onValidate={(values) =>
+                !loading && (session ? true : participantNameSchema.safeParse(values.username).success)
+              }
               onSubmit={handleJoin}
               onError={() => setError("Não conseguimos acessar câmera ou microfone. Você ainda pode entrar sem eles.")}
             />
@@ -100,7 +107,7 @@ export default function RoomContent({ sessionId }: Props) {
     );
   }
 
-  const { choices, token } = joined;
+  const { choices, token, name } = joined;
 
   return (
     <LiveKitRoom
@@ -119,7 +126,7 @@ export default function RoomContent({ sessionId }: Props) {
       onError={() => setError("A conexão de vídeo falhou. Entre de novo.")}
     >
       {/* O CollabProvider envolve o layout inteiro: editor, quadro e indicador de conexão usam a mesma conexão. */}
-      <CollabProvider sessionId={sessionId} userName={choices.username.trim()}>
+      <CollabProvider sessionId={sessionId} userName={name} sendName={!session}>
         <RoomLayout />
       </CollabProvider>
     </LiveKitRoom>

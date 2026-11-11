@@ -2,6 +2,10 @@ import { defineConfig, devices } from "@playwright/test";
 
 // E2E da sala: dois navegadores reais entram em /sala/teste e conversam entre si.
 // Precisa do .env.local preenchido (LiveKit) e, a partir do editor, do apps/collab rodando.
+// O collab só aceita token assinado com o mesmo segredo do Next. Nos E2E os dois sobem com
+// este segredo de teste (variável do processo vence o .env.local e o .env do collab).
+const COLLAB_JWT_SECRET = "segredo-so-dos-testes-e2e-com-32-chars";
+
 export default defineConfig({
   testDir: "./e2e",
   timeout: 60_000,
@@ -29,6 +33,7 @@ export default defineConfig({
       url: "http://localhost:1234/health",
       reuseExistingServer: true,
       timeout: 60_000,
+      env: { COLLAB_JWT_SECRET },
     },
     {
       command: "npm run dev",
@@ -36,8 +41,9 @@ export default defineConfig({
       reuseExistingServer: true,
       timeout: 120_000,
       // Variável do processo vence o .env.local: os testes usam o collab local, não o Render.
-      // Se já houver um `npm run dev` rodando, ele é reaproveitado com a URL que estiver nele.
-      env: { NEXT_PUBLIC_COLLAB_URL: "ws://localhost:1234" },
+      // Se já houver um `npm run dev` rodando, ele é reaproveitado com a URL e o segredo que estiverem
+      // nele: nesse caso o collab local precisa do mesmo COLLAB_JWT_SECRET do .env.local.
+      env: { NEXT_PUBLIC_COLLAB_URL: "ws://localhost:1234", COLLAB_JWT_SECRET },
     },
   ],
 });

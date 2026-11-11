@@ -129,7 +129,7 @@ export default async function InterviewerProfilePage({
                   aria-hidden="true"
                   className="edge bg-accent flex size-[168px] shrink-0 items-center justify-center rounded-2xl font-mono text-4xl font-bold"
                 >
-                  {initials(profile.name)}
+                  {initials(profile.name ?? "")}
                 </div>
               )}
 
