@@ -5,10 +5,13 @@ import { notFound } from "next/navigation";
 import { CodeAccent, CodeBlock, CodeMuted } from "@/components/code-block";
 import { Eyebrow } from "@/components/eyebrow";
 import { ScoreBar } from "@/components/score-bar";
+import { SessionBoard } from "@/components/session-board";
 import { SiteHeader } from "@/components/site-header";
 import { buttonVariants } from "@/components/ui/button";
 import { SCORE_LABELS } from "@/lib/feedback";
 import { initials } from "@/lib/initials";
+import { LANGUAGES } from "@/lib/room/languages";
+import { getSessionSnapshot, type SessionSnapshot } from "@/lib/room/snapshot";
 import { createClient } from "@/lib/supabase/server";
 
 export const instant = false;
@@ -52,6 +55,8 @@ function toItems(text: string | null) {
 
 const H2 = "font-heading text-[22px] font-bold";
 const CHIP = "edge bg-card rounded-[7px] px-2 py-0.5 font-mono text-xs";
+const EMPTY_PANEL =
+  "edge-dashed text-muted-foreground rounded-[14px] px-[18px] py-6 text-center font-mono text-[13px]";
 
 function FeedbackList({ items, tone }: { items: string[]; tone: "strong" | "neutral" }) {
   return (
@@ -111,6 +116,22 @@ export default async function SessionResultPage({
     .select("name, avatar_url")
     .eq("id", session.interviewer_id)
     .maybeSingle();
+
+  // Código e quadro finais da sala. A participação já foi conferida acima (a RLS só
+  // devolveu a sessão para quem está nela), então a leitura pode ser do backend. Só vale
+  // com o feedback enviado, e uma falha aqui não esconde o feedback.
+  let snapshot: SessionSnapshot | null = null;
+  let snapshotFailed = false;
+  if (feedback) {
+    try {
+      snapshot = await getSessionSnapshot(session.id);
+    } catch {
+      snapshotFailed = true;
+    }
+  }
+  const code = snapshot?.code.trimEnd() ?? "";
+  const codeLanguage = LANGUAGES.find((language) => language.id === snapshot?.language)?.label;
+  const boardElements = snapshot?.boardElements ?? [];
 
   const interviewerName = interviewerProfile?.name ?? "Entrevistador";
   const sessionTypeLabel = SESSION_TYPE_LABELS[session.type] ?? session.type;
@@ -211,23 +232,43 @@ export default async function SessionResultPage({
               ) : null}
             </div>
 
-            {/* Código e quadro finais ainda não são guardados com o feedback:
-                o espaço fica reservado, sem conteúdo inventado. */}
             <div className="flex min-w-0 flex-[1_1_420px] flex-col gap-7">
               <section className="flex flex-col gap-3">
-                <h2 className={H2}>Código final</h2>
-                <CodeBlock className="rounded-[14px] px-4 py-3.5">
-                  <div>
-                    <CodeMuted>$</CodeMuted> lugh sessao codigo
-                  </div>
-                  <CodeMuted>ainda não disponível nesta tela</CodeMuted>
-                </CodeBlock>
+                <div className="flex items-baseline justify-between gap-3">
+                  <h2 className={H2}>Código final</h2>
+                  {code && codeLanguage ? (
+                    <span className="text-muted-foreground font-mono text-xs">
+                      {codeLanguage.toLowerCase()}
+                    </span>
+                  ) : null}
+                </div>
+                {code ? (
+                  <pre
+                    tabIndex={0}
+                    aria-label="Código final da sessão"
+                    className="bg-code text-code-foreground max-h-[420px] overflow-auto rounded-[14px] px-4 py-3.5 font-mono text-[13px] leading-[1.7]"
+                  >
+                    <code>{code}</code>
+                  </pre>
+                ) : (
+                  <p className={EMPTY_PANEL}>
+                    {snapshotFailed
+                      ? "não deu para carregar o código agora"
+                      : "nada foi escrito no editor nesta sessão"}
+                  </p>
+                )}
               </section>
               <section className="flex flex-col gap-3">
                 <h2 className={H2}>Quadro final</h2>
-                <div className="edge-dashed bg-dots text-muted-foreground rounded-[14px] px-[18px] py-10 text-center font-mono text-[13px]">
-                  o quadro da sessão vai aparecer aqui
-                </div>
+                {boardElements.length > 0 ? (
+                  <SessionBoard elements={boardElements} files={snapshot?.boardFiles ?? {}} />
+                ) : (
+                  <p className={`${EMPTY_PANEL} bg-dots py-10`}>
+                    {snapshotFailed
+                      ? "não deu para carregar o quadro agora"
+                      : "nada foi desenhado no quadro nesta sessão"}
+                  </p>
+                )}
               </section>
             </div>
           </div>
