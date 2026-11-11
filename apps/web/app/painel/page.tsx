@@ -2,7 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Eyebrow } from "@/components/eyebrow";
 import { SiteHeader } from "@/components/site-header";
+import { formatPrice } from "@/lib/format-price";
 import { WEEKDAY_LABELS } from "@/lib/interviewer-options";
+import { sumEarnings } from "@/lib/payments";
 import { createClient } from "@/lib/supabase/server";
 import { AddBlockForm } from "./add-block-form";
 import { DeleteBlockButton } from "./delete-block-button";
@@ -67,6 +69,15 @@ export default async function PainelPage() {
     .eq("interviewer_id", user.id)
     .order("weekday")
     .order("start_time");
+
+  // A RLS de payments devolve os pagamentos das sessões do usuário. Ele também pode ser
+  // candidato em outras sessões, então só contam as que ele conduz. Se a leitura
+  // falhar, os ganhos não aparecem (em vez de mostrar zero como se fosse verdade).
+  const { data: payments } = await supabase
+    .from("payments")
+    .select("status, interviewer_share_cents, sessions!inner(interviewer_id)")
+    .eq("sessions.interviewer_id", user.id);
+  const earnings = payments ? sumEarnings(payments) : null;
 
   const blocksByWeekday = new Map<
     number,
@@ -158,6 +169,25 @@ export default async function PainelPage() {
                 : "Cadastre seu documento para receber sua parte de cada sessão por PIX. Sem ele, o valor das sessões fica retido com o Lugh."}
             </p>
           </div>
+
+          {earnings ? (
+            <dl className="flex flex-wrap gap-x-10 gap-y-4">
+              <div>
+                <dt className="text-muted-foreground font-mono text-xs">a receber</dt>
+                <dd className="font-heading text-[32px] leading-[1.1] font-extrabold tabular-nums">
+                  {formatPrice(earnings.pendingCents)}
+                </dd>
+                <dd className="text-muted-foreground text-[13px]">liberado quando você envia o feedback</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground font-mono text-xs">recebido</dt>
+                <dd className="font-heading text-[32px] leading-[1.1] font-extrabold tabular-nums">
+                  {formatPrice(earnings.releasedCents)}
+                </dd>
+                <dd className="text-muted-foreground text-[13px]">já enviado para o seu PIX</dd>
+              </div>
+            </dl>
+          ) : null}
 
           {interviewer.abacate_subaccount_id ? (
             <p className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
