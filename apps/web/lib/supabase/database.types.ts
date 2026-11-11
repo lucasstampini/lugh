@@ -381,6 +381,15 @@ export type Database = {
           review_count: number
         }[]
       }
+      interviewer_reviews: {
+        Args: { interviewer: string }
+        Returns: {
+          comment: string
+          created_at: string
+          rating: number
+          reviewer_first_name: string
+        }[]
+      }
       interviewers_booked_slots: {
         Args: { from_ts: string; interviewer_ids: string[]; to_ts: string }
         Returns: {
