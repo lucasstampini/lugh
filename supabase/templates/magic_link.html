@@ -1,0 +1,10 @@
+<h2>Seu link de entrada no Lugh</h2>
+
+<p>Clique no botão abaixo para entrar. O link vale por 1 hora e só pode ser usado uma vez.</p>
+
+<!-- token_hash em vez de {{ .ConfirmationURL }}: o link funciona em qualquer
+     navegador ou aparelho, não só no que pediu o e-mail. {{ .RedirectTo }} é o
+     /auth/callback?next=... montado em app/login/magic-link-form.tsx. -->
+<p><a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email">Entrar no Lugh</a></p>
+
+<p>Se você não pediu este e-mail, pode ignorar.</p>
