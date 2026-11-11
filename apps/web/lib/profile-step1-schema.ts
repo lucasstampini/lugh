@@ -4,7 +4,7 @@ import { z } from "zod";
 // vaga alvo, LinkedIn e GitHub ficam pra quando as etapas 2 e 3 existirem.
 //
 // Cidade e estado saíram daqui por enquanto: dependem da migration
-// 20261109190000_profile_location.sql, que ainda não foi aplicada no
+// 20261109200000_profile_location.sql, que ainda não foi aplicada no
 // projeto Supabase. Volta a incluir depois de rodar a migration.
 export const profileStep1Schema = z.object({
   name: z.string().trim().min(1, "Digite seu nome completo.").max(120),

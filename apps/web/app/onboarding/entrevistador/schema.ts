@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { AREA_OPTIONS, SENIORITY_OPTIONS } from "@/lib/interviewer-options";
-import { optionalSocialUrl, requiredSocialUrl } from "@/lib/social-url";
+import { optionalSocialUrl } from "@/lib/social-url";
 
 export { AREA_OPTIONS, SENIORITY_OPTIONS };
 
@@ -35,8 +35,16 @@ export const interviewerFormSchema = z.object({
     .trim()
     .min(1, "Digite um preço.")
     .transform((value, ctx) => {
-      const normalized = value.replace(/\./g, "").replace(",", ".");
-      const amount = Number(normalized);
+      // "100,50" e "1.234,50": vírgula é o decimal e ponto é milhar. Sem
+      // vírgula, ponto seguido de 1 ou 2 dígitos no fim ("100.50") é decimal.
+      const normalized = value.includes(",")
+        ? value.replace(/\./g, "").replace(",", ".")
+        : /^\d+\.\d{1,2}$/.test(value)
+          ? value
+          : value.replace(/\./g, "");
+      const amount = /^\d+(\.\d+)?$/.test(normalized)
+        ? Number(normalized)
+        : Number.NaN;
       if (Number.isNaN(amount)) {
         ctx.addIssue({ code: "custom", message: "Preço inválido." });
         return z.NEVER;
@@ -57,9 +65,8 @@ export const interviewerFormSchema = z.object({
     .max(500, "Até 500 caracteres.")
     .optional()
     .or(z.literal("")),
-  linkedin: requiredSocialUrl(
+  linkedin: optionalSocialUrl(
     "linkedin.com",
-    "LinkedIn é obrigatório pra quem entrevista.",
     "Precisa ser uma URL do linkedin.com.",
   ),
   github: optionalSocialUrl("github.com", "Precisa ser uma URL do github.com."),
