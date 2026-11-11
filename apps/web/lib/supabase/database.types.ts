@@ -193,6 +193,59 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          abacate_billing_id: string
+          amount_cents: number
+          br_code: string
+          br_code_base64: string
+          created_at: string
+          expires_at: string
+          id: string
+          interviewer_share_cents: number
+          paid_at: string | null
+          released_at: string | null
+          session_id: string
+          status: string
+        }
+        Insert: {
+          abacate_billing_id: string
+          amount_cents: number
+          br_code: string
+          br_code_base64: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          interviewer_share_cents: number
+          paid_at?: string | null
+          released_at?: string | null
+          session_id: string
+          status?: string
+        }
+        Update: {
+          abacate_billing_id?: string
+          amount_cents?: number
+          br_code?: string
+          br_code_base64?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          interviewer_share_cents?: number
+          paid_at?: string | null
+          released_at?: string | null
+          session_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: true
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           areas: string[] | null
