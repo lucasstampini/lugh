@@ -1,15 +1,18 @@
-// Cor de cada participante na sala (cursor no editor e, no PR do quadro, ponteiro no Excalidraw).
+// Cor de cada participante na sala (cursor no editor e ponteiro no quadro).
 // Derivada do nome para ser estável: a mesma pessoa tem a mesma cor ao recarregar a página.
+//
+// A paleta é a da identidade, toda em tons claros que aparecem bem no fundo escuro da
+// sala. Por isso o texto das etiquetas sobre essas cores é sempre Tinta (cursor-styles.ts).
+// Enquanto a sala não sabe o papel de cada um (fase 5), não dá para fixar "entrevistador
+// em verde, candidato em branco" como no DESIGN.md: a cor vem do nome.
 
 export const PARTICIPANT_COLORS = [
-  "#f97316",
-  "#22c55e",
-  "#3b82f6",
-  "#a855f7",
-  "#ec4899",
-  "#eab308",
-  "#14b8a6",
-  "#ef4444",
+  "#2EF58A",
+  "#FFFFFF",
+  "#FEEDBA",
+  "#FFB4A6",
+  "#8FE9B7",
+  "#A9BDB2",
 ] as const;
 
 export function colorFromName(name: string): string {
