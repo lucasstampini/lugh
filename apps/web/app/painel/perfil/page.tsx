@@ -36,7 +36,7 @@ export default async function PerfilEntrevistadorPage() {
     areas: interviewer.areas,
     price: (interviewer.price_cents / 100).toFixed(2).replace(".", ","),
     bio: interviewer.bio ?? "",
-    linkedin: interviewer.linkedin_url,
+    linkedin: interviewer.linkedin_url ?? "",
     github: interviewer.github_url ?? "",
   };
 

@@ -159,7 +159,7 @@ export function InterviewerForm({
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="linkedin" className="text-sm font-medium">
-          LinkedIn
+          LinkedIn (opcional)
         </label>
         <Input
           id="linkedin"

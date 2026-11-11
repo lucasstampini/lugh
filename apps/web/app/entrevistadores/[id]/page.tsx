@@ -354,15 +354,17 @@ export default async function InterviewerProfilePage({
               index={4}
               className="flex flex-wrap gap-3"
             >
-              <a
-                href={interviewer.linkedin_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="border-border hover:border-primary hover:text-primary flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-semibold transition-colors"
-              >
-                LinkedIn
-                <ExternalLink aria-hidden="true" size={13} />
-              </a>
+              {interviewer.linkedin_url ? (
+                <a
+                  href={interviewer.linkedin_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border-border hover:border-primary hover:text-primary flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-semibold transition-colors"
+                >
+                  LinkedIn
+                  <ExternalLink aria-hidden="true" size={13} />
+                </a>
+              ) : null}
               {interviewer.github_url ? (
                 <a
                   href={interviewer.github_url}
