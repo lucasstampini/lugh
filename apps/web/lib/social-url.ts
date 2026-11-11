@@ -30,16 +30,3 @@ export function optionalSocialUrl(host: string, hostMessage: string) {
       return url;
     });
 }
-
-export function requiredSocialUrl(
-  host: string,
-  requiredMessage: string,
-  hostMessage: string,
-) {
-  return z
-    .string()
-    .trim()
-    .min(1, requiredMessage)
-    .transform((value) => normalizeUrl(value))
-    .refine((url) => hostMatches(url, host), { message: hostMessage });
-}

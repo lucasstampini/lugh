@@ -111,13 +111,14 @@ export function GoogleLoginButton({ next }: { next?: string }) {
 
   return (
     <div className="flex w-full flex-col gap-3">
-      {/* Cores e logo seguem o guia de marca do Google para "Sign in with Google",
-          por isso fogem do Índigo padrão do Lugh: é o botão de outra marca, não o nosso. */}
+      {/* O logo colorido é o do Google (guia de marca deles); o botão em si
+          segue o padrão secundário do Lugh. */}
       <Button
         onClick={handleClick}
         disabled={loading}
         variant="outline"
-        className="h-11 w-full border-[#DADCE0] bg-white font-medium text-[#3C4043] hover:bg-[#F7F8F8] disabled:opacity-60 dark:border-[#5F6368] dark:bg-[#131314] dark:text-[#E3E3E3] dark:hover:bg-[#1E1F20]"
+        size="lg"
+        className="w-full text-base"
       >
         <svg viewBox="0 0 18 18" aria-hidden="true">
           <path
@@ -137,9 +138,13 @@ export function GoogleLoginButton({ next }: { next?: string }) {
             d="M9 3.5795c1.3214 0 2.5077.4541 3.4405 1.346l2.5813-2.5814C13.4632.8918 11.426 0 9 0 5.4818 0 2.4382 2.0168.9574 4.9582L3.9641 7.29C4.6727 5.1627 6.6564 3.5795 9 3.5795z"
           />
         </svg>
-        {loading ? "Entrando..." : "Entrar com Google"}
+        {loading ? "Entrando..." : "Continuar com Google"}
       </Button>
-      {error ? <p className="text-destructive text-sm">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-destructive text-sm font-semibold">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

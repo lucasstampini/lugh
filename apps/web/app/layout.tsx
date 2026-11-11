@@ -4,7 +4,7 @@ import "./globals.css";
 
 const display = Funnel_Display({
   subsets: ["latin"],
-  weight: ["700", "800"],
+  weight: ["500", "700", "800"],
   variable: "--font-display",
 });
 

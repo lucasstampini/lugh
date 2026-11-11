@@ -3,14 +3,13 @@
 import { useConnectionState } from "@livekit/components-react";
 import { useState } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { combineConnectionStatus, isFullyConnected, type ConnectionTone } from "@/lib/room/connection";
 
 import { useCollab } from "./CollabProvider";
 
 const dotColor: Record<ConnectionTone, string> = {
-  ok: "bg-emerald-500",
-  warning: "bg-amber-500 animate-pulse",
+  ok: "bg-primary live",
+  warning: "bg-warning animate-pulse",
   error: "bg-destructive",
 };
 
@@ -30,9 +29,14 @@ export function ConnectionStatus() {
   const { label, tone } = combineConnectionStatus({ collab, livekit, hasConnected });
 
   return (
-    <Badge variant="outline" role="status" aria-live="polite" data-tone={tone}>
+    <span
+      role="status"
+      aria-live="polite"
+      data-tone={tone}
+      className="inline-flex items-center gap-1.5 font-mono text-xs lowercase"
+    >
       <span aria-hidden className={`size-2 rounded-full ${dotColor[tone]}`} />
       {label}
-    </Badge>
+    </span>
   );
 }

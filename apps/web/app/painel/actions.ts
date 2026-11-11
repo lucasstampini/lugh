@@ -28,7 +28,13 @@ async function requireOwnerId() {
   return { supabase, userId: user.id };
 }
 
+// Server Action é um endpoint público: o tipo do TypeScript não garante o que
+// chega do navegador, então os argumentos também passam pelo zod.
 export async function togglePaused(paused: boolean) {
+  if (!z.boolean().safeParse(paused).success) {
+    return { error: "Não deu para atualizar agora. Tente de novo." };
+  }
+
   const { supabase, userId } = await requireOwnerId();
 
   const { error } = await supabase
@@ -95,6 +101,11 @@ export async function addAvailabilityBlock(
 }
 
 export async function deleteAvailabilityBlock(id: string) {
+  if (!z.uuid().safeParse(id).success) {
+    return { error: "Não deu para apagar o bloco agora. Tente de novo." };
+  }
+
+  // A policy de delete (RLS) garante que só o dono apaga o próprio bloco.
   const { supabase } = await requireOwnerId();
 
   const { error } = await supabase.from("availability").delete().eq("id", id);

@@ -2,38 +2,37 @@ import { SiteHeader } from "@/components/site-header";
 
 export default function Loading() {
   return (
-    <main className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col">
       <SiteHeader />
-
-      <div className="flex w-full flex-col gap-5 px-6 py-8 lg:px-12">
-        <div className="bg-muted h-4 w-40 animate-pulse rounded" />
-
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-          <div className="flex flex-col gap-6">
-            <div className="border-border bg-card flex flex-col gap-6 rounded-[20px] border p-8">
-              <div className="flex items-center gap-6">
-                <div className="bg-muted size-24 animate-pulse rounded-full" />
-                <div className="flex flex-1 flex-col gap-2">
-                  <div className="bg-muted h-7 w-1/2 animate-pulse rounded" />
-                  <div className="bg-muted h-4 w-1/3 animate-pulse rounded" />
-                  <div className="bg-muted h-4 w-1/4 animate-pulse rounded" />
-                </div>
+      <main className="mx-auto box-border flex w-full max-w-[1240px] flex-col gap-5 px-[clamp(20px,5vw,48px)] pt-5 pb-[72px]">
+        <p role="status" className="text-muted-foreground flex min-h-11 items-center font-mono text-[13px]">
+          carregando perfil…
+        </p>
+        <div className="flex animate-pulse flex-wrap items-start gap-x-10 gap-y-7">
+          <div className="flex min-w-0 flex-[999_1_560px] flex-col gap-8">
+            <div className="bg-secondary flex flex-wrap items-center gap-x-7 gap-y-5 rounded-[18px] p-[clamp(18px,2.4vw,28px)]">
+              <div className="bg-skeleton size-[168px] shrink-0 rounded-2xl" />
+              <div className="flex flex-[1_1_300px] flex-col gap-3">
+                <div className="bg-skeleton h-5 w-40 rounded-md" />
+                <div className="bg-skeleton h-10 w-2/3 rounded-md" />
+                <div className="bg-skeleton h-5 w-1/2 rounded-md" />
+                <div className="bg-skeleton h-4 w-1/3 rounded-md" />
               </div>
-              <div className="bg-muted h-16 animate-pulse rounded" />
             </div>
-
-            <div className="border-border bg-card flex flex-col gap-4 rounded-[20px] border p-8">
-              <div className="bg-muted h-6 w-40 animate-pulse rounded" />
-              <div className="bg-muted h-20 animate-pulse rounded" />
+            <div className="flex flex-col gap-3">
+              <div className="bg-skeleton h-7 w-24 rounded-md" />
+              <div className="bg-skeleton h-4 w-full max-w-[68ch] rounded-md" />
+              <div className="bg-skeleton h-4 w-4/5 max-w-[60ch] rounded-md" />
             </div>
           </div>
-
-          <div className="border-border bg-card flex h-fit flex-col gap-4 rounded-[20px] border p-6">
-            <div className="bg-muted h-10 w-28 animate-pulse rounded-full" />
-            <div className="bg-muted h-12 animate-pulse rounded-xl" />
+          <div className="border-border-soft flex w-full min-w-0 flex-[1_1_340px] flex-col gap-[18px] rounded-[18px] border-[1.5px] p-6 md:max-w-[420px]">
+            <div className="bg-skeleton h-9 w-28 rounded-md" />
+            <div className="bg-skeleton h-11 rounded-lg" />
+            <div className="bg-skeleton h-11 rounded-lg" />
+            <div className="bg-skeleton h-[54px] rounded-xl" />
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
