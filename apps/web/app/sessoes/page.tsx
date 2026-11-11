@@ -1,10 +1,13 @@
+import { CircleCheck } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CodeAccent, CodeBlock, CodeMuted } from "@/components/code-block";
 import { Eyebrow } from "@/components/eyebrow";
 import { SiteHeader } from "@/components/site-header";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { formatSessionDate } from "@/lib/format-session-date";
 import { initials } from "@/lib/initials";
+import { ROOM_OPENS_BEFORE_MINUTES, roomAccess } from "@/lib/room/session";
 import { createClient } from "@/lib/supabase/server";
 
 export const instant = false;
@@ -49,39 +52,18 @@ type SessionRowData = {
   candidate_id: string;
   interviewer_id: string;
   starts_at: string;
+  ends_at: string;
   type: string;
   status: string;
   candidate_notes: string | null;
 };
 
-// "qua, 18 nov" e "19h" (ou "19h30"), no horário de Brasília.
-function formatSessionDate(iso: string) {
-  const parts = new Intl.DateTimeFormat("pt-BR", {
-    timeZone: "America/Sao_Paulo",
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-    .formatToParts(new Date(iso))
-    .reduce<Record<string, string>>((acc, part) => {
-      acc[part.type] = part.value;
-      return acc;
-    }, {});
-
-  const weekday = parts.weekday.replace(".", "");
-  const month = parts.month.replace(".", "");
-  const hour = Number(parts.hour);
-  return {
-    day: `${weekday}, ${parts.day} ${month}`,
-    time: parts.minute === "00" ? `${hour}h` : `${hour}h${parts.minute}`,
-  };
-}
-
 const H2 = "font-heading text-[22px] font-bold";
 
-export default async function SessionsPage() {
+export default async function SessionsPage({ searchParams }: PageProps<"/sessoes">) {
+  const { agendada } = await searchParams;
+  const bookedId = Array.isArray(agendada) ? agendada[0] : agendada;
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -97,7 +79,7 @@ export default async function SessionsPage() {
   const [{ data: sessions, error }, { data: profile }] = await Promise.all([
     supabase
       .from("sessions")
-      .select("id, candidate_id, interviewer_id, starts_at, type, status, candidate_notes")
+      .select("id, candidate_id, interviewer_id, starts_at, ends_at, type, status, candidate_notes")
       .order("starts_at", { ascending: false }),
     supabase.from("profiles").select("role").eq("id", userId).single(),
   ]);
@@ -127,18 +109,24 @@ export default async function SessionsPage() {
   const upcoming = (sessions ?? []).filter((s) => UPCOMING_STATUSES.has(s.status)).reverse();
   const past = (sessions ?? []).filter((s) => !UPCOMING_STATUSES.has(s.status));
 
+  // Sessão recém-agendada (?agendada=<id>). RLS garante que só entra aqui uma
+  // sessão do próprio usuário.
+  const justBooked = bookedId ? (sessions ?? []).find((s) => s.id === bookedId) : undefined;
+  const justBookedDate = justBooked ? formatSessionDate(justBooked.starts_at) : null;
+
   function SessionRow({ session, muted }: { session: SessionRowData; muted?: boolean }) {
     const isCandidate = session.candidate_id === userId;
     const title = isCandidate
       ? (interviewerNameById.get(session.interviewer_id) ?? "Entrevistador")
       : "Sessão com candidato";
     const { day, time } = formatSessionDate(session.starts_at);
+    const access = roomAccess(session.starts_at, session.ends_at);
 
     return (
       <li
         className={`bg-card flex flex-wrap items-center gap-x-[18px] gap-y-3.5 rounded-2xl border-[1.5px] p-4 ${
           muted ? "border-border-dashed" : "border-border pop"
-        }`}
+        } ${session.id === justBooked?.id ? "bg-accent" : ""}`}
       >
         <div className="bg-secondary w-24 shrink-0 rounded-[10px] px-2 py-2.5 text-center font-mono">
           <div className="text-muted-foreground text-xs">{day}</div>
@@ -172,9 +160,33 @@ export default async function SessionsPage() {
         </div>
 
         {ROOM_STATUSES.has(session.status) ? (
-          <Link href={`/sala/${session.id}`} className={buttonVariants({ className: "h-12 px-5" })}>
-            Entrar na sala
-          </Link>
+          access === "open" ? (
+            <Link
+              href={`/sala/${session.id}`}
+              className={buttonVariants({ className: "h-12 px-5" })}
+            >
+              Entrar na sala
+            </Link>
+          ) : (
+            <div className="flex flex-col items-center gap-1.5">
+              <Button
+                type="button"
+                disabled
+                aria-describedby={`sala-${session.id}`}
+                className="h-12 px-5"
+              >
+                Entrar na sala
+              </Button>
+              <span
+                id={`sala-${session.id}`}
+                className="text-muted-foreground font-mono text-xs"
+              >
+                {access === "early"
+                  ? `abre ${ROOM_OPENS_BEFORE_MINUTES} min antes`
+                  : "horário encerrado"}
+              </span>
+            </div>
+          )
         ) : isCandidate && session.status === "completed" ? (
           <Link
             href={`/sessoes/${session.id}/resultado`}
@@ -208,6 +220,24 @@ export default async function SessionsPage() {
             {isInterviewer ? "Abrir horários" : "Agendar nova sessão"}
           </Link>
         </div>
+
+        {justBooked && justBookedDate ? (
+          <div role="status" className="edge bg-accent flex items-start gap-3 rounded-xl px-4 py-3.5">
+            <CircleCheck
+              aria-hidden="true"
+              size={20}
+              strokeWidth={2.4}
+              className="text-brand-deep mt-0.5 shrink-0"
+            />
+            <div>
+              <p className="font-extrabold">Sessão agendada</p>
+              <p className="text-muted-foreground text-sm">
+                {justBookedDate.day} · {justBookedDate.time}, horário de Brasília. A sala abre{" "}
+                {ROOM_OPENS_BEFORE_MINUTES} minutos antes.
+              </p>
+            </div>
+          </div>
+        ) : null}
 
         {error ? (
           <div

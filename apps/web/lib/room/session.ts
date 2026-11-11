@@ -26,3 +26,16 @@ export type TokenQuery = z.infer<typeof tokenQuerySchema>;
 export function roomNameFor(sessionId: string): string {
   return `session-${sessionId}`;
 }
+
+// A sala abre um pouco antes do horário e fecha quando a sessão termina.
+export const ROOM_OPENS_BEFORE_MINUTES = 10;
+
+export type RoomAccess = "early" | "open" | "ended";
+
+export function roomAccess(startsAt: string, endsAt: string, now: Date = new Date()): RoomAccess {
+  const current = now.getTime();
+  if (current < new Date(startsAt).getTime() - ROOM_OPENS_BEFORE_MINUTES * 60 * 1000) {
+    return "early";
+  }
+  return current < new Date(endsAt).getTime() ? "open" : "ended";
+}
