@@ -5,13 +5,9 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import { useRef, useState, useTransition } from "react";
 import { uploadAvatar } from "@/app/onboarding/actions";
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
-  return (first + last).toUpperCase();
-}
+import { FieldError } from "@/components/form-field";
+import { Button } from "@/components/ui/button";
+import { initials } from "@/lib/initials";
 
 export function AvatarUpload({
   initialUrl,
@@ -20,18 +16,20 @@ export function AvatarUpload({
   rounded = "rounded-full",
   children,
   secondaryLabel,
+  onUploaded,
 }: {
   initialUrl: string | null;
   name: string;
-  // Tamanho em px. Avatar padrão é circular; o do Figma node 47:2 usa
-  // rounded-[20px] em vez de círculo.
+  // Tamanho em px. O avatar padrão é circular.
   size?: number;
   rounded?: string;
-  // Conteúdo entre o avatar e o botão "Adicionar foto" (título/descrição).
+  // Conteúdo ao lado do avatar, acima do botão de enviar (rótulo ou título).
   children?: ReactNode;
-  // Botão de texto extra, do lado do avatar, além do ícone de câmera (Figma
-  // node 47:2, "Adicionar foto"). Sem isso, mantém só o ícone.
+  // Texto do botão de enviar ao lado do avatar. Sem isso, fica só o ícone
+  // de câmera sobre a foto.
   secondaryLabel?: string;
+  // Avisa quem usa o componente quando a foto nova foi salva (para prévias).
+  onUploaded?: (url: string | null) => void;
 }) {
   const [url, setUrl] = useState(initialUrl);
   const [preview, setPreview] = useState<string | null>(null);
@@ -59,6 +57,7 @@ export function AvatarUpload({
         return;
       }
       setUrl(result.url ?? null);
+      onUploaded?.(result.url ?? null);
       setPreview(null);
     });
   }
@@ -66,7 +65,7 @@ export function AvatarUpload({
   const shownUrl = preview ?? url;
 
   return (
-    <div className="flex items-center gap-[18px]">
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-4">
       <div className="relative shrink-0" style={{ width: size, height: size }}>
         {shownUrl ? (
           <Image
@@ -75,54 +74,61 @@ export function AvatarUpload({
             width={size}
             height={size}
             unoptimized
-            className={`size-full object-cover ${rounded}`}
+            className={`edge size-full object-cover ${rounded}`}
           />
         ) : (
           <div
-            className={`bg-secondary text-primary font-heading flex size-full items-center justify-center font-extrabold ${rounded}`}
-            style={{ fontSize: size * 0.36 }}
+            className={`edge bg-accent flex size-full items-center justify-center font-mono font-bold ${rounded}`}
+            style={{ fontSize: size * 0.3 }}
           >
             {initials(name || "?")}
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          disabled={pending}
-          aria-label="Trocar foto de perfil"
-          className="bg-primary text-primary-foreground absolute -right-1 -bottom-1 flex size-7 items-center justify-center rounded-full disabled:opacity-60"
-        >
-          <Camera aria-hidden="true" size={13} />
-        </button>
+        {secondaryLabel ? null : (
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={pending}
+            aria-label="Trocar foto de perfil"
+            className="edge bg-primary text-ink absolute -right-2 -bottom-2 flex size-11 items-center justify-center rounded-full disabled:opacity-60"
+          >
+            <Camera aria-hidden="true" size={16} />
+          </button>
+        )}
 
         <input
           ref={inputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp"
           onChange={handleChange}
+          tabIndex={-1}
+          aria-hidden="true"
           className="sr-only"
         />
-
-        {error ? (
-          <p className="text-destructive absolute top-full mt-2 w-40 text-center text-xs">
-            {error}
-          </p>
-        ) : null}
       </div>
 
-      {children}
-
-      {secondaryLabel ? (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          disabled={pending}
-          className="border-primary text-primary bg-card ml-auto flex h-11 shrink-0 items-center rounded-md border px-3.5 text-sm font-bold disabled:opacity-60"
-        >
-          {pending ? "Enviando..." : secondaryLabel}
-        </button>
-      ) : null}
+      <div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
+        {children}
+        {secondaryLabel ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => inputRef.current?.click()}
+            disabled={pending}
+            className="rounded-[10px] px-4"
+          >
+            {pending ? "Enviando..." : secondaryLabel}
+          </Button>
+        ) : null}
+        {error ? (
+          <FieldError message={error} />
+        ) : (
+          <p className="text-muted-foreground text-[13px]">
+            Opcional. JPG, PNG ou WEBP de até 4 MB.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

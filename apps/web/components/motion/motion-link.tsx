@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { spring } from "./springs";
@@ -8,7 +8,9 @@ import { spring } from "./springs";
 const MotionNextLink = motion.create(Link);
 
 // CTA com feedback tátil de clique: explica que o clique foi registrado,
-// sem floreio (sem bounce, sem giro). Respeita prefers-reduced-motion.
+// levanta 2 px no hover e encolhe no clique. Respeita prefers-reduced-motion por CSS
+// (motion-reduce:): decidir no render mudava os atributos do link entre
+// servidor e navegador (o whileTap acrescenta tabindex) e quebrava a hidratação.
 // Props tipadas explicitamente (não ComponentProps<typeof Link>): o motion
 // tipa onDrag/eventos de outro jeito que o anchor nativo, e dá conflito de
 // tipos se a gente espalhar todas as props do Link aqui.
@@ -21,14 +23,12 @@ export function MotionLink({
   className?: string;
   children: ReactNode;
 }) {
-  const reduceMotion = useReducedMotion();
-
   return (
     <MotionNextLink
       href={href}
-      className={className}
-      whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-      whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+      className={`motion-reduce:transform-none! ${className ?? ""}`}
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.97 }}
       transition={spring}
     >
       {children}

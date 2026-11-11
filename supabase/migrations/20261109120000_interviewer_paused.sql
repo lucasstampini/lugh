@@ -1,29 +1,17 @@
--- "active" (aprovação, só service role) e "paused" (pausar/retomar, o
--- próprio entrevistador) são conceitos diferentes de propósito: sem essa
--- separação, dar ao entrevistador o direito de ligar "active" de novo
--- reabriria a brecha de auto-aprovação já corrigida nesta tabela.
+-- "active" (só service role liga/desliga, ex: moderação) e "paused"
+-- (pausar/retomar, o próprio entrevistador) são conceitos diferentes de
+-- propósito: quem foi desativado pela moderação não consegue se reativar
+-- pelo interruptor de pausa.
 alter table public.interviewers
   add column paused boolean not null default false;
 
 grant update (paused) on public.interviewers to authenticated;
 
--- "pausado some do marketplace" (TAREFAS-MOACIR 3.4): a view e a policy
--- pública que escondiam o e-mail também precisam esconder quem está pausado,
--- não só quem nunca foi aprovado.
-drop policy "profiles: public read for active interviewers" on public.profiles;
-
-create policy "profiles: public read for active interviewers" on public.profiles
-  for select using (
-    exists (
-      select 1 from public.interviewers i
-      where i.profile_id = profiles.id and i.active = true and i.paused = false
-    )
-  );
-
+-- "pausado some do marketplace" (TAREFAS-MOACIR 3.4): a view pública e a
+-- policy de disponibilidade também precisam esconder quem está pausado.
 drop view public.interviewer_profiles;
 
-create view public.interviewer_profiles
-with (security_invoker = true) as
+create view public.interviewer_profiles as
 select p.id, p.name, p.avatar_url
 from public.profiles p
 join public.interviewers i on i.profile_id = p.id
