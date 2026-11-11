@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { FieldError } from "@/components/form-field";
+import { Button } from "@/components/ui/button";
 import { togglePaused } from "./actions";
 
 export function PausedToggle({ paused }: { paused: boolean }) {
@@ -23,19 +25,16 @@ export function PausedToggle({ paused }: { paused: boolean }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <button
+      <Button
         type="button"
         onClick={handleClick}
         disabled={pending}
-        className={`flex h-11 items-center justify-center rounded-lg px-5 text-sm font-bold disabled:opacity-60 ${
-          isPaused
-            ? "bg-primary text-primary-foreground"
-            : "border-border border bg-transparent text-foreground"
-        }`}
+        variant={isPaused ? "default" : "outline"}
+        className="h-12 px-5"
       >
-        {pending ? "Salvando..." : isPaused ? "Retomar perfil" : "Pausar perfil"}
-      </button>
-      {error ? <p className="text-destructive text-sm">{error}</p> : null}
+        {pending ? "Salvando..." : isPaused ? "Reativar perfil" : "Pausar perfil"}
+      </Button>
+      <FieldError message={error} />
     </div>
   );
 }

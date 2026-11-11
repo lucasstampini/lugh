@@ -30,15 +30,7 @@ export default async function PerfilPage() {
   }
 
   return (
-    <ProfileWizardShell
-      activeStep={1}
-      heroLines={["Seu próximo", "passo tem", "seu nome."]}
-      dicaLabel="No seu tempo."
-      dicaText="Seu perfil fica visível apenas para os profissionais com quem você agendar."
-      stepLabel="Configuração do perfil · Etapa 1 de 4"
-      title="Dados pessoais"
-      description="Vamos começar pelo básico. Conte como você quer aparecer na Lugh."
-    >
+    <ProfileWizardShell activeStep={1} title="Dados pessoais">
       <ProfileStep1Form
         avatarUrl={profile.avatar_url}
         avatarName={profile.name}
