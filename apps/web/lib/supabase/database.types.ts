@@ -175,7 +175,12 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "interviewer_completed_sessions":
+            "interviewer_booked_slots":
+{ Args: { "from_ts": string,"interviewer": string,"to_ts": string }; Returns: {
+              "ends_at": string,"starts_at": string
+            }[]
+                           },
+"interviewer_completed_sessions":
 { Args: { "interviewer": string }; Returns: number
                            },
 "interviewer_ratings":
