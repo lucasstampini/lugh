@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import { spring, springSoft } from "./springs";
 
@@ -15,12 +15,12 @@ export function FadeInG({
   index?: number;
   large?: boolean;
 }) {
-  const reduceMotion = useReducedMotion();
   const delay = Math.min(index, 7) * 0.04;
 
   return (
     <motion.g
-      initial={{ opacity: 0, y: reduceMotion ? 0 : 6 }}
+      className="motion-reduce:transform-none!"
+      initial={{ opacity: 0, y: 6 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ ...(large ? springSoft : spring), delay }}

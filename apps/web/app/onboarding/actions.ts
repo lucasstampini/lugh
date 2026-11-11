@@ -5,6 +5,10 @@ import { candidateProfileSchema } from "@/lib/candidate-profile-schema";
 import { createClient } from "@/lib/supabase/server";
 import { interviewerFormSchema } from "./entrevistador/schema";
 
+const POSTGRES_UNIQUE_VIOLATION = "23505";
+
+// O mesmo limite vale no bucket (migration avatar_storage) e no
+// serverActions.bodySizeLimit do next.config.ts.
 const AVATAR_MAX_BYTES = 4 * 1024 * 1024;
 const AVATAR_EXTENSIONS: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -150,24 +154,33 @@ export async function createInterviewerProfile(
     redirect("/login");
   }
 
-  // upsert em vez de insert: se o update do role falhar depois de o insert
-  // já ter dado certo, reenviar o form não esbarra em chave duplicada.
-  const { error: interviewerError } = await supabase
+  const values = {
+    headline: parsed.data.headline,
+    company: parsed.data.company,
+    seniority: parsed.data.seniority,
+    areas: parsed.data.areas,
+    price_cents: parsed.data.price,
+    bio: parsed.data.bio || null,
+    linkedin_url: parsed.data.linkedin,
+    github_url: parsed.data.github,
+  };
+
+  // Insert ou update explícito em vez de upsert: o "ON CONFLICT DO UPDATE" do
+  // upsert reescreve profile_id, e o grant de update em interviewers é por
+  // coluna (profile_id e active ficam de fora), então o banco recusaria.
+  const { error: insertError } = await supabase
     .from("interviewers")
-    .upsert(
-      {
-        profile_id: user.id,
-        headline: parsed.data.headline,
-        company: parsed.data.company,
-        seniority: parsed.data.seniority,
-        areas: parsed.data.areas,
-        price_cents: parsed.data.price,
-        bio: parsed.data.bio || null,
-        linkedin_url: parsed.data.linkedin,
-        github_url: parsed.data.github,
-      },
-      { onConflict: "profile_id" },
-    );
+    .insert({ profile_id: user.id, ...values });
+
+  // 23505 = a linha já existe: é edição do perfil, ou reenvio do formulário
+  // (duplo clique, ou o update do role abaixo falhou na tentativa anterior).
+  const { error: interviewerError } =
+    insertError?.code === POSTGRES_UNIQUE_VIOLATION
+      ? await supabase
+          .from("interviewers")
+          .update(values)
+          .eq("profile_id", user.id)
+      : { error: insertError };
 
   if (interviewerError) {
     return { error: "Não deu para salvar agora. Tente de novo." };
