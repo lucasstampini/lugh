@@ -7,6 +7,7 @@ import {
   type PixCharge,
   type PixChargeInput,
 } from "@/lib/abacatepay";
+import { notifySessionConfirmed } from "@/lib/notifications";
 import { createAdminClient } from "@/lib/supabase/server";
 
 // Só servidor: pagamento é escrita sensível, tudo aqui usa a service role. Quem chama já
@@ -240,15 +241,22 @@ export async function confirmPayment(
 
   // Sessão expirada também volta: pagar no último segundo não pode perder o horário se
   // ele ainda está livre. Se não está, a trava de double booking recusa o update.
-  const { error: sessionError } = await admin
+  const { data: confirmed, error: sessionError } = await admin
     .from("sessions")
     .update({ status: "scheduled" })
     .eq("id", payment.session_id)
-    .in("status", ["pending_payment", "expired"]);
+    .in("status", ["pending_payment", "expired"])
+    .select("id");
 
   if (sessionError) {
     if (sessionError.code === EXCLUSION_VIOLATION) return "slot_lost";
     throw new Error(`Falha ao confirmar a sessão: ${sessionError.message}`);
+  }
+
+  // Só a chamada que de fato confirmou a sessão avisa por e-mail: o webhook reenviado e
+  // a consulta de status que chega junto não encontram linha para mudar.
+  if (confirmed?.length) {
+    await notifySessionConfirmed(payment.session_id);
   }
 
   return "confirmed";
