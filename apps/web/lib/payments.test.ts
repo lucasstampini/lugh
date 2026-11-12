@@ -35,6 +35,7 @@ const mocks = vi.hoisted(() => ({
   checkPixCharge: vi.fn(),
   withdrawFromSubAccount: vi.fn(),
   isTestMode: vi.fn(),
+  notifySessionConfirmed: vi.fn(),
   respond: vi.fn(),
 }));
 
@@ -89,6 +90,10 @@ vi.mock("@/lib/abacatepay", async (importOriginal) => ({
   checkPixCharge: mocks.checkPixCharge,
   withdrawFromSubAccount: mocks.withdrawFromSubAccount,
   isTestMode: mocks.isTestMode,
+}));
+
+vi.mock("@/lib/notifications", () => ({
+  notifySessionConfirmed: mocks.notifySessionConfirmed,
 }));
 
 const SESSION_ID = "0b8f6c1e-4a57-4d0b-9c58-2f1f4f3f7a10";
@@ -302,6 +307,29 @@ describe("confirmPayment", () => {
     });
 
     await expect(confirmPayment("pix_char_1", NOW)).resolves.toBe("slot_lost");
+    expect(mocks.notifySessionConfirmed).not.toHaveBeenCalled();
+  });
+
+  it("envia o e-mail de confirmação quando esta chamada confirmou a sessão", async () => {
+    database({
+      "payments.select": { data: { id: "pay-1", session_id: SESSION_ID } },
+      "sessions.update": { data: [{ id: SESSION_ID }] },
+    });
+
+    await expect(confirmPayment("pix_char_1", NOW)).resolves.toBe("confirmed");
+
+    expect(mocks.notifySessionConfirmed).toHaveBeenCalledExactlyOnceWith(SESSION_ID);
+  });
+
+  it("não repete o e-mail quando a sessão já estava confirmada (webhook reenviado)", async () => {
+    database({
+      "payments.select": { data: { id: "pay-1", session_id: SESSION_ID } },
+      "sessions.update": { data: [] },
+    });
+
+    await expect(confirmPayment("pix_char_1", NOW)).resolves.toBe("confirmed");
+
+    expect(mocks.notifySessionConfirmed).not.toHaveBeenCalled();
   });
 
   it("ignora cobrança que não é nossa", async () => {
