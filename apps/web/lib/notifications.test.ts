@@ -78,11 +78,31 @@ function database(tables: Record<string, Result>) {
   mocks.respond.mockImplementation((table: string) => tables[table]);
 }
 
-type Sent = { to: string; subject: string; text: string; html: string; idempotencyKey: string };
+type Sent = {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+  idempotencyKey: string;
+  scheduledAt?: Date;
+};
 
-function sentTo(email: string): Sent | undefined {
-  return (mocks.sendEmail.mock.calls as [Sent][]).map(([input]) => input).find((input) => input.to === email);
+function allSent(): Sent[] {
+  return (mocks.sendEmail.mock.calls as [Sent][]).map(([input]) => input);
 }
+
+// O e-mail imediato para um destinatário (o lembrete agendado fica de fora).
+function sentTo(email: string): Sent | undefined {
+  return allSent().find((input) => input.to === email && !input.scheduledAt);
+}
+
+function reminderTo(email: string): Sent | undefined {
+  return allSent().find((input) => input.to === email && input.scheduledAt);
+}
+
+// A sessão é às 22:00 UTC do dia 18. Dois dias antes, e em cima da hora.
+const DAYS_BEFORE = new Date("2026-11-16T15:00:00.000Z");
+const MINUTES_BEFORE = new Date("2026-11-18T20:58:00.000Z");
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -92,7 +112,7 @@ beforeEach(() => {
 
 describe("notifySessionConfirmed", () => {
   it("envia a confirmação para os dois, cada um com o seu texto e a sua chave", async () => {
-    await notifySessionConfirmed(SESSION_ID);
+    await notifySessionConfirmed(SESSION_ID, MINUTES_BEFORE);
 
     expect(mocks.sendEmail).toHaveBeenCalledTimes(2);
 
@@ -164,6 +184,48 @@ describe("notifySessionConfirmed", () => {
     await notifySessionConfirmed(SESSION_ID);
 
     expect(sentTo("pedro@exemplo.com")?.text).toContain("Olá, Candidato.");
+  });
+});
+
+describe("lembrete de 1 hora antes", () => {
+  it("agenda o lembrete dos dois para 1 hora antes do início", async () => {
+    await notifySessionConfirmed(SESSION_ID, DAYS_BEFORE);
+
+    expect(mocks.sendEmail).toHaveBeenCalledTimes(4);
+
+    const toCandidate = reminderTo("pedro@exemplo.com");
+    expect(toCandidate).toMatchObject({
+      subject: "Sua sessão começa às 19h",
+      idempotencyKey: `lembrete-${SESSION_ID}-candidato`,
+      scheduledAt: new Date("2026-11-18T21:00:00.000Z"),
+    });
+    expect(toCandidate?.text).toContain(`Entrar na sala: http://localhost:3000/sala/${SESSION_ID}`);
+
+    expect(reminderTo("camila@exemplo.com")).toMatchObject({
+      idempotencyKey: `lembrete-${SESSION_ID}-entrevistador`,
+      scheduledAt: new Date("2026-11-18T21:00:00.000Z"),
+    });
+  });
+
+  it("não agenda lembrete para sessão marcada a menos de 1h05 do início", async () => {
+    await notifySessionConfirmed(SESSION_ID, MINUTES_BEFORE);
+
+    expect(reminderTo("pedro@exemplo.com")).toBeUndefined();
+    expect(reminderTo("camila@exemplo.com")).toBeUndefined();
+    // A confirmação sai do mesmo jeito.
+    expect(sentTo("pedro@exemplo.com")).toBeDefined();
+  });
+
+  it("envia a confirmação mesmo quando o agendamento do lembrete falha", async () => {
+    mocks.sendEmail.mockImplementation(async (input: Sent) => {
+      if (input.scheduledAt) throw new Error("agendamento recusado");
+      return { id: "email-1" };
+    });
+
+    await expect(notifySessionConfirmed(SESSION_ID, DAYS_BEFORE)).resolves.toBeUndefined();
+
+    expect(sentTo("pedro@exemplo.com")).toBeDefined();
+    expect(sentTo("camila@exemplo.com")).toBeDefined();
   });
 });
 
