@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AddBlockForm } from "./add-block-form";
 import { DeleteBlockButton } from "./delete-block-button";
 import { PausedToggle } from "./paused-toggle";
+import { PayoutForm } from "./payout-form";
 
 export const instant = false;
 
@@ -52,7 +53,7 @@ export default async function PainelPage() {
 
   const { data: interviewer } = await supabase
     .from("interviewers")
-    .select("active, paused")
+    .select("active, paused, abacate_subaccount_id")
     .eq("profile_id", user.id)
     .maybeSingle();
 
@@ -147,6 +148,30 @@ export default async function PainelPage() {
             </div>
           </section>
         </div>
+
+        <section className="flex flex-col gap-4">
+          <div>
+            <h2 className="font-heading text-[22px] font-bold">Recebimentos</h2>
+            <p className="text-muted-foreground mt-1 max-w-[68ch] text-sm">
+              {interviewer.abacate_subaccount_id
+                ? "Sua parte de cada sessão é separada na hora em que o candidato paga o PIX."
+                : "Cadastre seu documento para receber sua parte de cada sessão por PIX. Sem ele, o valor das sessões fica retido com o Lugh."}
+            </p>
+          </div>
+
+          {interviewer.abacate_subaccount_id ? (
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+              <span className="border-border bg-accent rounded-[7px] border-[1.5px] px-2 py-0.5 font-mono text-xs font-bold">
+                pix: documento cadastrado
+              </span>
+              <span className="text-muted-foreground text-sm">
+                O repasse cai na chave PIX do seu CPF ou CNPJ.
+              </span>
+            </p>
+          ) : (
+            <PayoutForm />
+          )}
+        </section>
 
         <section className="flex flex-col gap-4">
           <div>
