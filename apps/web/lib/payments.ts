@@ -2,6 +2,8 @@ import {
   checkPixCharge,
   createPixCharge,
   isSplitUnavailable,
+  isTestMode,
+  withdrawFromSubAccount,
   type PixCharge,
   type PixChargeInput,
 } from "@/lib/abacatepay";
@@ -318,4 +320,84 @@ export async function refreshPaymentStatus(
   const after = await read();
   if (!after.session) return null;
   return { status: after.session.status, paid: isPaid(after.payment?.status) };
+}
+
+export type ReleaseResult =
+  // O repasse saiu (ou já tinha saído) para o PIX do entrevistador.
+  | "released"
+  // Não há o que repassar: sessão sem pagamento confirmado, ou cobrança feita sem split
+  // (o valor está com o Lugh, não na subconta).
+  | "nothing_to_release"
+  // A AbacatePay não completou o saque. O pagamento segue como paid, a receber.
+  | "failed";
+
+// O entrevistador enviou o feedback: saca a parte dele da subconta e marca o pagamento
+// como released. Quem chama já concluiu a sessão. Idempotente: o saque usa o id da
+// sessão como externalId e o update é condicional ao status paid. No Modo Teste da
+// AbacatePay não existe saque, então só o status muda. Lança erro quando o banco ou a
+// AbacatePay falham; o feedback já está salvo e não depende disto.
+export async function releasePayment(
+  sessionId: string,
+  now: Date = new Date(),
+): Promise<ReleaseResult> {
+  const admin = createAdminClient();
+
+  const { data: payment, error: paymentError } = await admin
+    .from("payments")
+    .select("id, status, interviewer_share_cents, sessions(interviewer_id)")
+    .eq("session_id", sessionId)
+    .maybeSingle();
+
+  if (paymentError) throw new Error(`Falha ao ler o pagamento: ${paymentError.message}`);
+  if (!payment) return "nothing_to_release";
+  if (payment.status === "released") return "released";
+  if (payment.status !== "paid" || payment.interviewer_share_cents === 0) {
+    return "nothing_to_release";
+  }
+
+  if (!isTestMode()) {
+    const { data: interviewer, error: interviewerError } = await admin
+      .from("interviewers")
+      .select("abacate_subaccount_id")
+      .eq("profile_id", payment.sessions.interviewer_id)
+      .maybeSingle();
+
+    if (interviewerError) throw new Error(`Falha ao ler o entrevistador: ${interviewerError.message}`);
+    if (!interviewer?.abacate_subaccount_id) return "nothing_to_release";
+
+    const status = await withdrawFromSubAccount({
+      subAccountId: interviewer.abacate_subaccount_id,
+      amountCents: payment.interviewer_share_cents,
+      externalId: `repasse-${sessionId}`,
+      description: "Repasse de sessão no Lugh",
+    });
+    if (status !== "COMPLETE") return "failed";
+  }
+
+  const { error: updateError } = await admin
+    .from("payments")
+    .update({ status: "released", released_at: now.toISOString() })
+    .eq("id", payment.id)
+    .eq("status", "paid");
+
+  if (updateError) throw new Error(`Falha ao marcar o repasse: ${updateError.message}`);
+  return "released";
+}
+
+export type Earnings = {
+  // Parte de sessões pagas que ainda não foi repassada (o feedback não foi enviado).
+  pendingCents: number;
+  // Parte já repassada para o PIX do entrevistador.
+  releasedCents: number;
+};
+
+export function sumEarnings(
+  payments: { status: string; interviewer_share_cents: number }[],
+): Earnings {
+  const total = (status: string) =>
+    payments
+      .filter((payment) => payment.status === status)
+      .reduce((sum, payment) => sum + payment.interviewer_share_cents, 0);
+
+  return { pendingCents: total("paid"), releasedCents: total("released") };
 }

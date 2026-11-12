@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { canSendFeedback, parseFeedbackForm, type FeedbackFieldErrors } from "@/lib/feedback";
+import { releasePayment } from "@/lib/payments";
 import { closeLivekitRoom } from "@/lib/room/livekit-token";
 import { completeSession, endSession, getSessionForUser, type SessionForUser } from "@/lib/sessions";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
@@ -91,7 +92,16 @@ export async function submitFeedback(
     return { error: OUR_FAULT };
   }
 
+  // Feedback entregue: libera o repasse do entrevistador. Se falhar, o feedback já
+  // está salvo e o pagamento continua como a receber no painel.
+  try {
+    await releasePayment(session.id);
+  } catch {
+    // Melhor esforço: não desfaz o feedback por causa do repasse.
+  }
+
   revalidatePath("/sessoes");
+  revalidatePath("/painel");
   revalidatePath(resultPath);
   redirect(resultPath);
 }
