@@ -258,10 +258,10 @@ export function BookingForm({
         {state?.error ? <FormAlert title="Não deu para agendar">{state.error}</FormAlert> : null}
 
         <Button type="submit" size="lg" disabled={!selected || pending} className="h-[54px] w-full">
-          {pending ? "Agendando..." : "Confirmar agendamento"}
+          {pending ? "Reservando horário..." : "Ir para o pagamento"}
         </Button>
         <p className="text-muted-foreground text-center font-mono text-xs">
-          pagamento por PIX chega em breve
+          pagamento por PIX · confirmação na hora
         </p>
       </aside>
     </form>

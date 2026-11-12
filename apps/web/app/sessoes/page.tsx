@@ -8,6 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { canSendFeedback } from "@/lib/feedback";
 import { formatSessionDate } from "@/lib/format-session-date";
 import { initials } from "@/lib/initials";
+import { expireUnpaidSessions, PAYMENT_WINDOW_MINUTES } from "@/lib/payments";
 import { ROOM_OPENS_BEFORE_MINUTES, roomAccess } from "@/lib/room/session";
 import { createClient } from "@/lib/supabase/server";
 
@@ -75,6 +76,9 @@ export default async function SessionsPage({ searchParams }: PageProps<"/sessoes
   }
   const userId = user.id;
 
+  // Sem cron: quem passou do prazo de pagamento vira "expirada" antes de a lista ser lida.
+  await expireUnpaidSessions();
+
   // Sem filtro: RLS já só devolve sessão onde o usuário logado é o
   // candidate_id ou o interviewer_id.
   const [{ data: sessions, error }, { data: profile }] = await Promise.all([
@@ -104,7 +108,10 @@ export default async function SessionsPage({ searchParams }: PageProps<"/sessoes
 
   // Sessão recém-agendada (?agendada=<id>). RLS garante que só entra aqui uma
   // sessão do próprio usuário.
-  const justBooked = bookedId ? (sessions ?? []).find((s) => s.id === bookedId) : undefined;
+  // O aviso só vale para sessão confirmada: com o PIX pendente ela ainda não está agendada.
+  const justBooked = bookedId
+    ? (sessions ?? []).find((s) => s.id === bookedId && s.status === "scheduled")
+    : undefined;
   const justBookedDate = justBooked ? formatSessionDate(justBooked.starts_at) : null;
 
   function SessionRow({ session, muted }: { session: SessionRowData; muted?: boolean }) {
@@ -161,6 +168,21 @@ export default async function SessionsPage({ searchParams }: PageProps<"/sessoes
           >
             Preencher feedback
           </Link>
+        ) : session.status === "pending_payment" ? (
+          isCandidate ? (
+            <div className="flex flex-col items-center gap-1.5">
+              <Link
+                href={`/agendar/${session.interviewer_id}?pagar=${session.id}`}
+                aria-describedby={`pagar-${session.id}`}
+                className={buttonVariants({ className: "h-12 px-5" })}
+              >
+                Pagar com PIX
+              </Link>
+              <span id={`pagar-${session.id}`} className="text-muted-foreground font-mono text-xs">
+                reserva de {PAYMENT_WINDOW_MINUTES} min
+              </span>
+            </div>
+          ) : null
         ) : ROOM_STATUSES.has(session.status) ? (
           access === "open" ? (
             <Link
@@ -232,7 +254,7 @@ export default async function SessionsPage({ searchParams }: PageProps<"/sessoes
               className="text-brand-deep mt-0.5 shrink-0"
             />
             <div>
-              <p className="font-extrabold">Sessão agendada</p>
+              <p className="font-extrabold">Pagamento confirmado, sessão agendada</p>
               <p className="text-muted-foreground text-sm">
                 {justBookedDate.day} · {justBookedDate.time}, horário de Brasília. A sala abre{" "}
                 {ROOM_OPENS_BEFORE_MINUTES} minutos antes.
