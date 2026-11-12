@@ -13,7 +13,7 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { notifySessionConfirmed } from "./notifications";
+import { notifyFeedbackReady, notifyPayoutReleased, notifySessionConfirmed } from "./notifications";
 
 type Result = { data?: unknown; error?: { message: string } | null };
 
@@ -164,5 +164,49 @@ describe("notifySessionConfirmed", () => {
     await notifySessionConfirmed(SESSION_ID);
 
     expect(sentTo("pedro@exemplo.com")?.text).toContain("Olá, Candidato.");
+  });
+});
+
+describe("notifyFeedbackReady", () => {
+  it("avisa só o candidato, com o link do resultado", async () => {
+    await notifyFeedbackReady(SESSION_ID);
+
+    expect(mocks.sendEmail).toHaveBeenCalledTimes(1);
+    const sent = sentTo("pedro@exemplo.com");
+    expect(sent).toMatchObject({
+      subject: "Seu feedback chegou",
+      idempotencyKey: `feedback-${SESSION_ID}`,
+    });
+    expect(sent?.text).toContain("Camila Ribeiro enviou o feedback");
+    expect(sent?.text).toContain(
+      `Ver o resultado: http://localhost:3000/sessoes/${SESSION_ID}/resultado`,
+    );
+  });
+
+  it("não lança erro quando a Resend recusa", async () => {
+    mocks.sendEmail.mockRejectedValue(new Error("recusado"));
+
+    await expect(notifyFeedbackReady(SESSION_ID)).resolves.toBeUndefined();
+  });
+});
+
+describe("notifyPayoutReleased", () => {
+  it("avisa só o entrevistador, com o valor e o link do painel", async () => {
+    await notifyPayoutReleased(SESSION_ID, 8000);
+
+    expect(mocks.sendEmail).toHaveBeenCalledTimes(1);
+    const sent = sentTo("camila@exemplo.com");
+    expect(sent).toMatchObject({ idempotencyKey: `repasse-${SESSION_ID}` });
+    expect(sent?.subject.replaceAll(" ", " ")).toBe("Você recebeu R$ 80");
+    expect(sent?.text).toContain("com Pedro foi liberado");
+    expect(sent?.text).toContain("Ver meus ganhos: http://localhost:3000/painel");
+  });
+
+  it("não lança erro quando o banco falha", async () => {
+    mocks.respond.mockRejectedValue(new Error("banco fora do ar"));
+
+    await expect(notifyPayoutReleased(SESSION_ID, 8000)).resolves.toBeUndefined();
+
+    expect(mocks.sendEmail).not.toHaveBeenCalled();
   });
 });
