@@ -36,6 +36,7 @@ const mocks = vi.hoisted(() => ({
   withdrawFromSubAccount: vi.fn(),
   isTestMode: vi.fn(),
   notifySessionConfirmed: vi.fn(),
+  notifyPayoutReleased: vi.fn(),
   respond: vi.fn(),
 }));
 
@@ -94,6 +95,7 @@ vi.mock("@/lib/abacatepay", async (importOriginal) => ({
 
 vi.mock("@/lib/notifications", () => ({
   notifySessionConfirmed: mocks.notifySessionConfirmed,
+  notifyPayoutReleased: mocks.notifyPayoutReleased,
 }));
 
 const SESSION_ID = "0b8f6c1e-4a57-4d0b-9c58-2f1f4f3f7a10";
@@ -478,6 +480,7 @@ describe("releasePayment", () => {
 
     await expect(releasePayment(SESSION_ID, NOW)).resolves.toBe("failed");
     expect(callsTo("payments", "update")).toHaveLength(0);
+    expect(mocks.notifyPayoutReleased).not.toHaveBeenCalled();
   });
 
   it("não saca de novo um pagamento já repassado", async () => {
@@ -498,6 +501,47 @@ describe("releasePayment", () => {
     await expect(releasePayment(SESSION_ID, NOW)).resolves.toBe("nothing_to_release");
     expect(mocks.withdrawFromSubAccount).not.toHaveBeenCalled();
     expect(callsTo("payments", "update")).toHaveLength(0);
+  });
+});
+
+describe("releasePayment e o e-mail de repasse", () => {
+  const paid = {
+    id: "pay-1",
+    status: "paid",
+    interviewer_share_cents: 8000,
+    sessions: { interviewer_id: INTERVIEWER_ID },
+  };
+
+  beforeEach(() => mocks.isTestMode.mockReturnValue(true));
+
+  it("avisa o entrevistador do valor quando esta chamada marcou o repasse", async () => {
+    database({
+      "payments.select": { data: paid },
+      "payments.update": { data: [{ id: "pay-1" }] },
+    });
+
+    await expect(releasePayment(SESSION_ID, NOW)).resolves.toBe("released");
+
+    expect(mocks.notifyPayoutReleased).toHaveBeenCalledExactlyOnceWith(SESSION_ID, 8000);
+  });
+
+  it("não repete o e-mail quando outra chamada já tinha marcado o repasse", async () => {
+    database({
+      "payments.select": { data: paid },
+      "payments.update": { data: [] },
+    });
+
+    await expect(releasePayment(SESSION_ID, NOW)).resolves.toBe("released");
+
+    expect(mocks.notifyPayoutReleased).not.toHaveBeenCalled();
+  });
+
+  it("não avisa quando a cobrança foi feita sem split", async () => {
+    database({ "payments.select": { data: { ...paid, interviewer_share_cents: 0 } } });
+
+    await expect(releasePayment(SESSION_ID, NOW)).resolves.toBe("nothing_to_release");
+
+    expect(mocks.notifyPayoutReleased).not.toHaveBeenCalled();
   });
 });
 

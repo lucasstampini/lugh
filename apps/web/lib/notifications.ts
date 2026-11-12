@@ -1,5 +1,10 @@
 import { appUrl } from "@/lib/app-url";
-import { confirmationEmail, type EmailContent } from "@/lib/emails";
+import {
+  confirmationEmail,
+  feedbackReadyEmail,
+  payoutEmail,
+  type EmailContent,
+} from "@/lib/emails";
 import { sendEmail } from "@/lib/resend";
 import { SESSION_TYPE_LABELS, type SessionType } from "@/lib/room/session";
 import { createAdminClient } from "@/lib/supabase/server";
@@ -106,6 +111,51 @@ export async function notifySessionConfirmed(sessionId: string): Promise<void> {
         `confirmacao-${session.id}-entrevistador`,
       ),
     ]);
+  } catch {
+    // Banco fora do ar: sem e-mail desta vez.
+  }
+}
+
+// O entrevistador enviou o feedback e a sessão ficou completed: avisa o candidato, com
+// o link do resultado.
+export async function notifyFeedbackReady(sessionId: string): Promise<void> {
+  try {
+    const session = await loadSession(sessionId);
+    if (!session) return;
+
+    await deliver(
+      session.candidate.email,
+      feedbackReadyEmail({
+        candidateName: session.candidate.name,
+        interviewerName: session.interviewer.name,
+        startsAt: session.startsAt,
+        resultUrl: appUrl(`/sessoes/${session.id}/resultado`),
+      }),
+      `feedback-${session.id}`,
+    );
+  } catch {
+    // Banco fora do ar: sem e-mail desta vez.
+  }
+}
+
+// O repasse da sessão foi liberado (payments.status = released): avisa o entrevistador
+// do valor. amountCents é a parte dele, em centavos.
+export async function notifyPayoutReleased(sessionId: string, amountCents: number): Promise<void> {
+  try {
+    const session = await loadSession(sessionId);
+    if (!session) return;
+
+    await deliver(
+      session.interviewer.email,
+      payoutEmail({
+        interviewerName: session.interviewer.name,
+        candidateName: session.candidate.name,
+        amountCents,
+        startsAt: session.startsAt,
+        panelUrl: appUrl("/painel"),
+      }),
+      `repasse-${session.id}`,
+    );
   } catch {
     // Banco fora do ar: sem e-mail desta vez.
   }

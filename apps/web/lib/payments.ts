@@ -7,7 +7,7 @@ import {
   type PixCharge,
   type PixChargeInput,
 } from "@/lib/abacatepay";
-import { notifySessionConfirmed } from "@/lib/notifications";
+import { notifyPayoutReleased, notifySessionConfirmed } from "@/lib/notifications";
 import { createAdminClient } from "@/lib/supabase/server";
 
 // Só servidor: pagamento é escrita sensível, tudo aqui usa a service role. Quem chama já
@@ -382,13 +382,20 @@ export async function releasePayment(
     if (status !== "COMPLETE") return "failed";
   }
 
-  const { error: updateError } = await admin
+  const { data: released, error: updateError } = await admin
     .from("payments")
     .update({ status: "released", released_at: now.toISOString() })
     .eq("id", payment.id)
-    .eq("status", "paid");
+    .eq("status", "paid")
+    .select("id");
 
   if (updateError) throw new Error(`Falha ao marcar o repasse: ${updateError.message}`);
+
+  // Só a chamada que marcou o repasse avisa o entrevistador por e-mail.
+  if (released?.length) {
+    await notifyPayoutReleased(sessionId, payment.interviewer_share_cents);
+  }
+
   return "released";
 }
 

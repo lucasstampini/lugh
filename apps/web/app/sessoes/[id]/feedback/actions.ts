@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { canSendFeedback, parseFeedbackForm, type FeedbackFieldErrors } from "@/lib/feedback";
+import { notifyFeedbackReady } from "@/lib/notifications";
 import { releasePayment } from "@/lib/payments";
 import { closeLivekitRoom } from "@/lib/room/livekit-token";
 import { completeSession, endSession, getSessionForUser, type SessionForUser } from "@/lib/sessions";
@@ -62,6 +63,7 @@ export async function submitFeedback(
     return { error: "Confira os campos marcados abaixo.", fieldErrors: parsed.fieldErrors };
   }
 
+  let completed = false;
   try {
     // O horário acabou e ninguém encerrou: encerra agora, pelo mesmo caminho do botão.
     if (session.status === "in_progress") {
@@ -87,9 +89,15 @@ export async function submitFeedback(
       return { error: OUR_FAULT };
     }
 
-    await completeSession(session.id);
+    completed = await completeSession(session.id);
   } catch {
     return { error: OUR_FAULT };
+  }
+
+  // Só o envio que concluiu a sessão avisa o candidato: segundo clique ou outra aba não
+  // repetem o e-mail. O aviso nunca lança erro.
+  if (completed) {
+    await notifyFeedbackReady(session.id);
   }
 
   // Feedback entregue: libera o repasse do entrevistador. Se falhar, o feedback já

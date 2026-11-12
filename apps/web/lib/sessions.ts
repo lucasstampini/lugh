@@ -97,13 +97,16 @@ export async function endSession(sessionId: string): Promise<boolean> {
 }
 
 // awaiting_feedback → completed: o entrevistador enviou o feedback. Quem chama grava o
-// feedback antes. Repetir não muda nada: a segunda chamada não encontra linha.
-export async function completeSession(sessionId: string): Promise<void> {
-  const { error } = await createAdminClient()
+// feedback antes. Repetir não muda nada: a segunda chamada não encontra linha e devolve
+// false. Só quem recebe true concluiu a sessão (e avisa o candidato).
+export async function completeSession(sessionId: string): Promise<boolean> {
+  const { data, error } = await createAdminClient()
     .from("sessions")
     .update({ status: "completed" })
     .eq("id", sessionId)
-    .eq("status", "awaiting_feedback");
+    .eq("status", "awaiting_feedback")
+    .select("id");
 
   if (error) throw new Error(`Falha ao concluir a sessão: ${error.message}`);
+  return data.length > 0;
 }
