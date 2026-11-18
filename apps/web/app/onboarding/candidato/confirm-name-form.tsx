@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { confirmCandidate } from "@/app/onboarding/actions";
-import { CodeAccent, CodeBlock, CodeMuted, CodeString } from "@/components/code-block";
 import { Eyebrow } from "@/components/eyebrow";
 import { ChoicePill, DashedLabel, Field, FormAlert, LABEL_CLASS } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { initials } from "@/lib/initials";
 import { AREA_OPTIONS } from "@/lib/interviewer-options";
+import { GitHubIcon, LinkedInIcon } from "@/components/brand-icons";
 import { AvatarUpload } from "./avatar-upload";
 
 const areaLabels: Record<string, string> = Object.fromEntries(
@@ -21,22 +21,14 @@ const areaLabels: Record<string, string> = Object.fromEntries(
 
 type Preview = {
   name: string;
+  preferredName: string;
+  experienceYears: string;
   targetRole: string;
   areas: string[];
+  bio: string;
   linkedin: string;
   github: string;
 };
-
-function JsonLine({ field, value, last }: { field: string; value: string; last?: boolean }) {
-  return (
-    <div>
-      {"  "}
-      <CodeString>{`"${field}"`}</CodeString>:{" "}
-      {value ? <CodeAccent>{`"${value}"`}</CodeAccent> : <CodeMuted>null</CodeMuted>}
-      {last ? "" : ","}
-    </div>
-  );
-}
 
 export function ConfirmNameForm({
   initialName,
@@ -52,8 +44,11 @@ export function ConfirmNameForm({
   // valida e salva é a action.
   const [preview, setPreview] = useState<Preview>({
     name: initialName,
+    preferredName: "",
+    experienceYears: "",
     targetRole: "",
     areas: [],
+    bio: "",
     linkedin: "",
     github: "",
   });
@@ -62,15 +57,32 @@ export function ConfirmNameForm({
     const data = new FormData(event.currentTarget);
     setPreview({
       name: String(data.get("name") ?? ""),
+      preferredName: String(data.get("preferredName") ?? ""),
+      experienceYears: String(data.get("experienceYears") ?? ""),
       targetRole: String(data.get("targetRole") ?? ""),
       areas: data.getAll("areas").map(String),
+      bio: String(data.get("bio") ?? ""),
       linkedin: String(data.get("linkedin") ?? ""),
       github: String(data.get("github") ?? ""),
     });
   }
 
-  const previewName = preview.name.trim() || "Seu nome";
+  // O entrevistador chama a pessoa pelo nome de preferência quando ele existe.
+  const fullName = preview.name.trim();
+  const previewName = preview.preferredName.trim() || fullName || "Seu nome";
+  const showFullName = Boolean(
+    preview.preferredName.trim() && fullName && fullName !== preview.preferredName.trim(),
+  );
   const previewAreas = preview.areas.map((area) => areaLabels[area] ?? area);
+  const previewBio = preview.bio.trim();
+  const previewLinkedin = preview.linkedin.trim();
+  const previewGithub = preview.github.trim();
+  // O campo é numérico e opcional: 0 ou vazio não viram linha na prévia.
+  const years = Number.parseInt(preview.experienceYears, 10);
+  const previewYears =
+    Number.isFinite(years) && years > 0
+      ? `${years} ${years === 1 ? "ano" : "anos"} de experiência`
+      : null;
 
   return (
     <div className="flex flex-wrap items-start gap-x-14 gap-y-9">
@@ -210,36 +222,69 @@ export function ConfirmNameForm({
                 aria-hidden="true"
                 className="edge bg-accent flex size-16 shrink-0 items-center justify-center rounded-full font-mono text-lg font-bold"
               >
-                {initials(previewName)}
+                {initials(fullName || previewName)}
               </span>
             )}
             <div className="min-w-0">
               <p className="text-lg font-extrabold break-words">{previewName}</p>
+              {showFullName ? (
+                <p className="text-muted-foreground text-xs break-words">{fullName}</p>
+              ) : null}
               {preview.targetRole ? (
                 <p className="text-muted-foreground text-sm break-words">{preview.targetRole}</p>
               ) : null}
-              {previewAreas.length > 0 ? (
-                <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  {previewAreas.map((area) => (
-                    <span
-                      key={area}
-                      className="edge rounded-md px-[7px] py-px font-mono text-xs lowercase"
-                    >
-                      {area}
-                    </span>
-                  ))}
-                </div>
+              {previewYears ? (
+                <p className="text-muted-foreground font-mono text-xs">{previewYears}</p>
               ) : null}
             </div>
           </div>
-          <CodeBlock className="rounded-xl text-xs">
-            <div>{"{"}</div>
-            <JsonLine field="nome" value={preview.name.trim()} />
-            <JsonLine field="areas" value={previewAreas.join(", ").toLowerCase()} />
-            <JsonLine field="linkedin" value={preview.linkedin.trim()} />
-            <JsonLine field="github" value={preview.github.trim()} last />
-            <div>{"}"}</div>
-          </CodeBlock>
+
+          {previewAreas.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {previewAreas.map((area) => (
+                <span
+                  key={area}
+                  className="edge bg-card rounded-md px-[7px] py-px font-mono text-xs lowercase"
+                >
+                  {area}
+                </span>
+              ))}
+            </div>
+          ) : null}
+
+          {previewBio ? (
+            <p className="text-sm break-words whitespace-pre-line">{previewBio}</p>
+          ) : null}
+
+          {previewLinkedin || previewGithub ? (
+            <div className="flex flex-wrap gap-2">
+              {previewLinkedin ? (
+                <span className="edge bg-card flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold">
+                  <LinkedInIcon size={13} />
+                  LinkedIn
+                </span>
+              ) : null}
+              {previewGithub ? (
+                <span className="edge bg-card flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold">
+                  <GitHubIcon size={13} />
+                  GitHub
+                </span>
+              ) : null}
+            </div>
+          ) : null}
+
+          {/* Nada preenchido além do nome: a prévia diz o que falta em vez de
+              ficar um cartão vazio. */}
+          {!preview.targetRole &&
+          !previewYears &&
+          previewAreas.length === 0 &&
+          !previewBio &&
+          !previewLinkedin &&
+          !previewGithub ? (
+            <p className="text-muted-foreground font-mono text-xs">
+              preencha os campos ao lado para montar sua prévia
+            </p>
+          ) : null}
         </div>
       </aside>
     </div>
