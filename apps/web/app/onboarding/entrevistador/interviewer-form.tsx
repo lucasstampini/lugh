@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { createInterviewerProfile } from "@/app/onboarding/actions";
 import { AvatarUpload } from "@/app/onboarding/candidato/avatar-upload";
+import { GitHubIcon, LinkedInIcon } from "@/components/brand-icons";
 import { Eyebrow } from "@/components/eyebrow";
 import {
   ChoicePill,
@@ -40,8 +41,28 @@ export type InterviewerFormDefaults = {
 const areaLabels: Record<string, string> = Object.fromEntries(
   AREA_OPTIONS.map((option) => [option.value, option.label]),
 );
+const seniorityLabels: Record<string, string> = Object.fromEntries(
+  SENIORITY_OPTIONS.map((option) => [option.value, option.label]),
+);
 
-type Preview = { headline: string; company: string; areas: string[]; price: string };
+type Preview = {
+  headline: string;
+  company: string;
+  seniority: string;
+  areas: string[];
+  price: string;
+  bio: string;
+  linkedin: string;
+  github: string;
+};
+
+// Campo com logo da plataforma à esquerda. Mesma caixa do campo de preço: a
+// borda e o foco ficam no contêiner, não no <input>.
+function socialBox(error?: string) {
+  return `bg-background has-focus-visible:outline-ring flex h-[50px] items-center gap-2.5 rounded-xl border-[1.5px] px-3.5 has-focus-visible:outline-[3px] has-focus-visible:outline-offset-[3px] ${
+    error ? "border-destructive" : "border-input"
+  }`;
+}
 
 export function InterviewerForm({
   defaultValues,
@@ -73,8 +94,12 @@ export function InterviewerForm({
   const [preview, setPreview] = useState<Preview>({
     headline: defaultValues?.headline ?? "",
     company: defaultValues?.company ?? "",
+    seniority: defaultValues?.seniority ?? "",
     areas: defaultValues?.areas ?? [],
     price: defaultValues?.price ?? "",
+    bio: defaultValues?.bio ?? "",
+    linkedin: defaultValues?.linkedin ?? "",
+    github: defaultValues?.github ?? "",
   });
   const fieldErrors = state?.fieldErrors ?? {};
   const errorCount = Object.keys(fieldErrors).length;
@@ -84,12 +109,20 @@ export function InterviewerForm({
     setPreview({
       headline: String(data.get("headline") ?? ""),
       company: String(data.get("company") ?? ""),
+      seniority: String(data.get("seniority") ?? ""),
       areas: data.getAll("areas").map(String),
       price: String(data.get("price") ?? ""),
+      bio: String(data.get("bio") ?? ""),
+      linkedin: String(data.get("linkedin") ?? ""),
+      github: String(data.get("github") ?? ""),
     });
   }
 
   const previewRole = [preview.headline.trim(), preview.company.trim()].filter(Boolean).join(" · ");
+  const previewSeniority = seniorityLabels[preview.seniority] ?? null;
+  const previewBio = preview.bio.trim();
+  const previewLinkedin = preview.linkedin.trim();
+  const previewGithub = preview.github.trim();
 
   return (
     <div className="flex flex-wrap items-start gap-x-14 gap-y-9">
@@ -250,6 +283,9 @@ export function InterviewerForm({
           />
         </Field>
 
+        {/* LinkedIn e GitHub levam a marca da plataforma dentro do campo, no
+            mesmo desenho de prefixo do preço: a logo diz qual link vai ali sem
+            depender só do rótulo. */}
         <div className="flex flex-wrap gap-5">
           <Field
             label="LinkedIn"
@@ -258,13 +294,18 @@ export function InterviewerForm({
             error={fieldErrors.linkedin}
             className="flex-[1_1_220px]"
           >
-            <Input
-              id="linkedin"
-              name="linkedin"
-              defaultValue={defaultValues?.linkedin}
-              placeholder="linkedin.com/in/seu-perfil"
-              aria-invalid={fieldErrors.linkedin ? true : undefined}
-            />
+            <div className={socialBox(fieldErrors.linkedin)}>
+              <LinkedInIcon size={17} className="text-muted-foreground shrink-0" />
+              <input
+                id="linkedin"
+                name="linkedin"
+                inputMode="url"
+                defaultValue={defaultValues?.linkedin}
+                placeholder="linkedin.com/in/seu-perfil"
+                aria-invalid={fieldErrors.linkedin ? true : undefined}
+                className="placeholder:text-muted-foreground h-full min-w-0 flex-1 bg-transparent text-base outline-none"
+              />
+            </div>
           </Field>
           <Field
             label="GitHub"
@@ -273,13 +314,18 @@ export function InterviewerForm({
             error={fieldErrors.github}
             className="flex-[1_1_220px]"
           >
-            <Input
-              id="github"
-              name="github"
-              defaultValue={defaultValues?.github}
-              placeholder="github.com/seu-usuario"
-              aria-invalid={fieldErrors.github ? true : undefined}
-            />
+            <div className={socialBox(fieldErrors.github)}>
+              <GitHubIcon size={17} className="text-muted-foreground shrink-0" />
+              <input
+                id="github"
+                name="github"
+                inputMode="url"
+                defaultValue={defaultValues?.github}
+                placeholder="github.com/seu-usuario"
+                aria-invalid={fieldErrors.github ? true : undefined}
+                className="placeholder:text-muted-foreground h-full min-w-0 flex-1 bg-transparent text-base outline-none"
+              />
+            </div>
           </Field>
         </div>
 
@@ -301,7 +347,7 @@ export function InterviewerForm({
         aria-label="Prévia do seu perfil"
         className="pop flex w-full min-w-0 flex-[1_1_300px] flex-col gap-3 md:max-w-[380px]"
       >
-        <span className="font-mono text-xs font-bold">prévia · seu card no marketplace</span>
+        <span className="font-mono text-xs font-bold">prévia · como o candidato te vê</span>
         <div className="bg-secondary rounded-[18px] p-[18px]">
           <div className="edge bg-card flex flex-col gap-3 rounded-2xl p-3">
             {avatarUrl ? (
@@ -327,13 +373,18 @@ export function InterviewerForm({
                 {previewRole || "Seu cargo e empresa"}
               </p>
             </div>
-            {preview.areas.length > 0 ? (
+            {preview.areas.length > 0 || previewSeniority ? (
               <div className="flex flex-wrap gap-1.5 font-mono text-xs">
                 {preview.areas.map((area) => (
                   <span key={area} className="edge rounded-[7px] px-2 py-0.5 lowercase">
                     {areaLabels[area] ?? area}
                   </span>
                 ))}
+                {previewSeniority ? (
+                  <span className="edge bg-accent rounded-[7px] px-2 py-0.5 lowercase">
+                    {previewSeniority}
+                  </span>
+                ) : null}
               </div>
             ) : null}
             <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
@@ -342,6 +393,33 @@ export function InterviewerForm({
               </span>
             </div>
           </div>
+
+          {/* Bio e links não cabem no card da vitrine: o candidato vê isso ao
+              abrir o perfil, então a prévia mostra os dois blocos. */}
+          {previewBio || previewLinkedin || previewGithub ? (
+            <div className="mt-3 flex flex-col gap-3">
+              {previewBio ? (
+                <p className="text-sm break-words whitespace-pre-line">{previewBio}</p>
+              ) : null}
+
+              {previewLinkedin || previewGithub ? (
+                <div className="flex flex-wrap gap-2">
+                  {previewLinkedin ? (
+                    <span className="edge bg-card flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold">
+                      <LinkedInIcon size={13} />
+                      LinkedIn
+                    </span>
+                  ) : null}
+                  {previewGithub ? (
+                    <span className="edge bg-card flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold">
+                      <GitHubIcon size={13} />
+                      GitHub
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
         <p className="text-muted-foreground text-[13px]">
           Depois de publicar, você abre seus horários no painel.
