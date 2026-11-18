@@ -2,7 +2,6 @@ import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { CodeAccent, CodeBlock, CodeMuted } from "@/components/code-block";
 import { Eyebrow } from "@/components/eyebrow";
 import { SiteHeader } from "@/components/site-header";
 import { buttonVariants } from "@/components/ui/button";
@@ -45,12 +44,6 @@ export default async function SessionFeedbackPage({
           role="alert"
           className="edge flex flex-col items-start gap-3.5 rounded-2xl px-6 py-[clamp(28px,5vw,56px)]"
         >
-          <CodeBlock>
-            <div>
-              <CodeMuted>GET</CodeMuted> /sessoes/feedback
-            </div>
-            <div className="text-destructive-soft">erro: sem resposta do servidor</div>
-          </CodeBlock>
           <h1 className="font-heading text-[26px] leading-tight font-bold">
             Não deu para abrir o feedback
           </h1>
@@ -86,12 +79,6 @@ export default async function SessionFeedbackPage({
     return (
       <Shell>
         <div className="pop edge-dashed flex flex-col items-start gap-3.5 rounded-2xl px-6 py-[clamp(28px,5vw,56px)]">
-          <CodeBlock>
-            <div>
-              <CodeMuted>$</CodeMuted> lugh feedback
-            </div>
-            <CodeAccent>{notOverYet ? "sessão: em aberto" : "sessão: sem feedback"}</CodeAccent>
-          </CodeBlock>
           <h1 className="font-heading text-[26px] leading-tight font-bold">
             {notOverYet ? "A sessão ainda não terminou" : "Esta sessão não recebe feedback"}
           </h1>

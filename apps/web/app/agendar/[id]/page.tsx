@@ -1,7 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { CodeBlock, CodeMuted } from "@/components/code-block";
 import { SiteHeader } from "@/components/site-header";
 import { buttonVariants } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format-price";
@@ -121,12 +120,6 @@ export default async function AgendarPage({
             role="alert"
             className="edge flex flex-col items-start gap-3.5 rounded-2xl px-6 py-[clamp(28px,5vw,56px)]"
           >
-            <CodeBlock>
-              <div>
-                <CodeMuted>GET</CodeMuted> /agendar
-              </div>
-              <div className="text-destructive-soft">erro: sem resposta do servidor</div>
-            </CodeBlock>
             <h1 className="font-heading text-[26px] leading-tight font-bold">
               Não deu para carregar os horários
             </h1>

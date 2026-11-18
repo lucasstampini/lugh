@@ -1,8 +1,6 @@
 import { CircleCheck } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CodeAccent, CodeBlock, CodeMuted } from "@/components/code-block";
-import { Eyebrow } from "@/components/eyebrow";
 import { SiteHeader } from "@/components/site-header";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { canSendFeedback } from "@/lib/feedback";
@@ -207,21 +205,42 @@ export default async function SessionsPage({ searchParams }: PageProps<"/sessoes
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
 
-      <main className="mx-auto box-border flex w-full max-w-[1120px] flex-col gap-8 px-[clamp(20px,5vw,48px)] pt-[clamp(24px,4vw,48px)] pb-[72px]">
-        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+      {/* Faixa de topo amarela, a mesma da landing e da área de
+          entrevistadores. */}
+      <section
+        className="edge-b bg-primary text-ink"
+        style={{
+          backgroundImage: "radial-gradient(rgba(20,22,43,0.13) 1.4px, transparent 1.4px)",
+          backgroundSize: "26px 26px",
+        }}
+      >
+        <div className="mx-auto box-border flex w-full max-w-[1120px] flex-wrap items-end justify-between gap-x-8 gap-y-4 px-[clamp(20px,5vw,48px)] py-[clamp(28px,4vw,52px)]">
           <div className="flex flex-col gap-2">
-            <Eyebrow>{isInterviewer ? "entrevistador" : "candidato"}</Eyebrow>
+            <span className="text-ink/75 font-mono text-[13px] font-bold">
+              {"// "}
+              {isInterviewer ? "entrevistador" : "candidato"}
+            </span>
             <h1 className="font-heading text-[clamp(30px,3.4vw,44px)] leading-[1.05] font-extrabold tracking-[-0.02em]">
               Minhas sessões
             </h1>
+            <p className="text-ink/75 text-sm">
+              {isInterviewer
+                ? "Tudo que você vai conduzir e o que já aconteceu."
+                : "Tudo que você marcou e o feedback de cada sessão."}
+            </p>
           </div>
+
           <Link
             href={isInterviewer ? "/painel" : "/entrevistadores"}
-            className={buttonVariants({ variant: "outline", className: "h-12 px-5" })}
+            className={buttonVariants({ variant: "ink", className: "h-12 px-5" })}
           >
             {isInterviewer ? "Abrir horários" : "Agendar nova sessão"}
           </Link>
         </div>
+      </section>
+
+      <main className="bg-secondary flex-1">
+        <div className="mx-auto box-border flex w-full max-w-[1120px] flex-col gap-8 px-[clamp(20px,5vw,48px)] pt-[clamp(24px,4vw,48px)] pb-[72px]">
 
         {justBooked && justBookedDate ? (
           <div role="status" className="edge bg-accent flex items-start gap-3 rounded-xl px-4 py-3.5">
@@ -246,12 +265,6 @@ export default async function SessionsPage({ searchParams }: PageProps<"/sessoes
             role="alert"
             className="edge flex flex-col items-start gap-3.5 rounded-2xl px-6 py-[clamp(28px,5vw,56px)]"
           >
-            <CodeBlock>
-              <div>
-                <CodeMuted>GET</CodeMuted> /sessoes
-              </div>
-              <div className="text-destructive-soft">erro: sem resposta do servidor</div>
-            </CodeBlock>
             <h2 className="font-heading text-[26px] leading-tight font-bold">
               Não deu para carregar suas sessões
             </h2>
@@ -264,12 +277,6 @@ export default async function SessionsPage({ searchParams }: PageProps<"/sessoes
           </div>
         ) : !hasSessions ? (
           <div className="pop edge-dashed flex flex-col items-start gap-3.5 rounded-2xl px-6 py-[clamp(28px,5vw,56px)]">
-            <CodeBlock>
-              <div>
-                <CodeMuted>$</CodeMuted> lugh sessoes
-              </div>
-              <CodeAccent>0 sessões</CodeAccent>
-            </CodeBlock>
             <h2 className="font-heading text-[26px] leading-tight font-bold">
               {isInterviewer
                 ? "Ninguém agendou com você ainda"
@@ -320,6 +327,7 @@ export default async function SessionsPage({ searchParams }: PageProps<"/sessoes
             ) : null}
           </>
         )}
+        </div>
       </main>
     </div>
   );

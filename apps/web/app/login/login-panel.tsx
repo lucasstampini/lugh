@@ -2,7 +2,6 @@
 
 import { CircleAlert, Mail } from "lucide-react";
 import { useState } from "react";
-import { Eyebrow } from "@/components/eyebrow";
 import { GoogleLoginButton } from "./google-login-button";
 import { MagicLinkForm } from "./magic-link-form";
 
@@ -27,7 +26,6 @@ export function LoginPanel({
           <Mail aria-hidden="true" size={26} />
         </div>
         <div className="flex flex-col gap-2">
-          <Eyebrow>link enviado</Eyebrow>
           <h1 role="status" className={H1}>
             Confira seu e-mail
           </h1>
@@ -45,7 +43,6 @@ export function LoginPanel({
   return (
     <>
       <div className="flex flex-col gap-2">
-        <Eyebrow>entrar</Eyebrow>
         <h1 className={H1}>Entre na sua conta</h1>
         <p className="text-muted-foreground">
           Sem senha. Use o Google ou receba um link de acesso por e-mail.
