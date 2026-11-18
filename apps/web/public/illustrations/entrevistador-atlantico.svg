@@ -1,0 +1,23 @@
+<svg viewBox="0 0 208 182" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="">
+  <rect width="208" height="182" fill="#E8EDF8" />
+
+  <!-- Ombros / camisa -->
+  <path d="M38 182 C38 150 66 136 104 136 C142 136 170 150 170 182 Z" fill="#FF8A70" />
+
+  <!-- Cabelo, atrás do rosto -->
+  <ellipse cx="104" cy="74" rx="56" ry="60" fill="#182D4D" />
+
+  <!-- Rosto -->
+  <ellipse cx="104" cy="92" rx="38" ry="44" fill="#C88765" />
+
+  <!-- Cabelo emoldurando o rosto -->
+  <path d="M66 70 C66 110 70 140 78 150 L66 150 C54 130 50 95 60 65 Z" fill="#182D4D" />
+  <path d="M142 70 C142 110 138 140 130 150 L142 150 C154 130 158 95 148 65 Z" fill="#182D4D" />
+
+  <!-- Olhos (mesma faixa do BlinkingEyes: 37%-61% x, 39.5%-43.5% y) -->
+  <ellipse cx="90" cy="75" rx="4" ry="3" fill="#182D4D" />
+  <ellipse cx="118" cy="75" rx="4" ry="3" fill="#182D4D" />
+
+  <!-- Sorriso -->
+  <path d="M90 100 Q104 110 118 100" stroke="#142C52" stroke-width="3" fill="none" stroke-linecap="round" />
+</svg>

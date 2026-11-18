@@ -1,7 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { CodeAccent, CodeBlock, CodeMuted } from "@/components/code-block";
 import { buttonVariants } from "@/components/ui/button";
 
 export default function NotFound() {
@@ -14,18 +13,6 @@ export default function NotFound() {
       </header>
       <main className="flex flex-1 items-center justify-center px-[clamp(20px,5vw,48px)] pt-6 pb-20">
         <div className="pop edge bg-card box-border flex w-full max-w-[560px] flex-col items-start gap-[18px] rounded-[20px] p-[clamp(22px,4vw,40px)]">
-          <CodeBlock className="self-stretch rounded-xl px-4 py-3.5 text-sm leading-[1.8]">
-            <div>
-              <CodeMuted>GET</CodeMuted> /essa-pagina
-            </div>
-            <div>
-              <CodeAccent>404</CodeAccent> não encontrada
-              <span
-                aria-hidden="true"
-                className="caret bg-primary ml-1.5 inline-block h-[1.05em] w-2 align-text-bottom"
-              />
-            </div>
-          </CodeBlock>
           <h1 className="font-heading text-[clamp(30px,3.6vw,44px)] leading-[1.05] font-extrabold tracking-[-0.02em]">
             Essa página não existe
           </h1>

@@ -2,7 +2,6 @@ import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CodeAccent, CodeBlock, CodeMuted } from "@/components/code-block";
 import { Eyebrow } from "@/components/eyebrow";
 import { ScoreBar } from "@/components/score-bar";
 import { SessionBoard } from "@/components/session-board";
@@ -312,12 +311,6 @@ export default async function SessionResultPage({
           </div>
         ) : (
           <div className="edge-dashed flex flex-col items-start gap-3.5 rounded-2xl px-6 py-[clamp(28px,5vw,56px)]">
-            <CodeBlock>
-              <div>
-                <CodeMuted>GET</CodeMuted> /sessoes/resultado
-              </div>
-              <CodeAccent>feedback: pendente</CodeAccent>
-            </CodeBlock>
             <h2 className="font-heading text-[26px] leading-tight font-bold">
               O feedback ainda não chegou
             </h2>

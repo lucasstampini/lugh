@@ -15,7 +15,7 @@ export async function LandingHeaderActions() {
 
   if (user) {
     return (
-      <Link href="/entrevistadores" className={buttonVariants({ className: "rounded-[10px]" })}>
+      <Link href="/entrevistadores" className={buttonVariants({ variant: "ink", className: "rounded-[10px]" })}>
         Encontrar um entrevistador
       </Link>
     );
@@ -23,10 +23,16 @@ export async function LandingHeaderActions() {
 
   return (
     <>
-      <Link href="/login" className="text-foreground inline-flex min-h-11 items-center">
+      <Link href="/login" className="text-foreground nav-underline hidden min-h-11 items-center sm:inline-flex">
         Entrar
       </Link>
-      <Link href="/entrevistadores" className={buttonVariants({ className: "rounded-[10px]" })}>
+      <Link
+        href="/entrevistadores"
+        className={buttonVariants({
+          variant: "ink",
+          className: "rounded-[10px] max-sm:hidden",
+        })}
+      >
         Encontrar um entrevistador
       </Link>
     </>
