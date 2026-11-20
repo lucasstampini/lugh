@@ -21,8 +21,9 @@ export function PortalGate({
   children,
 }: {
   areaTags: AreaTag[];
-  // "ink" é a pedra escura, para quando o portão fica sobre o amarelo.
-  tone?: "primary" | "ink" | "deep";
+  // "ink" é a pedra escura. "soft" é a pedra em branco translúcido, para o
+  // portão ficar como marca d'água sobre a faixa azul do hero.
+  tone?: "primary" | "ink" | "deep" | "soft";
   // "plain" escreve a área como palavra solta, sem o balão branco.
   tagStyle?: "pill" | "plain";
   children?: ReactNode;
@@ -30,8 +31,14 @@ export function PortalGate({
   // "deep" é a pedra azul: sobre o amarelo ela separa o portão dos cards de
   // frente, que são brancos com borda de tinta.
   const stone =
-    tone === "ink" ? "bg-ink" : tone === "deep" ? "bg-brand-deep" : "bg-primary";
-  const light = tone === "primary" ? "bg-primary" : "bg-card";
+    tone === "ink"
+      ? "bg-ink"
+      : tone === "deep"
+        ? "bg-brand-deep"
+        : tone === "soft"
+          ? "bg-white/[0.12]"
+          : "bg-primary";
+  const light = tone === "primary" ? "bg-primary" : tone === "soft" ? "bg-white/[0.12]" : "bg-card";
   const glow =
     tone === "primary"
       ? "0 0 56px 14px rgba(255,194,61,0.5)"

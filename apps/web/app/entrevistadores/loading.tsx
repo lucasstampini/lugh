@@ -1,17 +1,17 @@
 import { SiteHeader } from "@/components/site-header";
 
-// Mesmo esqueleto da página pronta (faixa amarela, filtros, grade de cards),
+// Mesmo esqueleto da página pronta (faixa azul, filtros, grade de cards),
 // para nada pular de lugar quando os dados chegam.
 export default function Loading() {
   return (
     <main className="bg-secondary flex min-h-screen flex-col">
       <SiteHeader />
 
-      <section className="edge-b bg-primary">
+      <section className="edge-b bg-brand-deep">
         <div className="mx-auto flex max-w-[1312px] flex-col gap-4 px-6 py-14">
-          <div className="bg-ink/15 h-3.5 w-56 rounded" />
-          <div className="bg-ink/15 h-10 w-[min(100%,520px)] rounded sm:h-12" />
-          <div className="bg-ink/15 h-6 w-[min(100%,440px)] rounded" />
+          <div className="bg-white/20 h-3.5 w-56 rounded" />
+          <div className="bg-white/20 h-10 w-[min(100%,520px)] rounded sm:h-12" />
+          <div className="bg-white/20 h-6 w-[min(100%,440px)] rounded" />
         </div>
       </section>
 

@@ -14,6 +14,7 @@ import { FadeIn } from "@/components/motion/fade-in";
 import { ScoreBar } from "@/components/score-bar";
 import { HoverLift } from "@/components/motion/hover-lift";
 import { SiteHeader } from "@/components/site-header";
+import { buttonVariants } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format-price";
 import { initials } from "@/lib/initials";
 import { computeAllWeeks, getFreeSlots, upcomingSlotLabels } from "@/lib/slots";
@@ -259,7 +260,7 @@ export default async function InterviewerProfilePage({
               <p className="text-lg font-semibold">{interviewer.headline}</p>
               <p className="text-sm text-white/75">{interviewer.company}</p>
               {!isVisible ? (
-                <span className="bg-primary text-ink mt-1 w-fit rounded-full px-2.5 py-1 text-xs font-bold">
+                <span className="edge bg-primary text-ink mt-1 w-fit rounded-full px-2.5 py-1 text-xs font-bold">
                   {interviewer.active
                     ? "Perfil pausado (visível só pra você)"
                     : "Aguardando aprovação (visível só pra você)"}
@@ -526,7 +527,7 @@ export default async function InterviewerProfilePage({
                   </div>
 
                   {nextSlot ? (
-                    <div className="bg-primary flex flex-col gap-0.5 rounded-lg p-3">
+                    <div className="edge bg-primary flex flex-col gap-0.5 rounded-lg p-3">
                       <p className="text-ink text-[10px] font-extrabold tracking-[0.06em] uppercase">
                         Próximo horário
                       </p>
@@ -574,7 +575,7 @@ export default async function InterviewerProfilePage({
                                     key={slot.startsAt}
                                     href={`/agendar/${id}?slot=${encodeURIComponent(slot.startsAt)}`}
                                     aria-label={`Agendar ${WEEKDAY_SHORT[day.weekday]} ${day.dayOfMonth} às ${slot.hour}h`}
-                                    className="bg-accent text-ink hover:bg-primary rounded-full px-2.5 py-1 font-mono text-xs font-semibold transition-colors"
+                                    className="bg-accent text-ink hover:bg-brand-deep rounded-full px-2.5 py-1 font-mono text-xs font-semibold transition-colors hover:text-white"
                                   >
                                     {slot.hour}h
                                   </Link>
@@ -603,7 +604,7 @@ export default async function InterviewerProfilePage({
                   ) : (
                     <Link
                       href={`/agendar/${interviewer.profile_id}`}
-                      className="bg-brand-deep text-white flex h-12 items-center justify-center gap-2 rounded-xl text-sm font-bold"
+                      className={buttonVariants({ className: "h-12 w-full gap-2" })}
                     >
                       Escolher horário
                       <ArrowRight aria-hidden="true" size={16} />

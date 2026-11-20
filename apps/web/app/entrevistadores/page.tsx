@@ -2,6 +2,7 @@ import { ArrowRight, Compass, Search } from "lucide-react";
 import Link from "next/link";
 import { AutoSubmitSelect } from "@/components/auto-submit-select";
 import { SiteHeader } from "@/components/site-header";
+import { buttonVariants } from "@/components/ui/button";
 import { InterviewerCard } from "@/components/interviewer-card";
 import { FadeIn } from "@/components/motion/fade-in";
 import { HoverLift } from "@/components/motion/hover-lift";
@@ -137,17 +138,17 @@ export default async function EntrevistadoresPage({
     <main className="bg-secondary flex min-h-screen flex-col">
       <SiteHeader />
 
-      {/* Faixa de topo amarela, a mesma da landing: tinta sobre o amarelo Sol,
-          textura de pontos e a linha de tinta embaixo. */}
+      {/* Faixa de topo azul, a mesma da landing: branco sobre o azul, textura
+          de pontos e a linha de tinta embaixo. */}
       <section
-        className="edge-b bg-primary text-ink"
+        className="edge-b bg-brand-deep text-white"
         style={{
-          backgroundImage: "radial-gradient(rgba(20,22,43,0.13) 1.4px, transparent 1.4px)",
+          backgroundImage: "radial-gradient(rgba(255,255,255,0.16) 1.4px, transparent 1.4px)",
           backgroundSize: "26px 26px",
         }}
       >
         <FadeIn className="mx-auto flex max-w-[1312px] flex-col gap-4 px-6 py-14">
-          <span className="text-ink/75 text-[11px] font-extrabold tracking-[0.1em] uppercase">
+          <span className="text-[11px] font-extrabold tracking-[0.1em] text-white/80 uppercase">
             Encontre quem vai treinar com você
           </span>
           <h1 className="font-heading text-4xl font-extrabold tracking-[-0.03em] sm:text-5xl">
@@ -192,7 +193,7 @@ export default async function EntrevistadoresPage({
               </div>
               <button
                 type="submit"
-                className="bg-brand-deep text-white flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold"
+                className={buttonVariants({ className: "h-[52px] gap-2 px-5" })}
               >
                 Buscar profissionais
                 <ArrowRight aria-hidden="true" size={16} />
@@ -263,7 +264,7 @@ export default async function EntrevistadoresPage({
             </p>
             <Link
               href={retryHref}
-              className="bg-brand-deep flex h-11 items-center rounded-xl px-5 text-sm font-bold text-white"
+              className={buttonVariants({ className: "px-5" })}
             >
               Tentar de novo
             </Link>
@@ -283,7 +284,7 @@ export default async function EntrevistadoresPage({
             {hasFilters ? (
               <Link
                 href="/entrevistadores"
-                className="bg-brand-deep flex h-11 items-center rounded-xl px-5 text-sm font-bold text-white"
+                className={buttonVariants({ className: "px-5" })}
               >
                 Limpar filtros
               </Link>
@@ -358,7 +359,7 @@ export default async function EntrevistadoresPage({
                 >
                   Anterior
                 </button>
-                <span className="bg-primary text-ink flex size-10 items-center justify-center rounded-xl text-sm font-bold">
+                <span className="edge bg-primary text-ink flex size-10 items-center justify-center rounded-xl text-sm font-bold">
                   1
                 </span>
                 <button
@@ -375,7 +376,7 @@ export default async function EntrevistadoresPage({
 
         <div className="bg-secondary border-primary flex flex-wrap items-center gap-4 rounded-xl border-l-4 p-5">
           <Compass aria-hidden="true" size={24} className="text-brand-deep shrink-0" />
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <div className="flex min-w-[200px] flex-1 flex-col gap-0.5">
             <p className="text-sm font-bold">Ainda não sabe por onde começar?</p>
             <p className="text-foreground/70 text-sm">
               Para a primeira vaga, uma entrevista comportamental ajuda você
@@ -384,7 +385,7 @@ export default async function EntrevistadoresPage({
           </div>
           <Link
             href="/entrevistadores?area=behavioral"
-            className="bg-brand-deep text-white flex h-10 shrink-0 items-center rounded-xl px-4 text-sm font-bold"
+            className={buttonVariants({ variant: "outline", className: "px-4" })}
           >
             Ver esse tipo de treino
           </Link>
