@@ -2,9 +2,9 @@ import {
   ArrowRight,
   Check,
   ChevronRight,
-  Cloud,
   Database,
   LayoutTemplate,
+  MessagesSquare,
   Network,
   Plus,
   Server,
@@ -42,13 +42,16 @@ const STEPS = [
   },
 ];
 
+// As mesmas áreas do filtro do marketplace (lib/interviewer-options): cada
+// porta abre a lista já filtrada, então não pode existir área aqui que o
+// filtro não conheça.
 const AREAS = [
-  { icon: Server, name: "Back-end", description: "APIs, bancos de dados e filas" },
-  { icon: LayoutTemplate, name: "Front-end", description: "React, CSS e acessibilidade" },
-  { icon: Database, name: "Dados", description: "SQL, modelagem e pipelines" },
-  { icon: Smartphone, name: "Mobile", description: "Android, iOS e React Native" },
-  { icon: Cloud, name: "DevOps", description: "Nuvem, CI/CD e observabilidade" },
-  { icon: Network, name: "System design", description: "Arquitetura e escala" },
+  { icon: Server, slug: "backend", name: "Back-end", description: "APIs, bancos de dados e filas" },
+  { icon: LayoutTemplate, slug: "frontend", name: "Front-end", description: "React, CSS e acessibilidade" },
+  { icon: Database, slug: "data", name: "Dados", description: "SQL, modelagem e pipelines" },
+  { icon: Smartphone, slug: "mobile", name: "Mobile", description: "Android, iOS e React Native" },
+  { icon: Network, slug: "system_design", name: "System design", description: "Arquitetura e escala" },
+  { icon: MessagesSquare, slug: "behavioral", name: "Comportamental", description: "Sua história, contada com clareza" },
 ];
 
 // Agenda de exemplo do entrevistador: uma coluna por dia, uma linha por faixa
@@ -311,10 +314,10 @@ export default function Home() {
             <SectionHead eyebrow="Áreas" title="Treine na sua área" />
 
             <div className={`grid gap-4 ${GRID_AUTOFIT}`}>
-              {AREAS.map(({ icon: Icon, name, description }) => (
+              {AREAS.map(({ icon: Icon, slug, name, description }) => (
                 <Link
-                  key={name}
-                  href="/entrevistadores"
+                  key={slug}
+                  href={`/entrevistadores?area=${slug}`}
                   className="rise lift-card edge bg-card group/area box-border flex min-h-[104px] items-center gap-[18px] rounded-2xl px-[22px] py-5"
                 >
                   <span
@@ -676,12 +679,15 @@ export default function Home() {
       >
         <Image src="/brand/lugh-logo.svg" alt="Lugh" width={81} height={28} className="h-7 w-auto" />
         <nav aria-label="Rodapé" className="flex flex-wrap gap-x-6 gap-y-1 text-sm font-semibold">
-          <Link href="/termos" className={NAV_LINK}>
-            Termos
+          <Link href="/entrevistadores" className={NAV_LINK}>
+            Entrevistadores
           </Link>
-          <Link href="/contato" className={NAV_LINK}>
-            Contato
-          </Link>
+          <a href="#como-funciona" className={NAV_LINK}>
+            Como funciona
+          </a>
+          <a href="#faq" className={NAV_LINK}>
+            Perguntas frequentes
+          </a>
           <a href="#seja-entrevistador" className={NAV_LINK}>
             Quero ser entrevistador
           </a>

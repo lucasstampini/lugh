@@ -23,7 +23,7 @@ export async function LandingHeaderActions() {
 
   return (
     <>
-      <Link href="/login" className="text-foreground nav-underline hidden min-h-11 items-center sm:inline-flex">
+      <Link href="/login" className="text-foreground nav-underline inline-flex min-h-11 items-center">
         Entrar
       </Link>
       <Link
