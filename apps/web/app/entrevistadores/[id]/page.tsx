@@ -14,8 +14,9 @@ import { FadeIn } from "@/components/motion/fade-in";
 import { ScoreBar } from "@/components/score-bar";
 import { HoverLift } from "@/components/motion/hover-lift";
 import { SiteHeader } from "@/components/site-header";
-import { nextAvailableSlot } from "@/lib/availability";
-import { computeAllWeeks, getFreeSlots } from "@/lib/slots";
+import { formatPrice } from "@/lib/format-price";
+import { initials } from "@/lib/initials";
+import { computeAllWeeks, getFreeSlots, upcomingSlotLabels } from "@/lib/slots";
 import {
   AREA_OPTIONS,
   SENIORITY_OPTIONS,
@@ -26,11 +27,6 @@ import { createClient } from "@/lib/supabase/server";
 export const instant = false;
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-const priceFormatter = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-});
 
 // Pílula dos links sociais, sobre a faixa azul: contorno branco translúcido
 // que fecha no hover. A logo da plataforma herda a cor do texto.
@@ -72,13 +68,6 @@ const INCLUSIONS = [
   "Feedback estruturado após a sessão",
   "Horário sempre em fuso de Brasília",
 ];
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
-  return (first + last).toUpperCase();
-}
 
 function formatTime(time: string) {
   return time.slice(0, 5);
@@ -129,15 +118,27 @@ export default async function InterviewerProfilePage({
     notFound();
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("name, avatar_url")
-    .eq("id", id)
-    .maybeSingle();
+  // profiles só deixa cada um ler a própria linha: nome e avatar públicos vêm
+  // da view interviewer_profiles (nunca o e-mail). O dono vendo o próprio
+  // perfil pausado não aparece na view, então lê a linha dele em profiles.
+  const { data: profile } = isVisible
+    ? await supabase
+        .from("interviewer_profiles")
+        .select("name, avatar_url")
+        .eq("id", id)
+        .maybeSingle()
+    : await supabase
+        .from("profiles")
+        .select("name, avatar_url")
+        .eq("id", id)
+        .maybeSingle();
 
   if (!profile) {
     notFound();
   }
+
+  // Colunas de view chegam como anuláveis nos tipos gerados.
+  const profileName = profile.name ?? "";
 
   const [
     { data: availability },
@@ -181,7 +182,9 @@ export default async function InterviewerProfilePage({
     blocksByWeekday.set(block.weekday, list);
   }
 
-  const nextSlot = nextAvailableSlot(availability ?? []);
+  // O destaque sai das mesmas semanas da agenda, já sem as sessões marcadas:
+  // nunca promete um horário que não dá mais para agendar.
+  const nextSlot = upcomingSlotLabels(slotWeeks, 1)[0] ?? null;
   const joinYear = new Date(interviewer.created_at).getFullYear();
   const sessionsCount = typeof completedSessions === "number" ? completedSessions : 0;
   const rating = ratings?.[0] ?? null;
@@ -199,12 +202,12 @@ export default async function InterviewerProfilePage({
           backgroundSize: "26px 26px",
         }}
       >
-        <FadeIn className="mx-auto flex max-w-[1312px] flex-col gap-6 px-6 py-12 lg:px-0">
+        <FadeIn className="mx-auto flex max-w-[1312px] flex-col gap-6 px-6 py-12">
           <div className="flex flex-wrap items-center gap-6">
             {profile.avatar_url ? (
               <Image
                 src={profile.avatar_url}
-                alt={profile.name}
+                alt={profileName}
                 width={96}
                 height={96}
                 className="rounded-[24px]"
@@ -212,7 +215,7 @@ export default async function InterviewerProfilePage({
               />
             ) : (
               <div className="edge bg-card text-ink flex size-24 shrink-0 items-center justify-center rounded-[24px] font-heading text-2xl font-bold">
-                {initials(profile.name)}
+                {initials(profileName)}
               </div>
             )}
 
@@ -223,7 +226,7 @@ export default async function InterviewerProfilePage({
               {/* Nome e links sociais na mesma linha, dentro da faixa. */}
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                 <h1 className="font-heading text-4xl font-extrabold tracking-[-0.03em] sm:text-5xl">
-                  {profile.name}
+                  {profileName}
                 </h1>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -487,7 +490,7 @@ export default async function InterviewerProfilePage({
 
                 <div className="flex items-baseline gap-2">
                   <span className="font-heading text-brand-deep text-3xl font-extrabold tracking-[-0.03em] tabular-nums">
-                    {priceFormatter.format(interviewer.price_cents / 100)}
+                    {formatPrice(interviewer.price_cents)}
                   </span>
                   <span className="text-muted-foreground text-sm">/ sessão</span>
                 </div>
@@ -621,8 +624,8 @@ export default async function InterviewerProfilePage({
                   className="text-brand-deep mt-0.5 shrink-0"
                 />
                 <p className="text-foreground/70 text-sm">
-                  Mudou de plano? Você pode cancelar ou remarcar sem custo
-                  até 24h antes.
+                  Depois do PIX confirmado, a sessão aparece em Minhas sessões
+                  e a sala abre 10 minutos antes do horário.
                 </p>
               </div>
             </div>
