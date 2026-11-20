@@ -164,7 +164,7 @@ export default async function EntrevistadoresPage({
       <div className="mx-auto flex w-full max-w-[1312px] flex-col gap-8 px-6 py-10">
         <FadeIn
           index={1}
-          className="border-border-soft bg-card flex flex-col gap-5 rounded-[20px] border p-6 shadow-[0_10px_0_-4px_var(--accent)]"
+          className="edge bg-card flex flex-col gap-5 rounded-[20px] p-6 shadow-[0_10px_0_-4px_var(--primary)]"
         >
           <form
             id="filtros-entrevistadores"
@@ -254,7 +254,7 @@ export default async function EntrevistadoresPage({
         {error ? (
           <div
             role="alert"
-            className="border-border-soft bg-card flex flex-col items-start gap-3 rounded-[20px] border p-7"
+            className="edge bg-card flex flex-col items-start gap-3 rounded-[20px] p-7"
           >
             <h2 className="font-heading text-xl font-bold">
               Não deu para carregar os profissionais

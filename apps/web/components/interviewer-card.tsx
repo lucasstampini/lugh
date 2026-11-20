@@ -85,7 +85,7 @@ export function InterviewerCard({
   return (
     <Link
       href={`/entrevistadores/${profileId}`}
-      className="border-border-soft bg-card hover:border-brand-deep hover:shadow-[0_8px_0_-2px_var(--accent)] flex h-full flex-col gap-3.5 rounded-[20px] border border-l-4 border-l-brand-deep p-6 transition-[color,border-color,box-shadow]"
+      className="edge bg-card flex h-full flex-col gap-3.5 rounded-[20px] p-6 transition-shadow hover:shadow-[0_8px_0_-2px_var(--primary)]"
     >
       <div className="flex items-center gap-3">
         {avatarUrl ? (
