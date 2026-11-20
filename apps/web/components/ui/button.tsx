@@ -3,21 +3,21 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
 const buttonVariants = cva(
-  "group/button lift inline-flex shrink-0 items-center justify-center rounded-xl border-[1.5px] border-border bg-clip-padding text-[15px] font-extrabold whitespace-nowrap select-none disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-xl border-[1.5px] border-border bg-clip-padding text-[15px] font-extrabold whitespace-nowrap select-none disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        // Primário: verde com texto tinta. Um por tela ou seção.
-        default: "bg-primary text-primary-foreground dark:border-primary",
+        // Primário: amarelo com texto tinta. Um por tela ou seção.
+        default: "lift-hard bg-primary text-primary-foreground hover:bg-[#FFD75E] dark:border-primary",
         outline:
-          "bg-background text-foreground hover:bg-accent aria-expanded:bg-accent dark:border-input",
-        ink: "bg-foreground text-background",
+          "lift-hard bg-background text-foreground hover:bg-primary hover:text-ink aria-expanded:bg-accent dark:border-input dark:hover:bg-accent dark:hover:text-foreground",
+        ink: "lift-hard bg-foreground text-background hover:bg-brand-deep hover:text-white",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-accent",
+          "lift border-transparent bg-secondary text-secondary-foreground hover:bg-accent",
         ghost:
-          "border-transparent text-foreground hover:bg-accent aria-expanded:bg-accent",
+          "lift border-transparent text-foreground hover:bg-accent aria-expanded:bg-accent",
         destructive:
-          "border-destructive bg-transparent text-destructive hover:bg-destructive-soft",
+          "lift border-destructive bg-transparent text-destructive hover:bg-destructive-soft",
         link: "border-transparent text-brand-deep underline underline-offset-4",
       },
       size: {

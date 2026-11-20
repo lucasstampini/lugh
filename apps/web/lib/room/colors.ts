@@ -1,6 +1,6 @@
 // Cor de cada participante na sala (cursor no editor e ponteiro no quadro).
 //
-// Na sessão real a cor vem do papel, como no DESIGN.md: entrevistador em Verde, candidato
+// Na sessão real a cor vem do papel, como no DESIGN.md: entrevistador em amarelo Sol, candidato
 // em branco. Na sala de teste ninguém tem papel, então a cor é derivada do nome, para ser
 // estável: a mesma pessoa tem a mesma cor ao recarregar a página.
 //
@@ -10,7 +10,7 @@
 import type { SessionRole } from "./session";
 
 export const ROLE_COLORS: Record<SessionRole, string> = {
-  interviewer: "#2EF58A",
+  interviewer: "#FFC629",
   candidate: "#FFFFFF",
 };
 
@@ -19,12 +19,12 @@ export function colorForRole(role: SessionRole): string {
 }
 
 export const PARTICIPANT_COLORS = [
-  "#2EF58A",
+  "#FFC629",
   "#FFFFFF",
   "#FEEDBA",
   "#FFB4A6",
-  "#8FE9B7",
-  "#A9BDB2",
+  "#A9B8FF",
+  "#9AA0C2",
 ] as const;
 
 export function colorFromName(name: string): string {

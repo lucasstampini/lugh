@@ -1,156 +1,266 @@
-import { ArrowRight, Check, Mic, Video } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  ChevronRight,
+  Database,
+  LayoutTemplate,
+  MessagesSquare,
+  Network,
+  Plus,
+  Server,
+  Smartphone,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
-import { CodeAccent, CodeBlock, CodeMuted } from "@/components/code-block";
-import { DemoTimer } from "@/components/demo/demo-timer";
-import { BoardArrows, Caret, DemoCursor, Kw, LineNo, LiveDot } from "@/components/demo/parts";
 import { RoomCollage } from "@/components/demo/room-collage";
-import { Eyebrow } from "@/components/eyebrow";
+import { PortalGate } from "@/components/motion/portal-gate";
 import { LandingHeaderActions } from "@/components/landing-header-actions";
 import { buttonVariants } from "@/components/ui/button";
 
 // Tudo nesta página é ilustrativo (perfis, horários, preços, feedback): serve
 // para mostrar como o produto funciona. Os dados reais ficam em /entrevistadores.
 
-const DEMO_PEOPLE = [
+const STEPS = [
   {
-    name: "Camila Ribeiro",
-    role: "Engenheira de software sênior · Fintech de grande porte",
-    slot: "qua, 18 nov · 19h",
-    image: "/illustrations/camila.svg",
-    selected: true,
+    number: "1",
+    tone: "primary" as const,
+    title: "Escolha um entrevistador",
+    text: "Filtre por área e senioridade, compare a experiência e o preço de cada profissional e escolha um horário que caiba na sua semana.",
   },
   {
-    name: "Rafael Nascimento",
-    role: "Desenvolvedor front-end sênior · Plataforma de educação",
-    slot: "qui, 19 nov · 18h",
-    image: "/illustrations/rafael.svg",
-    selected: false,
+    number: "2",
+    tone: "deep" as const,
+    title: "Faça a entrevista",
+    text: "Entre na sala pelo navegador e passe por uma entrevista como as de verdade: você programa, desenha a arquitetura e explica seu raciocínio para quem já contrata.",
   },
   {
-    name: "Beatriz Costa",
-    role: "Engenheira de dados sênior · Varejo online",
-    slot: "sex, 20 nov · 10h",
-    image: "/illustrations/beatriz.svg",
-    selected: false,
+    number: "3",
+    tone: "ink" as const,
+    title: "Receba seu feedback",
+    text: "Saia com uma nota para cada competência e comentários sobre o que você fez na sessão, para saber o que treinar antes da próxima entrevista.",
   },
 ];
 
-// Agenda de exemplo: uma linha por faixa de horário, uma coluna por dia.
-// "busy" = ocupado (tracejado), "picked" = o horário escolhido.
-type SlotState = "free" | "busy" | "picked";
-const WEEK_DAYS = ["seg", "ter", "qua", "qui", "sex"];
-const WEEK_SLOTS: { label: string; state: SlotState }[][] = [
-  [
-    { label: "18h", state: "busy" },
-    { label: "18h", state: "free" },
-    { label: "18h", state: "free" },
-    { label: "18h", state: "busy" },
-    { label: "10h", state: "free" },
-  ],
-  [
-    { label: "19h", state: "free" },
-    { label: "19h", state: "busy" },
-    { label: "19h", state: "picked" },
-    { label: "19h", state: "free" },
-    { label: "14h", state: "busy" },
-  ],
-  [
-    { label: "20h", state: "busy" },
-    { label: "20h", state: "free" },
-    { label: "20h", state: "busy" },
-    { label: "20h", state: "free" },
-    { label: "18h", state: "free" },
-  ],
-  [
-    { label: "21h", state: "free" },
-    { label: "21h", state: "busy" },
-    { label: "21h", state: "free" },
-    { label: "21h", state: "busy" },
-    { label: "19h", state: "free" },
-  ],
+// As mesmas áreas do filtro do marketplace (lib/interviewer-options): cada
+// porta abre a lista já filtrada, então não pode existir área aqui que o
+// filtro não conheça.
+const AREAS = [
+  { icon: Server, slug: "backend", name: "Back-end", description: "APIs, bancos de dados e filas" },
+  { icon: LayoutTemplate, slug: "frontend", name: "Front-end", description: "React, CSS e acessibilidade" },
+  { icon: Database, slug: "data", name: "Dados", description: "SQL, modelagem e pipelines" },
+  { icon: Smartphone, slug: "mobile", name: "Mobile", description: "Android, iOS e React Native" },
+  { icon: Network, slug: "system_design", name: "System design", description: "Arquitetura e escala" },
+  { icon: MessagesSquare, slug: "behavioral", name: "Comportamental", description: "Sua história, contada com clareza" },
 ];
 
-const SLOT_CLASS: Record<SlotState, string> = {
-  free: "edge",
-  busy: "border-border-dashed text-muted-foreground border-[1.5px] border-dashed",
-  picked: "pop edge bg-primary font-bold [animation-delay:.8s]",
+// Agenda de exemplo do entrevistador: uma coluna por dia, uma linha por faixa
+// de horário. "livre" = aberto por ele, "fechado" = sem atendimento, "marcado"
+// = sessão já agendada.
+type SlotState = "livre" | "fechado" | "marcado";
+const AGENDA_DAYS = ["seg", "ter", "qua", "qui", "sex"];
+const AGENDA_ROWS: { label: string; state: SlotState }[][] = [
+  [
+    { label: "19h", state: "livre" },
+    { label: "18h", state: "fechado" },
+    { label: "18h", state: "livre" },
+    { label: "19h", state: "livre" },
+    { label: "Tiago", state: "marcado" },
+  ],
+  [
+    { label: "20h", state: "fechado" },
+    { label: "19h", state: "livre" },
+    { label: "Pedro", state: "marcado" },
+    { label: "20h", state: "livre" },
+    { label: "18h", state: "livre" },
+  ],
+];
+const AGENDA_SLOT: Record<SlotState, string> = {
+  livre: "bg-accent text-ink rounded-[7px] py-[7px]",
+  fechado:
+    "border-border-dashed text-muted-foreground rounded-[7px] border-[1.5px] border-dashed py-[5.5px]",
+  marcado: "pop edge bg-primary text-ink rounded-[7px] py-[5.5px] font-bold",
 };
 
-const FEEDBACK_SCORES = [
-  { label: "Resolução de problemas", score: 4 },
-  { label: "Comunicação", score: 4 },
-  { label: "Qualidade de código", score: 3 },
-  { label: "System design", score: 3 },
+// Perfis ilustrativos da vitrine de entrevistadores. O card do meio sobe e os
+// das pontas inclinam de leve, como no desenho do /preview.
+const INTERVIEWERS = [
+  {
+    tag: "Back-end · Entrevista técnica",
+    name: "Camila Ribeiro",
+    role: "Engenheira de software sênior",
+    company: "Fintech de grande porte",
+    slot: "Qua, 18 nov · 19h",
+    price: "R$ 100",
+    tilt: "lg:-rotate-1",
+    raised: false,
+  },
+  {
+    tag: "Front-end · Entrevista técnica",
+    name: "Rafael Nascimento",
+    role: "Desenvolvedor front-end pleno",
+    company: "Plataforma de educação",
+    slot: "Qui, 19 nov · 18h",
+    price: "R$ 80",
+    tilt: "",
+    raised: true,
+  },
+  {
+    tag: "Dados · SQL e modelagem",
+    name: "Beatriz Costa",
+    role: "Engenheira de dados sênior",
+    company: "Varejo online",
+    slot: "Sex, 20 nov · 10h",
+    price: "R$ 120",
+    tilt: "lg:rotate-1",
+    raised: false,
+  },
 ];
 
-const BOARD_NODES = [
-  { title: "Cliente", subtitle: "Interface web" },
-  { title: "API", subtitle: "Serviço de aplicação", highlight: true },
-  { title: "Banco de dados", subtitle: "Persistência" },
-  { title: "Cache", subtitle: "Acesso rápido", second: true },
+const INTERVIEWER_STATS = [
+  {
+    value: "60 min",
+    label: "por sessão",
+    detail: "Você escolhe quantas abre por semana, sem mínimo.",
+  },
+  {
+    value: "80%",
+    label: "do valor fica com você",
+    detail: "O Lugh retém 20% para pagamento, sala e suporte.",
+  },
+  {
+    value: "PIX",
+    label: "repasse automático",
+    detail: "O dinheiro cai na sua conta depois da sessão concluída.",
+  },
+];
+
+const INTERVIEWER_START = [
+  "Crie o perfil com área, senioridade e LinkedIn para a gente verificar.",
+  "Defina seu preço e marque na agenda os horários que quiser abrir.",
+  "Conduza a sessão na sala do Lugh e preencha o feedback no fim.",
+];
+
+const INTERVIEWER_BENEFITS = [
+  { lead: "Ganhe dinheiro", rest: "compartilhando sua experiência" },
+  { lead: "Encontre talentos", rest: "antes de eles chegarem ao mercado" },
+  { lead: "Defina seu preço", rest: "e abra só os horários que quiser" },
+  { lead: "Melhore sua marca pessoal", rest: "e aumente seu networking" },
+];
+
+const FAQ = [
+  {
+    question: "Preciso ter experiência para participar?",
+    answer:
+      "Não. O treino é pensado para quem busca estágio ou a primeira vaga júnior.",
+  },
+  {
+    question: "Como funciona a sessão?",
+    answer:
+      "Você e o entrevistador se encontram na sala do Lugh por 60 minutos, com vídeo, editor de código e quadro. Abre no navegador, sem instalar nada.",
+  },
+  {
+    question: "Quanto custa?",
+    answer:
+      "Cada entrevistador define o próprio preço. Você paga por PIX só a sessão que marcar, sem mensalidade.",
+  },
+  {
+    question: "Quando recebo meu feedback?",
+    answer:
+      "Depois da sessão, o entrevistador preenche a nota de cada competência e os comentários. O resultado fica em Minhas sessões.",
+  },
+  {
+    question: "O Lugh garante uma vaga?",
+    answer:
+      "Não. O Lugh oferece prática e feedback para você chegar mais preparado. A contratação depende de cada processo seletivo.",
+  },
 ];
 
 const SECTION = "mx-auto box-border max-w-[1240px] px-[clamp(20px,5vw,48px)]";
 const H2 =
   "font-heading text-[clamp(30px,3.5vw,46px)] leading-[1.08] font-extrabold tracking-[-0.02em]";
-const NAV_LINK = "text-foreground inline-flex min-h-11 items-center";
-const STEP_CARD =
-  "rise lift bg-secondary flex min-w-0 flex-col gap-5 rounded-[18px] p-[clamp(20px,2.4vw,32px)]";
+const NAV_LINK = "text-foreground nav-underline inline-flex min-h-11 items-center";
+const GRID_AUTOFIT = "[grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))]";
 
-function StepHeading({
-  number,
+// Cada passo tem a sua cor de selo.
+const STEP_NUMBER_TONE = {
+  primary: "bg-primary text-ink",
+  deep: "bg-brand-deep text-white",
+  ink: "bg-foreground text-background",
+} as const;
+
+const STEP_CARD =
+  "rise lift-card edge bg-card box-border flex flex-col items-start gap-[18px] rounded-[20px] p-[clamp(22px,2.4vw,32px)]";
+
+// Cabeçalho de seção em duas colunas: filete e rótulo curto à esquerda, título
+// de display à direita.
+function SectionHead({
+  eyebrow,
   title,
   children,
 }: {
-  number: string;
+  eyebrow: string;
   title: string;
-  children: string;
+  children?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <span className="font-mono text-[13px] font-bold">{number}</span>
-      <h3 className="font-heading text-2xl font-bold">{title}</h3>
-      <p className="text-muted-foreground">{children}</p>
-    </div>
-  );
-}
+    <div className="rise grid grid-cols-1 gap-x-[clamp(24px,4vw,56px)] gap-y-4 md:grid-cols-[4fr_8fr]">
+      <div className="flex items-start gap-3 md:pt-[0.5em]">
+        <span
+          aria-hidden="true"
+          className="bg-brand-deep mt-[0.55em] h-[6px] w-9 shrink-0 rounded-full"
+        />
+        <span className="text-brand-deep font-mono text-[13px] leading-[1.5] font-bold tracking-[0.08em] uppercase">
+          {eyebrow}
+        </span>
+      </div>
 
-function Avatar({ src, alt, size }: { src: string; alt: string; size: number }) {
-  return (
-    <Image
-      src={src}
-      alt={alt}
-      width={size}
-      height={size}
-      className="edge shrink-0 rounded-full object-cover"
-      style={{ width: size, height: size }}
-    />
+      <div className="flex min-w-0 flex-col gap-4">
+        <h2 className={H2}>{title}</h2>
+        {children}
+      </div>
+    </div>
   );
 }
 
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col overflow-x-hidden">
-      <header
-        className={`${SECTION} flex w-full flex-wrap items-center justify-between gap-x-8 gap-y-3 py-[18px]`}
+      {/* Bloco de abertura: cabeçalho e hero sobre o amarelo Sol, fechado por
+          uma linha de tinta. O portão da marca é o fundo da faixa inteira. */}
+      <div
+        className="edge-b bg-primary relative flex min-h-[66svh] flex-col overflow-hidden"
+        style={{
+          backgroundImage: "radial-gradient(rgba(20,22,43,0.13) 1.4px, transparent 1.4px)",
+          backgroundSize: "26px 26px",
+        }}
       >
-        <Link href="/" aria-label="Lugh, página inicial" className="inline-flex min-h-11 items-center">
-          <Image src="/brand/lugh-logo.svg" alt="Lugh" width={98} height={34} className="h-[34px] w-auto" />
+
+        {/* Cabeçalho de ponta a ponta: logo encostado na esquerda, menu na
+            direita, sem coluna centralizada. */}
+        <header className="bg-primary relative z-20 flex w-full flex-wrap items-center justify-between gap-x-8 gap-y-3 px-[clamp(20px,5vw,48px)] py-[18px]">
+        <Link
+          href="/"
+          aria-label="Lugh, página inicial"
+          className="group/logo inline-flex min-h-11 items-center"
+        >
+          <Image
+            src="/brand/lugh-logo.svg"
+            alt="Lugh"
+            width={98}
+            height={34}
+            className="h-[34px] w-auto transition-transform duration-[400ms] group-hover/logo:scale-[1.06] group-hover/logo:-rotate-3"
+          />
         </Link>
         <nav
           aria-label="Principal"
           className="flex flex-wrap items-center gap-x-7 gap-y-1 text-[15px] font-semibold"
         >
-          <a href="#como-funciona" className={NAV_LINK}>
+          <a
+            href="#como-funciona"
+            className="text-foreground nav-underline hidden min-h-11 items-center sm:inline-flex"
+          >
             Como funciona
-          </a>
-          <a href="#a-sala" className={NAV_LINK}>
-            A sala
-          </a>
-          <a href="#feedback" className={NAV_LINK}>
-            Feedback
           </a>
           <Suspense fallback={null}>
             <LandingHeaderActions />
@@ -158,500 +268,429 @@ export default function Home() {
         </nav>
       </header>
 
-      <main>
-        {/* Hero */}
-        <section
-          className={`${SECTION} flex flex-wrap items-center gap-x-14 gap-y-12 pt-[clamp(28px,5vw,64px)] pb-[clamp(56px,7vw,96px)]`}
-        >
-          <div className="flex min-w-0 flex-[1_1_380px] flex-col items-start gap-6">
-            <span className="edge bg-card inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-mono text-[13px] font-medium">
-              <LiveDot />
-              entrevista simulada · 1h
-            </span>
-            <h1 className="font-heading text-[clamp(36px,4.8vw,62px)] leading-[1.04] font-extrabold tracking-[-0.025em]">
+        {/* Hero: o título atravessa a faixa inteira, em corpo de display, e
+            embaixo dele o botão à esquerda e a arte à direita. Assim o alto da
+            página não fica vazio. */}
+        <section className="relative z-10 mx-auto box-border flex w-full max-w-[1400px] flex-1 flex-wrap items-center gap-x-[clamp(28px,4vw,56px)] gap-y-10 pr-[clamp(20px,4vw,56px)] pl-[clamp(16px,2.5vw,36px)] pt-[clamp(24px,3vw,48px)] pb-0">
+          <div className="pop flex min-w-0 flex-[1_1_440px] flex-col items-start gap-8 self-center pt-[clamp(8px,2vw,28px)] pb-[clamp(16px,3vw,48px)]">
+            <h1 className="font-heading max-w-[16ch] text-[clamp(34px,4.3vw,64px)] leading-[1.0] font-extrabold tracking-[-0.03em] text-white">
               Treine entrevista técnica com quem já trabalha na área
+              <span className="text-brand-deep">.</span>
             </h1>
-            <p className="text-muted-foreground max-w-[52ch] text-[clamp(16px,1.4vw,19px)]">
-              Uma entrevista simulada de 1 hora com um profissional de tecnologia. Você
-              programa, desenha a arquitetura e sai com nota por competência.
-            </p>
-            <Link href="/entrevistadores" className={buttonVariants({ size: "lg", className: "h-[54px] px-[26px]" })}>
+
+            <Link
+              href="/entrevistadores"
+              className={buttonVariants({
+                variant: "ink",
+                size: "lg",
+                className: "h-14 px-7 text-[17px]",
+              })}
+            >
               Encontrar um entrevistador
               <ArrowRight aria-hidden="true" />
             </Link>
-            <p className="text-muted-foreground font-mono text-[13px]">
-              sessões a partir de R$ 30 · PIX · sem mensalidade
-            </p>
           </div>
 
-          <div className="bg-dots bg-secondary box-border min-w-0 flex-[1.35_1_440px] rounded-3xl p-[clamp(18px,3vw,40px)]">
-            <RoomCollage />
+          {/* Arte: o portão da marca ao fundo, a colagem da sala na frente. */}
+          <div className="relative min-w-0 flex-[1.6_1_660px] self-end pt-[clamp(12px,2vw,28px)] md:translate-x-[clamp(4px,1.5vw,20px)]">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-[26%] bottom-0 left-1/2 flex w-full max-w-[560px] -translate-x-1/2 items-end justify-center md:max-w-none md:-translate-x-[54%]"
+            >
+              <PortalGate tone="deep" areaTags={[]} />
+            </div>
+
+            <div className="pop relative mx-auto w-full pb-[clamp(16px,2vw,28px)] md:-mt-[clamp(16px,4vw,64px)] md:w-[92%] md:translate-x-[5%]">
+              <RoomCollage />
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <main>
+        {/* Áreas: uma porta por área, no mesmo tamanho. */}
+        <section id="areas" className="edge-b bg-background">
+          <div className={`${SECTION} flex flex-col gap-[clamp(20px,2.5vw,32px)] pt-[clamp(28px,3.5vw,44px)] pb-[clamp(48px,6vw,80px)]`}>
+            <SectionHead eyebrow="Áreas" title="Treine na sua área" />
+
+            <div className={`grid gap-4 ${GRID_AUTOFIT}`}>
+              {AREAS.map(({ icon: Icon, slug, name, description }) => (
+                <Link
+                  key={slug}
+                  href={`/entrevistadores?area=${slug}`}
+                  className="rise lift-card edge bg-card group/area box-border flex min-h-[104px] items-center gap-[18px] rounded-2xl px-[22px] py-5"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="edge bg-secondary flex size-[52px] shrink-0 items-center justify-center rounded-xl transition-[background-color,transform] duration-300 group-hover/area:bg-primary group-hover/area:-rotate-6"
+                  >
+                    <Icon size={26} strokeWidth={1.8} />
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span className="font-heading text-[clamp(22px,2vw,26px)] leading-[1.1] font-extrabold tracking-[-0.01em]">
+                      {name}
+                    </span>
+                    <span className="text-muted-foreground text-sm">{description}</span>
+                  </span>
+                  <ChevronRight
+                    aria-hidden="true"
+                    size={22}
+                    strokeWidth={2.4}
+                    className="shrink-0 transition-transform duration-300 group-hover/area:translate-x-1.5"
+                  />
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* Como funciona */}
-        <section id="como-funciona" className="edge-t bg-background">
-          <div className={`${SECTION} flex flex-col gap-10 py-[clamp(56px,7vw,96px)]`}>
-            <div className="rise flex max-w-[720px] flex-col gap-3">
-              <Eyebrow>como funciona</Eyebrow>
-              <h2 className={H2}>Como agendar sua primeira sessão</h2>
+        {/* Como funciona: um card por passo, sem prévia de tela dentro. Cada
+            número tem a sua cor: amarelo, azul e tinta. */}
+        <section id="como-funciona" className="bg-background">
+          <div className={`${SECTION} flex flex-col gap-[clamp(28px,3vw,40px)] py-[clamp(56px,7vw,96px)]`}>
+            <SectionHead
+              eyebrow="Como funciona"
+              title="Da escolha ao feedback, em três passos."
+            />
+
+            <div className={`grid gap-5 ${GRID_AUTOFIT}`}>
+              {STEPS.map((step) => (
+                <article key={step.number} className={STEP_CARD}>
+                  <span
+                    className={`edge font-heading flex size-11 items-center justify-center rounded-[10px] text-[22px] font-extrabold ${STEP_NUMBER_TONE[step.tone]}`}
+                  >
+                    {step.number}
+                  </span>
+                  <h3 className="font-heading text-[clamp(28px,2.6vw,36px)] leading-[1.05] font-extrabold tracking-[-0.02em]">
+                    {step.title}
+                  </h3>
+                  <p className="text-muted-foreground text-[17px]">{step.text}</p>
+                </article>
+              ))}
             </div>
 
-            <div className="flex flex-wrap gap-5">
-              <article className={`${STEP_CARD} flex-[1.5_1_440px]`}>
-                <StepHeading number="01" title="Escolha">
-                  Filtre por área e veja a experiência de cada entrevistador.
-                </StepHeading>
-                <div className="flex flex-wrap gap-2 font-mono text-xs">
-                  <span className="bg-foreground text-background rounded-[7px] px-2.5 py-1">
-                    área: todas
-                  </span>
-                  <span className="edge bg-card rounded-[7px] px-2.5 py-[3px]">
-                    experiência: sênior
-                  </span>
-                  <span className="edge bg-card rounded-[7px] px-2.5 py-[3px]">
-                    ordenar: próximo horário
-                  </span>
-                </div>
-                <div className="flex flex-col gap-2.5">
-                  {DEMO_PEOPLE.map((person) => (
-                    <div
-                      key={person.name}
-                      className={`bg-card flex flex-wrap items-center gap-x-3.5 gap-y-3 rounded-xl px-3.5 py-3 ${
-                        person.selected ? "edge" : "border-border-soft border-[1.5px]"
-                      }`}
-                    >
-                      <Avatar src={person.image} alt={`Ilustração de ${person.name}`} size={52} />
-                      <div className="min-w-0 flex-[1_1_200px]">
-                        <p className="font-extrabold">{person.name}</p>
-                        <p className="text-muted-foreground text-sm">{person.role}</p>
-                      </div>
-                      <span className="bg-accent rounded-[7px] px-[9px] py-1 font-mono text-xs">
-                        {person.slot}
-                      </span>
-                      {person.selected ? (
-                        <span className="edge bg-primary rounded-[7px] px-[9px] py-[3px] font-mono text-xs font-bold">
-                          selecionada
-                        </span>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-                <p className="text-muted-foreground text-[13px]">
-                  Perfis ilustrativos, para mostrar como a busca funciona.
-                </p>
-              </article>
+            <Link
+              href="/entrevistadores"
+              className={buttonVariants({
+                variant: "outline",
+                size: "lg",
+                className: "h-12 self-start px-5",
+              })}
+            >
+              Ver entrevistadores
+              <ArrowRight aria-hidden="true" />
+            </Link>
+          </div>
+        </section>
 
-              <article className={`${STEP_CARD} flex-[1_1_320px]`}>
-                <StepHeading number="02" title="Agende">
-                  Escolha um horário livre na agenda dele.
-                </StepHeading>
-                <div className="edge bg-card flex flex-1 flex-col gap-3 rounded-xl p-3.5">
-                  <div className="flex justify-between font-mono text-xs">
-                    <span className="font-bold">novembro</span>
-                    <span className="text-muted-foreground">semana 16 a 20</span>
+        {/* A sala: a seção existe para receber a demo do produto. O quadro
+            abaixo é o espaço reservado, em 16 por 9, com a borda de tinta do
+            resto da página. */}
+        <section id="a-sala" className="edge-t bg-secondary">
+          <div className={`${SECTION} flex flex-col gap-[clamp(24px,3vw,40px)] py-[clamp(56px,7vw,96px)]`}>
+            <SectionHead eyebrow="A sala" title="Vídeo, código e quadro na mesma tela" />
+
+            <div
+              role="img"
+              aria-label="Espaço reservado para a demonstração do produto"
+              className="rise edge bg-dots bg-card flex aspect-[16/9] w-full items-center justify-center rounded-[18px] shadow-[7px_7px_0_var(--border)]"
+            >
+              <span className="text-muted-foreground font-mono text-sm">demo do produto</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Vitrine de entrevistadores: o desenho do /preview trazido para a
+            paleta atual. Card do meio levantado, os das pontas inclinados. */}
+        <section id="profissionais" className="edge-t bg-secondary">
+          <div className={`${SECTION} flex flex-col gap-[clamp(28px,3.5vw,48px)] py-[clamp(56px,7vw,96px)]`}>
+            <SectionHead
+              eyebrow="Profissionais"
+              title="Gente da área. Conversa de verdade."
+            >
+              <p className="text-muted-foreground max-w-[56ch] text-[17px]">
+                Sem resposta decorada. Você treina com quem vive os problemas do
+                mercado todo dia.
+              </p>
+            </SectionHead>
+
+            <div className="grid grid-cols-1 gap-6 pt-4 sm:grid-cols-3">
+              {INTERVIEWERS.map((person) => (
+                <article
+                  key={person.name}
+                  className={`rise lift-card edge bg-card flex h-full flex-col gap-4 rounded-[18px] p-7 ${person.tilt} ${
+                    person.raised
+                      ? "shadow-[8px_8px_0_var(--border)] lg:z-10 lg:-translate-y-5"
+                      : "shadow-[5px_5px_0_var(--border)]"
+                  }`}
+                >
+                  <span className="edge bg-accent text-ink w-fit rounded-[7px] px-2.5 py-1 font-mono text-[11px] font-bold">
+                    {person.tag}
+                  </span>
+
+                  <div className="flex flex-col gap-0.5">
+                    <h3 className="font-heading text-xl font-bold">{person.name}</h3>
+                    <p className="text-sm font-bold">{person.role}</p>
+                    <p className="text-muted-foreground text-xs">{person.company}</p>
                   </div>
-                  <div className="grid flex-1 grid-cols-5 grid-rows-[auto_repeat(4,minmax(36px,1fr))] gap-1.5 text-center font-mono text-xs">
-                    {WEEK_DAYS.map((day) => (
-                      <span key={day} className={day === "qua" ? "font-bold" : "text-muted-foreground"}>
+
+                  <div className="border-border-dashed mt-auto flex flex-col gap-2 border-t-[1.5px] border-dashed pt-4">
+                    <div className="flex items-center justify-between gap-3 text-sm font-bold">
+                      <span className="font-mono text-xs">{person.slot}</span>
+                      <Link
+                        href="/entrevistadores"
+                        className="text-brand-deep group/perfil inline-flex items-center gap-1"
+                      >
+                        Ver perfil
+                        <ArrowRight
+                          aria-hidden="true"
+                          size={14}
+                          className="transition-transform group-hover/perfil:translate-x-0.5"
+                        />
+                      </Link>
+                    </div>
+                    <p className="text-muted-foreground font-mono text-xs">
+                      {person.price} por sessão · 60 min
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <p className="text-muted-foreground font-mono text-xs">
+              perfis ilustrativos para mostrar a experiência
+            </p>
+          </div>
+        </section>
+
+        {/* Chamada: faixa azul com o botão amarelo. */}
+        <section id="entrevistadores" className="edge-t edge-b bg-brand-deep text-white">
+          <div
+            className={`${SECTION} flex flex-wrap items-center justify-between gap-x-12 gap-y-7 py-[clamp(48px,6vw,80px)]`}
+          >
+            <h2 className={`rise min-w-0 flex-[1_1_360px] ${H2}`}>
+              Esteja preparado de verdade para a próxima entrevista
+            </h2>
+            <Link
+              href="/entrevistadores"
+              className={buttonVariants({ size: "lg", className: "h-14 px-7 text-[17px]" })}
+            >
+              Encontrar um entrevistador
+              <ArrowRight aria-hidden="true" />
+            </Link>
+          </div>
+        </section>
+
+        {/* Seja entrevistador: a oferta para o outro lado do marketplace. O
+            entrevistador escolhe dia, horário e preço, então a agenda e o preço
+            aparecem como peça, não só como texto. */}
+        <section id="seja-entrevistador" className="edge-b bg-background">
+          <div className={`${SECTION} flex flex-col gap-[clamp(28px,3.5vw,48px)] py-[clamp(56px,7vw,96px)]`}>
+            <SectionHead eyebrow="Do outro lado" title="Seja entrevistador">
+              <p className="text-muted-foreground max-w-[58ch] text-[17px]">
+                Você escolhe os dias, os horários e quanto cobra. O Lugh cuida do
+                pagamento, da sala e do feedback, e o seu tempo livre vira renda.
+              </p>
+
+              <Link
+                href="/onboarding/entrevistador"
+                className={buttonVariants({
+                  size: "lg",
+                  className: "h-[54px] self-start px-[26px]",
+                })}
+              >
+                Quero entrevistar
+                <ArrowRight aria-hidden="true" />
+              </Link>
+            </SectionHead>
+
+            <div className="flex flex-wrap gap-x-14 gap-y-12">
+              {/* Peça da agenda e do preço: o controle fica com o entrevistador. */}
+              <div className="rise flex min-w-0 flex-[1.1_1_440px] flex-col gap-4">
+                <div className="lift-card edge bg-card flex flex-col gap-3.5 rounded-[18px] p-5 shadow-[6px_6px_0_var(--border)]">
+                  <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
+                    <span className="font-bold">sua agenda</span>
+                    <span className="text-muted-foreground">16 a 20 nov</span>
+                  </div>
+
+                  <div className="grid grid-cols-5 gap-1.5 text-center font-mono text-xs">
+                    {AGENDA_DAYS.map((day) => (
+                      <span
+                        key={day}
+                        className={day === "qua" ? "font-bold" : "text-muted-foreground"}
+                      >
                         {day}
                       </span>
                     ))}
-                    {WEEK_SLOTS.flatMap((row, rowIndex) =>
-                      row.map((slot, dayIndex) => (
+                    {AGENDA_ROWS.flatMap((row, rowIndex) =>
+                      row.map((slot, index) => (
                         <span
-                          key={`${rowIndex}-${dayIndex}`}
-                          className={`flex items-center justify-center rounded-[7px] py-[7px] ${SLOT_CLASS[slot.state]}`}
+                          key={`${rowIndex}-${index}`}
+                          className={AGENDA_SLOT[slot.state]}
+                          style={
+                            slot.state === "marcado"
+                              ? { animationDelay: `${0.6 + rowIndex * 0.5}s` }
+                              : undefined
+                          }
                         >
                           {slot.label}
                         </span>
                       )),
                     )}
                   </div>
-                  <div className="border-border flex flex-wrap items-center justify-between gap-2 border-t-[1.5px] border-dashed pt-3 font-mono text-xs">
-                    <span className="text-muted-foreground">tracejado = ocupado</span>
-                    <span className="font-bold">qua, 18 nov · 19h às 19h50</span>
-                  </div>
-                </div>
-              </article>
-            </div>
 
-            <div className="flex flex-wrap gap-5">
-              <article className={`${STEP_CARD} flex-[1_1_320px]`}>
-                <StepHeading number="03" title="Pague por PIX">
-                  O pagamento é por PIX. Se o horário está livre, a sessão é confirmada na hora.
-                </StepHeading>
-                <div className="edge bg-card flex flex-wrap items-center gap-4 rounded-xl p-3.5">
-                  <svg
-                    role="img"
-                    aria-label="Ilustração de um QR code de PIX"
-                    width="104"
-                    height="104"
-                    viewBox="0 0 29 29"
-                    className="shrink-0"
-                  >
-                    <rect width="29" height="29" className="fill-card" />
-                    <path
-                      className="fill-foreground"
-                      d="M0 0h7v7H0zM22 0h7v7h-7zM0 22h7v7H0zM9 0h2v2H9zM13 1h3v1h-3zM18 0h2v3h-2zM9 4h1v3H9zM12 4h2v2h-2zM16 5h4v1h-4zM0 9h3v1H0zM5 9h2v2H5zM9 9h3v3H9zM14 9h1v4h-1zM17 8h3v2h-3zM22 9h2v1h-2zM26 9h3v2h-3zM1 12h2v2H1zM5 13h3v1H5zM11 14h2v2h-2zM16 12h2v3h-2zM20 12h3v1h-3zM24 13h2v3h-2zM0 16h4v1H0zM6 16h3v2H6zM14 16h1v3h-1zM18 17h4v1h-4zM27 15h2v3h-2zM9 20h2v3H9zM13 21h3v2h-3zM18 20h2v2h-2zM22 20h3v3h-3zM27 21h2v1h-2zM9 25h4v1H9zM15 25h2v4h-2zM19 24h2v2h-2zM23 25h2v4h-2zM27 25h2v4h-2zM10 27h3v2h-3z"
-                    />
-                    <path className="fill-card" d="M1 1h5v5H1zM23 1h5v5h-5zM1 23h5v5H1z" />
-                    <path className="fill-foreground" d="M2 2h3v3H2zM24 2h3v3h-3zM2 24h3v3H2z" />
-                  </svg>
-                  <div className="flex min-w-0 flex-[1_1_140px] flex-col gap-2">
-                    <span className="font-heading text-[28px] leading-none font-extrabold tabular-nums">
-                      R$ 100,00
+                  <div className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1.5 font-mono text-xs">
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="bg-accent size-2.5 rounded-[3px]" />
+                      você abriu
                     </span>
-                    <span className="text-muted-foreground truncate font-mono text-xs">
-                      pix copia e cola: 00020126…
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="edge bg-primary size-2.5 rounded-[3px]" />
+                      já agendado
                     </span>
-                    <span className="pop edge bg-primary inline-flex items-center gap-1.5 self-start rounded-[7px] px-[9px] py-[3px] font-mono text-xs font-bold [animation-delay:1.4s]">
-                      <Check aria-hidden="true" size={13} strokeWidth={3} />
-                      pagamento confirmado
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="border-border-dashed size-2.5 rounded-[3px] border-[1.5px] border-dashed" />
+                      fechado
                     </span>
                   </div>
                 </div>
-              </article>
 
-              <article className={`${STEP_CARD} flex-[1.5_1_440px]`}>
-                <StepHeading number="04" title="Entre na sala">
-                  O link chega por e-mail. Abre no navegador, sem instalar nada.
-                </StepHeading>
-                <div className="edge bg-card flex flex-1 flex-wrap items-center gap-4 rounded-xl p-3.5">
-                  <div className="edge w-[132px] shrink-0 overflow-hidden rounded-[10px]">
-                    <Image
-                      src="/illustrations/candidato.svg"
-                      alt="Prévia da sua câmera, em ilustração"
-                      width={400}
-                      height={360}
-                      className="block w-full"
-                    />
-                  </div>
-                  <CodeBlock className="flex min-w-0 flex-[1_1_220px] flex-col gap-2.5 px-4 py-3.5 leading-normal whitespace-normal">
-                    <CodeMuted>$ lugh entrar /sala/8c2f</CodeMuted>
-                    <span>
-                      <CodeAccent>ok</CodeAccent>&nbsp;&nbsp;câmera
+                <div className="lift-card edge bg-card flex flex-wrap items-center justify-between gap-4 rounded-[18px] p-5 shadow-[6px_6px_0_var(--border)]">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-muted-foreground font-mono text-xs">
+                      seu preço por sessão
                     </span>
-                    <span>
-                      <CodeAccent>ok</CodeAccent>&nbsp;&nbsp;microfone
+                    <span className="font-heading text-[clamp(28px,3vw,38px)] leading-none font-extrabold tabular-nums">
+                      R$ 100
                     </span>
-                    <span>
-                      <CodeAccent>ok</CodeAccent>&nbsp;&nbsp;Camila já está na sala
-                      <span
-                        aria-hidden="true"
-                        className="caret bg-primary ml-1.5 inline-block h-[1.05em] w-2 align-text-bottom"
-                      />
+                    <span className="text-muted-foreground text-sm">
+                      Você define, muda quando quiser e sem teto.
                     </span>
-                  </CodeBlock>
-                </div>
-              </article>
-            </div>
-          </div>
-        </section>
-
-        {/* A sala */}
-        <section id="a-sala" className="edge-t edge-b bg-secondary">
-          <div
-            className={`${SECTION} flex flex-wrap items-center gap-x-14 gap-y-12 py-[clamp(56px,7vw,96px)]`}
-          >
-            <div className="rise edge bg-card box-border flex min-w-0 flex-[1.6_1_520px] flex-col gap-3.5 rounded-[22px] p-[clamp(14px,2vw,26px)]">
-              <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 font-mono text-xs">
-                <span className="inline-flex items-center gap-2">
-                  <LiveDot />
-                  Camila Ribeiro · técnica com código
-                </span>
-                <span className="inline-flex items-center gap-3">
-                  <span className="font-bold">
-                    <DemoTimer />
-                  </span>
-                  <span className="edge rounded-[7px] px-[9px] py-[3px]">Encerrar sessão</span>
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-3.5">
-                <div className="flex max-w-60 min-w-0 flex-[1_1_180px] flex-col gap-3">
-                  <div className="edge relative overflow-hidden rounded-[14px]">
-                    <Image
-                      src="/illustrations/camila.svg"
-                      alt="Ilustração da entrevistadora Camila em vídeo"
-                      width={400}
-                      height={360}
-                      className="block w-full"
-                    />
-                    <div aria-hidden="true" className="absolute bottom-2.5 left-2.5 flex gap-1.5">
-                      <span className="bg-code text-code-foreground flex size-[30px] items-center justify-center rounded-full">
-                        <Mic size={14} />
-                      </span>
-                      <span className="bg-code text-code-foreground flex size-[30px] items-center justify-center rounded-full">
-                        <Video size={14} />
-                      </span>
-                    </div>
                   </div>
-                  <div className="bg-code text-code-foreground font-heading rounded-[14px] p-3.5 text-[15px] leading-[1.3] font-bold">
-                    “Como você desenharia esse sistema?”
-                  </div>
-                </div>
 
-                <div className="bg-code text-code-foreground min-w-0 flex-[2_1_300px] overflow-hidden rounded-[14px]">
-                  <div className="border-code-border flex items-center justify-between border-b px-4 py-[11px] font-mono text-xs">
-                    <span className="text-code-muted font-bold">&lt;/&gt; solucao.js</span>
-                    <span className="text-primary">JavaScript</span>
-                  </div>
-                  <div className="overflow-x-auto px-4 py-3.5 font-mono text-xs leading-[1.75] whitespace-pre">
-                    <div>
-                      <LineNo>{"1  // Agrupe sua ideia antes de implementar"}</LineNo>
-                    </div>
-                    <div>
-                      <LineNo>{"2  "}</LineNo>
-                      <Kw>async function</Kw>
-                      {" buscarPerfil(id) {"}
-                    </div>
-                    <div className="bg-code-line -mx-4 px-4">
-                      <LineNo>{"3  "}</LineNo>
-                      {"  "}
-                      <Kw>const</Kw> cache = <Kw>await</Kw> memoria.get(id);
-                      <Caret />
-                    </div>
-                    <div>
-                      <LineNo>{"4  "}</LineNo>
-                      {"  "}
-                      <Kw>if</Kw> (cache) <Kw>return</Kw> cache;
-                    </div>
-                    <div>
-                      <LineNo>{"5  "}</LineNo>
-                    </div>
-                    <div>
-                      <LineNo>{"6  "}</LineNo>
-                      {"  "}
-                      <Kw>const</Kw> perfil = <Kw>await</Kw> banco.buscar(id);
-                    </div>
-                    <div>
-                      <LineNo>{"7  "}</LineNo>
-                      {"  "}
-                      <Kw>await</Kw> memoria.set(id, perfil);
-                    </div>
-                    <div>
-                      <LineNo>{"8  "}</LineNo>
-                      {"  "}
-                      <Kw>return</Kw> perfil;
-                    </div>
-                    <div>
-                      <LineNo>{"9  "}</LineNo>
-                      {"}"}
-                    </div>
+                  <div aria-hidden="true" className="flex items-center gap-2">
+                    <span className="edge bg-card flex size-9 items-center justify-center rounded-[10px] font-mono text-lg font-bold">
+                      −
+                    </span>
+                    <span className="edge bg-primary text-ink flex size-9 items-center justify-center rounded-[10px] font-mono text-lg font-bold">
+                      +
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <div className="edge bg-secondary flex flex-col gap-3 rounded-[14px] p-4">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-heading font-bold">Quadro branco</span>
-                  <span className="text-muted-foreground font-mono text-xs">100%</span>
-                </div>
-                <div className="bg-dots bg-card border-border-soft relative rounded-xl border-[1.5px] p-[clamp(14px,2vw,24px)] [background-size:24px_24px]">
-                  <div className="grid grid-cols-3 gap-x-[clamp(22px,3vw,40px)] gap-y-9">
-                    {BOARD_NODES.map((node) => (
-                      <div
-                        key={node.title}
-                        className={`edge relative rounded-xl p-3 ${
-                          node.highlight ? "bg-primary text-ink" : "bg-card"
-                        } ${node.second ? "col-start-2" : ""}`}
+              <div className="rise flex min-w-0 flex-[1_1_380px] flex-col gap-8">
+                <div className="flex flex-col gap-4">
+                  <h3 className="font-heading text-2xl font-bold">O que você ganha</h3>
+                  <ul className="flex flex-col gap-3.5">
+                    {INTERVIEWER_BENEFITS.map((benefit) => (
+                      <li
+                        key={benefit.lead}
+                        className="group/benefit flex items-start gap-3 text-[17px]"
                       >
-                        <p className="font-heading text-sm font-bold">{node.title}</p>
-                        <p className={`text-xs ${node.highlight ? "" : "text-muted-foreground"}`}>
-                          {node.subtitle}
-                        </p>
-                        {node.highlight ? <BoardArrows gap="lg" /> : null}
-                      </div>
+                        <span
+                          aria-hidden="true"
+                          className="edge bg-primary text-ink mt-px flex size-[26px] shrink-0 items-center justify-center rounded-lg transition-transform duration-300 group-hover/benefit:scale-115 group-hover/benefit:-rotate-10"
+                        >
+                          <Check size={15} strokeWidth={3} />
+                        </span>
+                        <span>
+                          <strong className="font-extrabold">{benefit.lead}</strong>{" "}
+                          {benefit.rest}
+                        </span>
+                      </li>
                     ))}
-                  </div>
-                  <DemoCursor name="Camila" tone="interviewer" className="drift-a top-[22%] left-[24%]" />
-                  <DemoCursor name="Você" tone="candidate" className="drift-b top-[66%] left-[70%]" />
+                  </ul>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  <h3 className="font-heading text-2xl font-bold">Como começar</h3>
+                  <ol className="flex flex-col gap-3.5">
+                    {INTERVIEWER_START.map((item, index) => (
+                      <li key={item} className="flex items-start gap-3 text-[17px]">
+                        <span className="edge bg-card text-ink mt-px flex size-[26px] shrink-0 items-center justify-center rounded-lg font-mono text-xs font-bold">
+                          {index + 1}
+                        </span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ol>
                 </div>
               </div>
             </div>
 
-            <div className="rise flex min-w-0 flex-[1_1_320px] flex-col gap-[18px]">
-              <Eyebrow>a sala</Eyebrow>
-              <h2 className={H2}>Vídeo, código e quadro na mesma tela</h2>
-              <p className="text-muted-foreground text-[17px]">
-                Você escreve o código e o entrevistador acompanha em tempo real. Na parte de
-                system design, os dois desenham a arquitetura no mesmo quadro.
-              </p>
-            </div>
+            {/* Números em fileira, separados por filete, sem virar mais três
+                cards iguais. */}
+            <dl className="border-border-soft divide-border-soft grid border-t-[1.5px] md:grid-cols-3 md:divide-x-[1.5px]">
+              {INTERVIEWER_STATS.map((stat) => (
+                <div
+                  key={stat.label}
+                  className="border-border-soft flex flex-col gap-1 border-b-[1.5px] py-6 md:border-b-0 md:px-7 md:first:pl-0 md:last:pr-0"
+                >
+                  <dt className="text-muted-foreground font-mono text-xs">{stat.label}</dt>
+                  <dd className="font-heading text-[clamp(30px,3.4vw,44px)] leading-none font-extrabold tabular-nums">
+                    {stat.value}
+                  </dd>
+                  <p className="text-muted-foreground text-sm">{stat.detail}</p>
+                </div>
+              ))}
+            </dl>
+
+            <p className="border-border-dashed text-muted-foreground border-t-[1.5px] border-dashed pt-5 text-sm">
+              Sem exclusividade e sem mensalidade: você abre só os horários que quiser e
+              pode fechar a agenda quando precisar.
+            </p>
           </div>
         </section>
 
-        {/* Feedback */}
-        <section id="feedback" className="bg-background">
+        {/* Perguntas frequentes: faixa azul com os cards brancos. */}
+        <section id="faq" className="edge-b bg-brand-deep text-white">
           <div
-            className={`${SECTION} flex flex-wrap items-center gap-x-16 gap-y-12 py-[clamp(56px,7vw,96px)]`}
+            className={`${SECTION} flex flex-wrap items-start gap-x-16 gap-y-8 py-[clamp(56px,7vw,96px)]`}
           >
-            <div className="rise flex min-w-0 flex-[1_1_340px] flex-col gap-[18px]">
-              <Eyebrow>o feedback</Eyebrow>
-              <h2 className={H2}>Você sai sabendo o que melhorar</h2>
-              <p className="text-muted-foreground max-w-[46ch] text-[17px]">
-                Depois da sessão, o entrevistador preenche um feedback com nota para cada
-                competência e comentários sobre o que você fez na entrevista.
-              </p>
-            </div>
+            <h2 className={`rise min-w-0 flex-[1_1_280px] ${H2}`}>Perguntas frequentes</h2>
 
-            <div className="rise edge bg-card box-border flex min-w-0 flex-[1.3_1_420px] flex-col gap-[22px] rounded-[18px] p-[clamp(18px,2.4vw,30px)]">
-              <div className="flex flex-wrap items-center gap-3">
-                <Avatar src="/illustrations/camila.svg" alt="Ilustração de Camila Ribeiro" size={46} />
-                <div className="min-w-0 flex-[1_1_180px]">
-                  <p className="font-extrabold">Resultado da sessão</p>
-                  <p className="text-muted-foreground font-mono text-xs">
-                    Camila Ribeiro · qua, 18 nov · 1h
+            <div className="rise flex min-w-0 flex-[1.8_1_480px] flex-col gap-3">
+              {FAQ.map((item) => (
+                <details
+                  key={item.question}
+                  className="edge bg-card text-foreground group/faq rounded-[14px] transition-[transform,box-shadow] duration-300 hover:-translate-x-[3px] hover:-translate-y-[3px] hover:shadow-[6px_6px_0_var(--primary)] open:bg-primary open:shadow-[6px_6px_0_var(--border)]"
+                >
+                  <summary className="flex min-h-[60px] cursor-pointer list-none items-center justify-between gap-4 px-5 text-[17px] font-extrabold [&::-webkit-details-marker]:hidden">
+                    {item.question}
+                    <Plus
+                      aria-hidden="true"
+                      size={20}
+                      className="edge bg-primary box-content shrink-0 rounded-[9px] p-1.5 transition-transform duration-300 group-open/faq:bg-card group-open/faq:rotate-45"
+                    />
+                  </summary>
+                  <p className="text-muted-foreground max-w-[64ch] px-5 pb-[18px] group-open/faq:text-ink">
+                    {item.answer}
                   </p>
-                </div>
-                <span className="bg-accent rounded-[7px] px-[9px] py-1 font-mono text-xs">exemplo</span>
-              </div>
-
-              <div className="flex flex-col gap-3.5">
-                {FEEDBACK_SCORES.map((item) => (
-                  <div key={item.label} className="flex flex-col gap-1.5">
-                    <div className="flex justify-between gap-3 text-[15px] font-bold">
-                      <span>{item.label}</span>
-                      <span className="font-mono tabular-nums">{item.score}/5</span>
-                    </div>
-                    <div className="edge bg-secondary h-3 overflow-hidden rounded-full">
-                      <div
-                        className="bar-grow bg-primary border-border h-full border-r-[1.5px]"
-                        style={{ width: `${item.score * 20}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex flex-wrap gap-3.5">
-                <div className="bg-accent min-w-0 flex-[1_1_200px] rounded-xl p-3.5">
-                  <p className="text-brand-deep mb-1 font-mono text-xs font-bold">pontos fortes</p>
-                  <p className="text-[15px]">
-                    Explicou o plano antes de escrever código e deu nomes claros às variáveis.
-                  </p>
-                </div>
-                <div className="bg-secondary min-w-0 flex-[1_1_200px] rounded-xl p-3.5">
-                  <p className="mb-1 font-mono text-xs font-bold">o que melhorar</p>
-                  <p className="text-[15px]">Testar os casos-limite antes de dizer que terminou.</p>
-                </div>
-              </div>
-
-              <CodeBlock className="rounded-xl text-xs">
-                <div>
-                  <CodeMuted>{"3  "}</CodeMuted>
-                  <CodeAccent>const</CodeAccent> cache = <CodeAccent>await</CodeAccent> memoria.get(id);
-                </div>
-                <div className="text-primary">{"   ^ Camila: e se o cache estiver fora do ar?"}</div>
-              </CodeBlock>
-            </div>
-          </div>
-        </section>
-
-        {/* Entrevistadores */}
-        <section id="entrevistadores" className="edge-t edge-b bg-secondary">
-          <div
-            className={`${SECTION} flex flex-wrap items-center gap-x-16 gap-y-12 py-[clamp(56px,7vw,96px)]`}
-          >
-            <div className="rise flex min-w-0 flex-[1.2_1_360px] flex-col items-start gap-5">
-              <Eyebrow>entrevistadores</Eyebrow>
-              <h2 className={H2}>Conheça os entrevistadores e encontre o seu</h2>
-              <p className="text-muted-foreground max-w-[46ch] text-[17px]">
-                Veja a experiência, as áreas, o preço e os horários de cada profissional. Cada
-                entrevistador define o próprio preço, com sessões a partir de R$ 30.
-              </p>
-              <Link
-                href="/entrevistadores"
-                className={buttonVariants({ size: "lg", className: "h-[54px] px-[26px]" })}
-              >
-                Encontrar um entrevistador
-                <ArrowRight aria-hidden="true" />
-              </Link>
-            </div>
-
-            <div className="rise flex min-w-0 flex-[1.2_1_380px] flex-wrap gap-3.5">
-              <div className="lift edge bg-card box-border flex min-w-0 flex-[1.2_1_220px] flex-col gap-3 rounded-2xl p-3">
-                <Image
-                  src="/illustrations/camila.svg"
-                  alt="Ilustração de Camila Ribeiro"
-                  width={400}
-                  height={360}
-                  className="edge box-border block aspect-[10/7] w-full rounded-[10px] object-cover"
-                />
-                <div>
-                  <p className="text-lg font-extrabold">Camila Ribeiro</p>
-                  <p className="text-muted-foreground text-sm">
-                    Engenheira de software sênior · Fintech de grande porte
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-1.5 font-mono text-xs">
-                  <span className="edge rounded-[7px] px-2 py-0.5">back-end</span>
-                  <span className="edge rounded-[7px] px-2 py-0.5">system design</span>
-                </div>
-                <div className="mt-auto flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
-                  <span className="text-sm font-bold">R$ 100 · 1h</span>
-                  <span className="edge bg-primary rounded-[7px] px-2 py-0.5 font-bold">
-                    qua, 18 nov · 19h
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex min-w-0 flex-[1_1_200px] flex-col gap-3.5">
-                {[
-                  {
-                    name: "Rafael Nascimento",
-                    role: "Front-end sênior · Plataforma de educação",
-                    price: "R$ 80 · 1h",
-                    slot: "qui, 19 nov · 18h",
-                    image: "/illustrations/rafael.svg",
-                  },
-                  {
-                    name: "Beatriz Costa",
-                    role: "Dados sênior · Varejo online",
-                    price: "R$ 120 · 1h",
-                    slot: "sex, 20 nov · 10h",
-                    image: "/illustrations/beatriz.svg",
-                  },
-                ].map((person) => (
-                  <div
-                    key={person.name}
-                    className="lift edge bg-card flex flex-col gap-2.5 rounded-2xl p-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar src={person.image} alt={`Ilustração de ${person.name}`} size={60} />
-                      <div className="min-w-0">
-                        <p className="font-extrabold">{person.name}</p>
-                        <p className="text-muted-foreground text-[13px]">{person.role}</p>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap justify-between gap-1.5 font-mono text-xs">
-                      <span className="font-bold">{person.price}</span>
-                      <span className="text-muted-foreground">{person.slot}</span>
-                    </div>
-                  </div>
-                ))}
-                <p className="text-muted-foreground text-[13px]">Perfis e preços ilustrativos.</p>
-              </div>
+                </details>
+              ))}
             </div>
           </div>
         </section>
       </main>
 
       <footer
-        className={`${SECTION} flex w-full flex-wrap items-center justify-between gap-x-8 gap-y-4 pt-8 pb-10`}
+        className={`${SECTION} flex w-full flex-wrap items-center justify-between gap-x-8 gap-y-4 pt-7 pb-9`}
       >
         <Image src="/brand/lugh-logo.svg" alt="Lugh" width={81} height={28} className="h-7 w-auto" />
         <nav aria-label="Rodapé" className="flex flex-wrap gap-x-6 gap-y-1 text-sm font-semibold">
-          <a href="#como-funciona" className={`${NAV_LINK} underline`}>
-            Como funciona
-          </a>
-          <Link href="/entrevistadores" className={`${NAV_LINK} underline`}>
+          <Link href="/entrevistadores" className={NAV_LINK}>
             Entrevistadores
           </Link>
-          <Link href="/login" className={`${NAV_LINK} underline`}>
+          <a href="#como-funciona" className={NAV_LINK}>
+            Como funciona
+          </a>
+          <a href="#faq" className={NAV_LINK}>
+            Perguntas frequentes
+          </a>
+          <a href="#seja-entrevistador" className={NAV_LINK}>
             Quero ser entrevistador
-          </Link>
+          </a>
         </nav>
         <span className="text-muted-foreground font-mono text-xs">© 2026 Lugh</span>
       </footer>

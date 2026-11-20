@@ -1,10 +1,10 @@
-import { Search } from "lucide-react";
+import { ArrowRight, Compass, Search } from "lucide-react";
 import Link from "next/link";
-import { CodeAccent, CodeBlock, CodeMuted } from "@/components/code-block";
-import { Eyebrow } from "@/components/eyebrow";
-import { InterviewerCard } from "@/components/interviewer-card";
+import { AutoSubmitSelect } from "@/components/auto-submit-select";
 import { SiteHeader } from "@/components/site-header";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { InterviewerCard } from "@/components/interviewer-card";
+import { FadeIn } from "@/components/motion/fade-in";
+import { HoverLift } from "@/components/motion/hover-lift";
 import { AREA_OPTIONS, SENIORITY_OPTIONS } from "@/lib/interviewer-options";
 import {
   type AvailabilityBlock,
@@ -14,9 +14,6 @@ import {
   upcomingSlotLabels,
 } from "@/lib/slots";
 import { createClient } from "@/lib/supabase/server";
-
-const CHIP =
-  "edge inline-flex min-h-11 items-center rounded-[9px] px-3.5 text-sm font-semibold aria-[current=true]:bg-foreground aria-[current=true]:text-background";
 
 export const instant = false;
 
@@ -60,23 +57,23 @@ export default async function EntrevistadoresPage({
   const [{ data: profiles }, { data: availability }, { data: ratings }, { data: booked }] =
     profileIds.length
       ? await Promise.all([
-        supabase
-          .from("interviewer_profiles")
-          .select("id, name, avatar_url")
-          .in("id", profileIds),
-        supabase
-          .from("availability")
-          .select("interviewer_id, weekday, start_time, end_time")
-          .in("interviewer_id", profileIds),
-        supabase.rpc("interviewer_ratings", { interviewer_ids: profileIds }),
-        // Sessões já marcadas, para o "próximo horário" do card ser um que
-        // ainda dá para agendar.
-        supabase.rpc("interviewers_booked_slots", {
-          interviewer_ids: profileIds,
-          from_ts: from.toISOString(),
-          to_ts: to.toISOString(),
-        }),
-      ])
+          supabase
+            .from("interviewer_profiles")
+            .select("id, name, avatar_url")
+            .in("id", profileIds),
+          supabase
+            .from("availability")
+            .select("interviewer_id, weekday, start_time, end_time")
+            .in("interviewer_id", profileIds),
+          supabase.rpc("interviewer_ratings", { interviewer_ids: profileIds }),
+          // Sessões já marcadas, para os horários do card serem só os que
+          // ainda dá para agendar.
+          supabase.rpc("interviewers_booked_slots", {
+            interviewer_ids: profileIds,
+            from_ts: from.toISOString(),
+            to_ts: to.toISOString(),
+          }),
+        ])
       : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }];
 
   const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
@@ -128,278 +125,284 @@ export default async function EntrevistadoresPage({
 
   const hasFilters = Boolean(area || senioridade || q);
 
-  // Monta o link de um filtro preservando os outros parâmetros da busca.
-  function hrefWith(overrides: { area?: string | null; senioridade?: string | null }) {
-    const next = new URLSearchParams();
-    const nextArea = overrides.area === undefined ? area : overrides.area;
-    const nextSeniority =
-      overrides.senioridade === undefined ? senioridade : overrides.senioridade;
-    if (q) next.set("q", q);
-    if (nextArea) next.set("area", nextArea);
-    if (nextSeniority) next.set("senioridade", nextSeniority);
-    if (sort !== "recentes") next.set("sort", sort);
-    const queryString = next.toString();
-    return queryString ? `/entrevistadores?${queryString}` : "/entrevistadores";
-  }
-
-  // A mesma busca, escrita como requisição: é o que aparece no bloco de terminal.
-  const currentQuery = hrefWith({}).replace("/entrevistadores", "");
-  const seniorityLabel = SENIORITY_OPTIONS.find((option) => option.value === senioridade)?.label;
-  const areaLabel = AREA_OPTIONS.find((option) => option.value === area)?.label;
-  const activeSummary = [
-    areaLabel ? `área: ${areaLabel.toLowerCase()}` : null,
-    seniorityLabel ? `experiência: ${seniorityLabel.toLowerCase()}` : null,
-    q ? `busca: ${q}` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  // A busca atual como link, para o "tentar de novo" do estado de erro.
+  const retryParams = new URLSearchParams();
+  if (q) retryParams.set("q", q);
+  if (area) retryParams.set("area", area);
+  if (senioridade) retryParams.set("senioridade", senioridade);
+  if (sort !== "recentes") retryParams.set("sort", sort);
+  const retryHref = retryParams.size ? `/entrevistadores?${retryParams}` : "/entrevistadores";
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <main className="bg-secondary flex min-h-screen flex-col">
       <SiteHeader />
 
-      <main>
-        <section className="edge-b bg-secondary">
-          <div className="mx-auto box-border flex max-w-[1240px] flex-wrap items-end justify-between gap-x-12 gap-y-6 px-[clamp(20px,5vw,48px)] py-[clamp(28px,4vw,48px)]">
-            <div className="flex min-w-0 flex-[1_1_360px] flex-col gap-2.5">
-              <Eyebrow>marketplace</Eyebrow>
-              <h1 className="font-heading text-[clamp(32px,3.6vw,48px)] leading-[1.05] font-extrabold tracking-[-0.02em]">
-                Entrevistadores
-              </h1>
-              <p className="text-muted-foreground max-w-[52ch]">
-                Profissionais de tecnologia que fazem entrevistas simuladas de 1 hora. Cada um
-                define o próprio preço.
-              </p>
+      {/* Faixa de topo amarela, a mesma da landing: tinta sobre o amarelo Sol,
+          textura de pontos e a linha de tinta embaixo. */}
+      <section
+        className="edge-b bg-primary text-ink"
+        style={{
+          backgroundImage: "radial-gradient(rgba(20,22,43,0.13) 1.4px, transparent 1.4px)",
+          backgroundSize: "26px 26px",
+        }}
+      >
+        <FadeIn className="mx-auto flex max-w-[1312px] flex-col gap-4 px-6 py-14">
+          <span className="text-ink/75 text-[11px] font-extrabold tracking-[0.1em] uppercase">
+            Encontre quem vai treinar com você
+          </span>
+          <h1 className="font-heading text-4xl font-extrabold tracking-[-0.03em] sm:text-5xl">
+            Seu próximo passo tem companhia.
+          </h1>
+          <p className="max-w-prose text-lg opacity-90">
+            Escolha alguém que conhece os desafios da área em que você quer
+            entrar.
+          </p>
+        </FadeIn>
+      </section>
+
+      <div className="mx-auto flex w-full max-w-[1312px] flex-col gap-8 px-6 py-10">
+        <FadeIn
+          index={1}
+          className="border-border-soft bg-card flex flex-col gap-5 rounded-[20px] border p-6 shadow-[0_10px_0_-4px_var(--accent)]"
+        >
+          <form
+            id="filtros-entrevistadores"
+            method="GET"
+            role="search"
+            className="flex flex-col gap-5"
+          >
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="relative flex-1">
+                <Search
+                  aria-hidden="true"
+                  size={16}
+                  className="text-muted-foreground absolute top-1/2 left-3.5 -translate-y-1/2"
+                />
+                <label htmlFor="q" className="sr-only">
+                  Buscar por nome, cargo ou empresa
+                </label>
+                <input
+                  id="q"
+                  name="q"
+                  type="search"
+                  defaultValue={q}
+                  placeholder="Busque por nome, cargo ou empresa"
+                  className="border-border-soft bg-background h-[52px] w-full rounded-xl border pl-10 pr-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
+                />
+              </div>
+              <button
+                type="submit"
+                className="bg-brand-deep text-white flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold"
+              >
+                Buscar profissionais
+                <ArrowRight aria-hidden="true" size={16} />
+              </button>
             </div>
 
-            <form
-              id="filtros-entrevistadores"
-              method="GET"
-              role="search"
-              className="flex max-w-[520px] min-w-0 flex-[1_1_360px] flex-col gap-2"
-            >
-              <label htmlFor="q" className="text-sm font-bold">
-                Buscar por nome, cargo ou empresa
-              </label>
-              {area ? <input type="hidden" name="area" value={area} /> : null}
-              {senioridade ? <input type="hidden" name="senioridade" value={senioridade} /> : null}
-              <div className="flex gap-2">
-                <div className="edge bg-card focus-within:outline-ring flex min-w-0 flex-1 items-center gap-2.5 rounded-[10px] px-3.5 focus-within:outline-[3px] focus-within:outline-offset-[3px]">
-                  <Search aria-hidden="true" size={18} strokeWidth={2.2} className="shrink-0" />
-                  <input
-                    id="q"
-                    name="q"
-                    type="search"
-                    defaultValue={q}
-                    placeholder="Engenheira, fintech, plataforma"
-                    className="placeholder:text-muted-foreground h-12 min-w-0 flex-1 bg-transparent outline-none"
-                  />
-                </div>
-                <Button type="submit" variant="ink" className="h-12 rounded-[10px] px-5">
-                  Buscar
-                </Button>
-              </div>
-            </form>
-          </div>
-        </section>
-
-        <div className="mx-auto box-border flex max-w-[1240px] flex-wrap items-start gap-x-10 gap-y-7 px-[clamp(20px,5vw,48px)] pt-[clamp(24px,3vw,40px)] pb-16">
-          <aside
-            aria-label="Filtros"
-            className="flex max-w-full min-w-0 flex-[1_1_220px] flex-col gap-6 md:max-w-[280px]"
-          >
-            <nav aria-label="Área" className="flex flex-col gap-2.5">
-              <p className="font-extrabold">Área</p>
-              <div className="flex flex-wrap gap-2">
-                <Link href={hrefWith({ area: null })} aria-current={area ? undefined : "true"} className={CHIP}>
-                  Todas
-                </Link>
-                {AREA_OPTIONS.map((option) => (
-                  <Link
-                    key={option.value}
-                    href={hrefWith({ area: option.value })}
-                    aria-current={area === option.value ? "true" : undefined}
-                    className={CHIP}
-                  >
-                    {option.label}
-                  </Link>
-                ))}
-              </div>
-            </nav>
-
-            <nav aria-label="Experiência" className="flex flex-col gap-2.5">
-              <p className="font-extrabold">Experiência</p>
-              <div className="flex flex-wrap gap-2">
-                <Link
-                  href={hrefWith({ senioridade: null })}
-                  aria-current={senioridade ? undefined : "true"}
-                  className={CHIP}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="area" className="text-xs font-bold">
+                  Área
+                </label>
+                <AutoSubmitSelect
+                  id="area"
+                  name="area"
+                  defaultValue={area ?? ""}
+                  className="border-border-soft bg-background h-11 rounded-xl border px-3 text-sm"
                 >
-                  Todas
-                </Link>
-                {SENIORITY_OPTIONS.map((option) => (
-                  <Link
-                    key={option.value}
-                    href={hrefWith({ senioridade: option.value })}
-                    aria-current={senioridade === option.value ? "true" : undefined}
-                    className={CHIP}
-                  >
-                    {option.label}
-                  </Link>
-                ))}
+                  <option value="">Todas as áreas</option>
+                  {AREA_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </AutoSubmitSelect>
               </div>
-            </nav>
 
-            <CodeBlock className="text-xs leading-[1.6] [overflow-wrap:anywhere] whitespace-normal">
-              <CodeMuted>GET</CodeMuted> /entrevistadores
-              <CodeAccent>{currentQuery}</CodeAccent>
-            </CodeBlock>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="senioridade" className="text-xs font-bold">
+                  Senioridade
+                </label>
+                <AutoSubmitSelect
+                  id="senioridade"
+                  name="senioridade"
+                  defaultValue={senioridade ?? ""}
+                  className="border-border-soft bg-background h-11 rounded-xl border px-3 text-sm"
+                >
+                  <option value="">Todas as senioridades</option>
+                  {SENIORITY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </AutoSubmitSelect>
+              </div>
+            </div>
 
             {hasFilters ? (
               <Link
                 href="/entrevistadores"
-                className="text-brand-deep inline-flex min-h-11 items-center self-start font-bold underline"
+                className="text-brand-deep inline-flex min-h-11 w-fit items-center text-sm font-semibold underline underline-offset-4"
               >
                 Limpar filtros
               </Link>
             ) : null}
-          </aside>
+          </form>
+        </FadeIn>
 
-          <section aria-label="Resultados" className="flex min-w-0 flex-[999_1_560px] flex-col gap-4">
-            {error ? (
-              <div
-                role="alert"
-                className="edge flex flex-col items-start gap-3.5 rounded-2xl px-6 py-[clamp(28px,5vw,56px)]"
+        {error ? (
+          <div
+            role="alert"
+            className="border-border-soft bg-card flex flex-col items-start gap-3 rounded-[20px] border p-7"
+          >
+            <h2 className="font-heading text-xl font-bold">
+              Não deu para carregar os profissionais
+            </h2>
+            <p className="text-muted-foreground max-w-[52ch] text-sm">
+              O problema é do nosso lado. Tente de novo em alguns segundos.
+            </p>
+            <Link
+              href={retryHref}
+              className="bg-brand-deep flex h-11 items-center rounded-xl px-5 text-sm font-bold text-white"
+            >
+              Tentar de novo
+            </Link>
+          </div>
+        ) : results.length === 0 ? (
+          <div className="border-border-dashed flex flex-col items-center gap-3 rounded-[20px] border-[1.5px] border-dashed px-6 py-14 text-center">
+            <h2 className="font-heading text-xl font-bold">
+              {hasFilters
+                ? "Nenhum profissional com esses filtros"
+                : "Ainda não há profissionais disponíveis"}
+            </h2>
+            <p className="text-muted-foreground max-w-[46ch] text-sm">
+              {hasFilters
+                ? "Tire um filtro ou busque por outro termo."
+                : "Os primeiros perfis estão chegando. Volte em breve."}
+            </p>
+            {hasFilters ? (
+              <Link
+                href="/entrevistadores"
+                className="bg-brand-deep flex h-11 items-center rounded-xl px-5 text-sm font-bold text-white"
               >
-                <CodeBlock>
-                  <div>
-                    <CodeMuted>GET</CodeMuted> /entrevistadores
-                  </div>
-                  <div className="text-destructive-soft">erro: sem resposta do servidor</div>
-                </CodeBlock>
-                <h2 className="font-heading text-[26px] leading-tight font-bold">
-                  Não deu para carregar os entrevistadores
+                Limpar filtros
+              </Link>
+            ) : null}
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div className="flex flex-col gap-1">
+                <h2 className="font-heading text-2xl font-extrabold tracking-[-0.02em]">
+                  {results.length}{" "}
+                  {results.length === 1
+                    ? "profissional para abrir caminhos"
+                    : "profissionais para abrir caminhos"}
                 </h2>
-                <p className="text-muted-foreground max-w-[52ch]">
-                  O problema é do nosso lado. Tente de novo em alguns segundos.
+                <p className="text-foreground/70 text-sm">
+                  Sessões individuais de 60 min, pague só pela que marcar.
                 </p>
-                <Link href={hrefWith({})} className={buttonVariants({ className: "h-12 rounded-[10px] px-5" })}>
-                  Tentar de novo
-                </Link>
               </div>
-            ) : results.length === 0 ? (
-              <div className="edge-dashed flex flex-col items-start gap-3.5 rounded-2xl px-6 py-[clamp(28px,5vw,56px)]">
-                <CodeBlock>
-                  <div>
-                    <CodeMuted>GET</CodeMuted> /entrevistadores{currentQuery}
-                  </div>
-                  <CodeAccent>0 resultados</CodeAccent>
-                </CodeBlock>
-                <h2 className="font-heading text-[26px] leading-tight font-bold">
-                  {hasFilters
-                    ? "Nenhum entrevistador com esses filtros"
-                    : "Ainda não há entrevistadores disponíveis"}
-                </h2>
-                <p className="text-muted-foreground max-w-[52ch]">
-                  {hasFilters
-                    ? "Tire um filtro ou busque por outro termo."
-                    : "Os primeiros perfis estão chegando. Volte em breve."}
-                </p>
-                {hasFilters ? (
-                  <Link
-                    href="/entrevistadores"
-                    className={buttonVariants({ className: "h-12 rounded-[10px] px-5" })}
-                  >
-                    Limpar filtros
-                  </Link>
-                ) : null}
-              </div>
-            ) : (
-              <>
-                <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2.5">
-                  <p className="font-extrabold">
-                    {results.length} {results.length === 1 ? "entrevistador" : "entrevistadores"}{" "}
-                    {activeSummary ? (
-                      <span className="text-muted-foreground font-mono text-[13px] font-medium">
-                        {activeSummary}
-                      </span>
-                    ) : null}
-                  </p>
-                  <div className="flex items-center gap-2.5">
-                    <label htmlFor="sort" className="text-sm font-bold">
-                      Ordenar por
-                    </label>
-                    <select
-                      id="sort"
-                      name="sort"
-                      form="filtros-entrevistadores"
-                      defaultValue={sort}
-                      className="edge bg-card h-11 rounded-[9px] px-3 text-sm font-semibold"
-                    >
-                      <option value="recentes">Mais recentes</option>
-                      <option value="preco">Menor preço</option>
-                    </select>
-                    <Button
-                      type="submit"
-                      form="filtros-entrevistadores"
-                      variant="outline"
-                      className="rounded-[9px] px-3.5 text-sm"
-                    >
-                      Aplicar
-                    </Button>
-                  </div>
-                </div>
 
-                <ul className="flex flex-col gap-4">
-                  {results.map(({ interviewer, profile, rating, slots }, index) => (
-                    <li
-                      key={interviewer.profile_id}
-                      className="pop lift"
-                      style={{ animationDelay: `${Math.min(index, 7) * 0.08}s` }}
-                    >
-                      <InterviewerCard
-                        profileId={interviewer.profile_id}
-                        name={profile?.name ?? ""}
-                        headline={interviewer.headline}
-                        company={interviewer.company}
-                        seniority={interviewer.seniority}
-                        areas={interviewer.areas}
-                        priceCents={interviewer.price_cents}
-                        avatarUrl={profile?.avatar_url ?? null}
-                        slots={slots}
-                        rating={rating?.average ?? null}
-                        reviewCount={rating?.reviewCount ?? 0}
-                      />
-                    </li>
-                  ))}
-                </ul>
-
-                {/* Paginação: ainda não existe no backend, a lista vem inteira. */}
-                <nav
-                  aria-label="Paginação"
-                  className="mt-2 flex flex-wrap items-center gap-2 font-mono text-sm font-bold"
+              <div className="flex items-center gap-2 text-sm">
+                <label htmlFor="sort" className="text-muted-foreground">
+                  Ordenar por:
+                </label>
+                <AutoSubmitSelect
+                  id="sort"
+                  name="sort"
+                  form="filtros-entrevistadores"
+                  defaultValue={sort}
+                  className="border-border-soft bg-background h-11 rounded-lg border px-2.5 text-sm font-semibold"
                 >
-                  <span
-                    aria-current="page"
-                    className="bg-foreground text-background edge inline-flex size-11 items-center justify-center rounded-[9px]"
-                  >
-                    1
-                  </span>
-                  <span
-                    aria-disabled="true"
-                    className="border-border-dashed text-muted-foreground inline-flex min-h-11 items-center rounded-[9px] border-[1.5px] border-dashed px-3.5"
-                  >
-                    Próxima
-                  </span>
-                  <span className="text-muted-foreground ml-1 text-xs font-medium">
-                    horários de Brasília
-                  </span>
-                </nav>
-              </>
-            )}
-          </section>
+                  <option value="recentes">Mais recentes</option>
+                  <option value="preco">Menor preço</option>
+                </AutoSubmitSelect>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {results.map(({ interviewer, profile, rating, slots }, index) => (
+                <FadeIn key={interviewer.profile_id} index={index}>
+                  <HoverLift className="h-full">
+                    <InterviewerCard
+                      profileId={interviewer.profile_id}
+                      name={profile?.name ?? ""}
+                      headline={interviewer.headline}
+                      company={interviewer.company}
+                      seniority={interviewer.seniority}
+                      bio={interviewer.bio}
+                      areas={interviewer.areas}
+                      priceCents={interviewer.price_cents}
+                      avatarUrl={profile?.avatar_url ?? null}
+                      slots={slots}
+                      rating={rating?.average ?? null}
+                      reviewCount={rating?.reviewCount ?? 0}
+                    />
+                  </HoverLift>
+                </FadeIn>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <p className="text-muted-foreground text-sm">
+                Mostrando {results.length} de {results.length}{" "}
+                {results.length === 1 ? "profissional" : "profissionais"} ·
+                Horários de Brasília
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled
+                  className="border-border-soft bg-card flex h-10 items-center rounded-xl border px-4 text-sm font-semibold opacity-40"
+                >
+                  Anterior
+                </button>
+                <span className="bg-primary text-ink flex size-10 items-center justify-center rounded-xl text-sm font-bold">
+                  1
+                </span>
+                <button
+                  type="button"
+                  disabled
+                  className="border-border-soft bg-card flex h-10 items-center rounded-xl border px-4 text-sm font-semibold opacity-40"
+                >
+                  Próxima
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+        <div className="bg-secondary border-primary flex flex-wrap items-center gap-4 rounded-xl border-l-4 p-5">
+          <Compass aria-hidden="true" size={24} className="text-brand-deep shrink-0" />
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <p className="text-sm font-bold">Ainda não sabe por onde começar?</p>
+            <p className="text-foreground/70 text-sm">
+              Para a primeira vaga, uma entrevista comportamental ajuda você
+              a contar sua história.
+            </p>
+          </div>
+          <Link
+            href="/entrevistadores?area=behavioral"
+            className="bg-brand-deep text-white flex h-10 shrink-0 items-center rounded-xl px-4 text-sm font-bold"
+          >
+            Ver esse tipo de treino
+          </Link>
         </div>
-      </main>
-    </div>
+
+        <p className="text-muted-foreground text-xs">
+          Perfis e avaliações ilustrativos nesta demonstração.
+        </p>
+      </div>
+
+      <footer className="border-border-soft bg-card flex flex-wrap items-center justify-between gap-2 border-t px-6 py-5 lg:px-16">
+        <span className="text-muted-foreground text-xs">
+          lugh / Seu próximo passo começa no treino.
+        </span>
+        <span className="text-muted-foreground text-xs">
+          Precisa de uma mão? Fale com a gente
+        </span>
+      </footer>
+    </main>
   );
 }

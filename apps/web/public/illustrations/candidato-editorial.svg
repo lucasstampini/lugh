@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 208 182" width="416" height="364" role="img" aria-label="Ilustração do candidato">
+  <rect width="208" height="182" fill="#E4E9FF"/>
+  <!-- Ombros e moletom -->
+  <path d="M28 182c3-26 26-40 48-44h56c22 4 45 18 48 44z" fill="#2747F5"/>
+  <path d="M86 138h36c-2 16-6 28-10 44h-16c-4-16-8-28-10-44z" fill="#1C35B8"/>
+  <!-- Pescoço -->
+  <path d="M90 112h28v26c-5 10-23 10-28 0z" fill="#B5784F"/>
+  <!-- Rosto -->
+  <path d="M72 80c0-22 14-35 32-35s32 13 32 35c0 25-14 41-32 41S72 105 72 80z" fill="#D09063"/>
+  <!-- Cabelo curto -->
+  <path d="M68 78c-3-27 11-44 36-44s39 17 36 44c-4-11-9-18-15-22-11 7-30 9-43 3-6 4-10 10-14 19z" fill="#2E2318"/>
+  <!-- Olhos e boca -->
+  <ellipse cx="90" cy="84" rx="3.4" ry="4" fill="#14162B"/>
+  <ellipse cx="118" cy="84" rx="3.4" ry="4" fill="#14162B"/>
+  <path d="M94 100c4 5 16 5 20 0" fill="none" stroke="#8C5A37" stroke-width="3" stroke-linecap="round"/>
+  <!-- Fone de ouvido -->
+  <path d="M66 86a38 38 0 0 1 76 0" fill="none" stroke="#14162B" stroke-width="6" stroke-linecap="round"/>
+  <rect x="58" y="80" width="15" height="26" rx="7" fill="#14162B"/>
+  <rect x="135" y="80" width="15" height="26" rx="7" fill="#14162B"/>
+  <path d="M135 100c-6 6-12 10-18 11" fill="none" stroke="#14162B" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="114" cy="112" r="3.5" fill="#14162B"/>
+</svg>

@@ -26,14 +26,14 @@ monaco.editor.defineTheme(LUGH_THEME, {
   inherit: true,
   rules: [],
   colors: {
-    "editor.background": "#0C1F17",
+    "editor.background": "#101536",
     "editor.foreground": "#FFFFFF",
     "editorCursor.foreground": "#FFFFFF",
-    "editor.lineHighlightBackground": "#17382A",
-    "editorLineNumber.foreground": "#6F8A7B",
-    "editorLineNumber.activeForeground": "#A9BDB2",
-    "editor.selectionBackground": "#2EF58A40",
-    "editorIndentGuide.background1": "#23402F",
+    "editor.lineHighlightBackground": "#1C2350",
+    "editorLineNumber.foreground": "#6B74A6",
+    "editorLineNumber.activeForeground": "#9AA0C2",
+    "editor.selectionBackground": "#FFC62940",
+    "editorIndentGuide.background1": "#262D5C",
   },
 });
 

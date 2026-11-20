@@ -1,39 +1,37 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { buttonVariants } from "@/components/ui/button";
+import { initials } from "@/lib/initials";
 import { createClient } from "@/lib/supabase/server";
-import { ProfileWizardShell } from "../profile-wizard-shell";
-import { WizardFooter } from "../wizard-parts";
+import { WizardShell } from "@/components/wizard-shell";
 import { PreferenceToggles } from "./preference-toggles";
 
 export const instant = false;
 
-function ReviewRow({
-  label,
+function SummaryCard({
+  title,
   editHref,
-  first,
   children,
 }: {
-  label: string;
+  title: string;
   editHref: string;
-  first?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className={`flex flex-wrap items-start justify-between gap-x-5 gap-y-1.5 ${
-        first ? "pb-3.5" : "border-border-dashed border-t-[1.5px] border-dashed py-3.5"
-      }`}
-    >
-      <dt className="text-muted-foreground flex-[0_0_130px] font-mono text-xs">{label}</dt>
-      <dd className="min-w-0 flex-[1_1_220px] font-semibold break-words">{children}</dd>
-      <Link
-        href={editHref}
-        aria-label={`Editar ${label}`}
-        className="text-brand-deep inline-flex min-h-11 items-center font-bold underline"
-      >
-        Editar
-      </Link>
+    <div className="border-border-soft bg-card flex flex-col gap-4 rounded-[20px] border p-6">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="font-heading text-[26px] leading-[1.15] font-extrabold tracking-[-0.03em]">
+          {title}
+        </h3>
+        <Link
+          href={editHref}
+          aria-label={`Editar: ${title}`}
+          className="text-brand-deep inline-flex min-h-11 items-center text-sm font-bold"
+        >
+          Editar
+        </Link>
+      </div>
+      {children}
     </div>
   );
 }
@@ -63,47 +61,85 @@ export default async function PerfilRevisarPage() {
   }
 
   return (
-    <ProfileWizardShell activeStep={4} title="Revisar">
-      <dl>
-        <ReviewRow label="nome" editHref="/perfil" first>
-          {profile.name}
-          {profile.preferred_name ? (
-            <span className="text-muted-foreground font-normal">
-              {" "}
-              · pode me chamar de {profile.preferred_name}
-            </span>
-          ) : null}
-        </ReviewRow>
-        <ReviewRow label="e-mail" editHref="/perfil">
-          {profile.email}
-        </ReviewRow>
-        <ReviewRow label="sobre você" editHref="/perfil">
-          {profile.bio ? (
-            profile.bio
-          ) : (
-            <span className="text-muted-foreground font-normal">Sem apresentação ainda.</span>
-          )}
-        </ReviewRow>
+    <WizardShell
+      activeStep={4}
+      heroLines={["Tudo pronto", "para o seu", "próximo passo."]}
+      dicaLabel="No seu tempo."
+      dicaText="Você pode ajustar essas informações depois, nas configurações do perfil."
+      stepLabel="Configuração do perfil · Etapa 4 de 4"
+      title="Revisar perfil"
+      description="Confira suas escolhas. Seu perfil ajuda a preparar uma sessão mais relevante."
+    >
+      <div className="flex flex-col gap-[22px]">
+        <SummaryCard title="Você na Lugh" editHref="/perfil">
+          <div className="flex items-center gap-4">
+            {profile.avatar_url ? (
+              <Image
+                src={profile.avatar_url}
+                alt=""
+                width={64}
+                height={64}
+                className="size-16 shrink-0 rounded-[20px] object-cover"
+                unoptimized
+              />
+            ) : (
+              <div className="bg-accent text-ink font-heading flex size-16 shrink-0 items-center justify-center rounded-[20px] text-xl font-extrabold">
+                {initials(profile.name)}
+              </div>
+            )}
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <p className="font-heading text-xl font-extrabold">{profile.name}</p>
+              <p className="text-foreground/70 text-sm">
+                {profile.preferred_name
+                  ? `Pode me chamar de ${profile.preferred_name}`
+                  : "Sem apelido cadastrado"}
+              </p>
+              <p className="text-foreground/70 text-sm break-words">{profile.email}</p>
+            </div>
+          </div>
+          <p className="text-foreground/80 max-w-[68ch] text-sm break-words whitespace-pre-line">
+            {profile.bio ? profile.bio : "Sem apresentação ainda."}
+          </p>
+        </SummaryCard>
+
         {/* Objetivo e experiência ainda não são salvos (etapas 2 e 3 são só
-            visuais), então não há o que resumir aqui. */}
-        <ReviewRow label="objetivo" editHref="/perfil/objetivo">
-          <span className="text-muted-foreground font-normal">Ainda não é salvo no perfil.</span>
-        </ReviewRow>
-        <ReviewRow label="experiência" editHref="/perfil/experiencia">
-          <span className="text-muted-foreground font-normal">Ainda não é salva no perfil.</span>
-        </ReviewRow>
-      </dl>
+            visuais): o resumo diz isso, em vez de mostrar dado de exemplo como
+            se fosse da pessoa. */}
+        <SummaryCard title="Seu objetivo" editHref="/perfil/objetivo">
+          <p className="text-muted-foreground text-sm">Ainda não é salvo no perfil.</p>
+        </SummaryCard>
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 text-sm font-bold">Preferências</legend>
-        <PreferenceToggles />
-      </fieldset>
+        <SummaryCard title="Seu ponto de partida" editHref="/perfil/experiencia">
+          <p className="text-muted-foreground text-sm">Ainda não é salvo no perfil.</p>
+        </SummaryCard>
 
-      <WizardFooter backHref="/perfil/experiencia">
-        <Link href="/entrevistadores" className={buttonVariants({ size: "lg" })}>
-          Concluir perfil
-        </Link>
-      </WizardFooter>
-    </ProfileWizardShell>
+        <div className="border-border-soft bg-card flex flex-col gap-4 rounded-[20px] border p-6">
+          <h3 className="font-heading text-[26px] leading-[1.15] font-extrabold tracking-[-0.03em]">
+            Você escolhe o que recebe
+          </h3>
+          <PreferenceToggles />
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Link
+              href="/perfil/experiencia"
+              className="text-brand-deep flex min-h-[52px] items-center text-sm font-bold"
+            >
+              ← Voltar
+            </Link>
+            <Link
+              href="/entrevistadores"
+              className="bg-brand-deep text-white flex min-h-[52px] items-center gap-2 rounded-xl px-5 text-sm font-extrabold"
+            >
+              Concluir e encontrar profissionais
+            </Link>
+          </div>
+          <p className="text-foreground/70 text-xs">
+            Ao concluir, você poderá agendar seu primeiro treino.
+          </p>
+        </div>
+      </div>
+    </WizardShell>
   );
 }

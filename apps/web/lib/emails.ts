@@ -9,11 +9,11 @@ export type EmailContent = { subject: string; html: string; text: string };
 
 // Cores da identidade (as mesmas dos tokens do site). Cliente de e-mail não lê CSS
 // externo nem fonte da web: tudo vai inline, com fontes do sistema.
-const INK = "#0F1A14";
-const GREEN = "#2EF58A";
-const LINK = "#0B7A4B";
-const MUTED = "#55635B";
-const SURFACE = "#F4F7F5";
+const INK = "#14162B";
+const SUN = "#FFC629";
+const LINK = "#2747F5";
+const MUTED = "#555A75";
+const SURFACE = "#F5F6FA";
 const FONT = "-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 const MONO = "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace";
 
@@ -74,7 +74,7 @@ function renderHtml({ title, paragraphs, details = [], action, footnote }: Layou
 <tr><td style="border:1.5px solid ${INK};border-radius:18px;padding:28px 24px">
 <h1 style="margin:0 0 16px;font-size:26px;line-height:1.15;font-weight:800;color:${INK}">${escapeHtml(title)}</h1>
 ${body}${detailsBlock}
-<a href="${escapeHtml(action.url)}" style="display:inline-block;padding:14px 24px;background:${GREEN};color:${INK};border:1.5px solid ${INK};border-radius:12px;font-size:16px;font-weight:800;text-decoration:none">${escapeHtml(action.label)}</a>
+<a href="${escapeHtml(action.url)}" style="display:inline-block;padding:14px 24px;background:${SUN};color:${INK};border:1.5px solid ${INK};border-radius:12px;font-size:16px;font-weight:800;text-decoration:none">${escapeHtml(action.label)}</a>
 ${footnoteBlock}
 </td></tr>
 <tr><td style="padding:20px 0 0;font-size:13px;line-height:1.55;color:${MUTED}">Você recebeu este e-mail porque tem uma sessão no Lugh. Se o botão não abrir, copie este link: <a href="${escapeHtml(action.url)}" style="color:${LINK}">${escapeHtml(action.url)}</a></td></tr>

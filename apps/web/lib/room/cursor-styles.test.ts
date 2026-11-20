@@ -62,7 +62,7 @@ describe("safeColor", () => {
 
   it("troca qualquer outra coisa por uma cor neutra", () => {
     for (const color of ["red", "#fff", "url(x)", "#22c55e; color: red", 123, null]) {
-      expect(safeColor(color)).toBe("#A9BDB2");
+      expect(safeColor(color)).toBe("#9AA0C2");
     }
   });
 });

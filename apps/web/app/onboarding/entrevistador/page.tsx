@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import { onboardingSteps } from "@/components/onboarding/steps";
 import { StepHeader } from "@/components/step-header";
+import { WizardShell } from "@/components/wizard-shell";
 import { createClient } from "@/lib/supabase/server";
 import { InterviewerForm } from "./interviewer-form";
 
@@ -23,16 +25,21 @@ export default async function OnboardingEntrevistadorPage() {
     .single();
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <StepHeader label="passo 2 de 2 · entrevistador" />
-      <main className="mx-auto box-border w-full max-w-[1120px] px-[clamp(20px,5vw,48px)] pt-[clamp(28px,5vw,56px)] pb-[72px]">
-        <InterviewerForm
-          title="Monte seu perfil de entrevistador"
-          backHref="/onboarding"
-          profileName={profile?.name ?? ""}
-          avatarUrl={profile?.avatar_url ?? null}
-        />
-      </main>
-    </div>
+    <WizardShell
+      header={<StepHeader label="passo 2 de 2" />}
+      activeStep={2}
+      steps={onboardingSteps("/onboarding/entrevistador")}
+      eyebrow="Bem-vindo ao Lugh."
+      heroLines={["Seu card", "decide em", "segundos."]}
+      dicaLabel="Dica"
+      dicaText="Cargo, empresa e preço aparecem no card. A bio é o que convence a agendar."
+    >
+      <InterviewerForm
+        title="Monte seu perfil de entrevistador"
+        backHref="/onboarding"
+        profileName={profile?.name ?? ""}
+        avatarUrl={profile?.avatar_url ?? null}
+      />
+    </WizardShell>
   );
 }

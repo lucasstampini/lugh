@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { Funnel_Display, JetBrains_Mono, Manrope } from "next/font/google";
+import { Bricolage_Grotesque, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const display = Funnel_Display({
+const display = Bricolage_Grotesque({
   subsets: ["latin"],
-  weight: ["500", "700", "800"],
+  weight: ["700", "800"],
   variable: "--font-display",
 });
 
-const sans = Manrope({
+const sans = Inter_Tight({
   subsets: ["latin"],
   variable: "--font-manrope",
 });
