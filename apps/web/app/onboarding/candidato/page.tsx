@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { onboardingSteps } from "@/components/onboarding/steps";
+import { StepHeader } from "@/components/step-header";
 import { WizardShell } from "@/components/wizard-shell";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmNameForm } from "./confirm-name-form";
@@ -24,6 +25,7 @@ export default async function OnboardingCandidatoPage() {
 
   return (
     <WizardShell
+      header={<StepHeader label="passo 2 de 2" />}
       activeStep={2}
       steps={onboardingSteps("/onboarding/candidato")}
       eyebrow="Bem-vindo ao Lugh."

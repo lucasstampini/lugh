@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { onboardingSteps } from "@/components/onboarding/steps";
+import { StepHeader } from "@/components/step-header";
 import { WizardShell } from "@/components/wizard-shell";
 import { createClient } from "@/lib/supabase/server";
 import { InterviewerForm } from "./interviewer-form";
@@ -25,6 +26,7 @@ export default async function OnboardingEntrevistadorPage() {
 
   return (
     <WizardShell
+      header={<StepHeader label="passo 2 de 2" />}
       activeStep={2}
       steps={onboardingSteps("/onboarding/entrevistador")}
       eyebrow="Bem-vindo ao Lugh."
