@@ -4,14 +4,30 @@
 -- pelas policies de RLS pensadas pro client, por isso insere active = true
 -- direto).
 
-insert into auth.users (id, email, raw_user_meta_data) values
+-- As contas entram por link de acesso (não têm senha). Para o Auth reconhecer
+-- a conta em vez de tentar criar outra com o mesmo e-mail, a linha precisa de
+-- instance_id, aud, role e e-mail confirmado, e os campos de token não podem
+-- ficar nulos. O link de acesso de cada uma sai pelo painel do Supabase
+-- (Authentication > Users > Send magic link) ou por auth.admin.generateLink.
+insert into auth.users (
+  id, email, raw_user_meta_data,
+  instance_id, aud, role, email_confirmed_at, raw_app_meta_data, created_at, updated_at,
+  confirmation_token, recovery_token, email_change, email_change_token_new
+)
+select
+  demo.id::uuid, demo.email, demo.meta,
+  '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', now(),
+  '{"provider": "email", "providers": ["email"]}'::jsonb, now(), now(),
+  '', '', '', ''
+from (values
   ('d0000000-0000-4000-8000-000000000001', 'mariana.demo@lugh.app', '{"full_name": "Mariana Albuquerque"}'::jsonb),
   ('d0000000-0000-4000-8000-000000000002', 'rafael.demo@lugh.app', '{"full_name": "Rafael Nogueira"}'::jsonb),
   ('d0000000-0000-4000-8000-000000000003', 'juliana.demo@lugh.app', '{"full_name": "Juliana Okada"}'::jsonb),
   ('d0000000-0000-4000-8000-000000000004', 'thiago.demo@lugh.app', '{"full_name": "Thiago Barbosa"}'::jsonb),
   ('d0000000-0000-4000-8000-000000000005', 'camila.demo@lugh.app', '{"full_name": "Camila Ferreira"}'::jsonb),
   ('d0000000-0000-4000-8000-000000000006', 'beatriz.demo@lugh.app', '{"full_name": "Beatriz Lima"}'::jsonb),
-  ('d0000000-0000-4000-8000-000000000007', 'pedro.demo@lugh.app', '{"full_name": "Pedro Martins"}'::jsonb);
+  ('d0000000-0000-4000-8000-000000000007', 'pedro.demo@lugh.app', '{"full_name": "Pedro Martins"}'::jsonb)
+) as demo (id, email, meta);
 
 -- O trigger "on_auth_user_created" já criou a linha em profiles (sem role,
 -- sem avatar) quando os auth.users acima foram inseridos. Completa aqui.
@@ -28,14 +44,14 @@ on conflict (id) do update set
   avatar_url = null;
 
 insert into public.interviewers (
-  profile_id, headline, company, seniority, areas, price_cents, bio, linkedin_url, active
+  profile_id, headline, company, seniority, areas, price_cents, bio, linkedin_url, github_url, active
 ) values
-  ('d0000000-0000-4000-8000-000000000001', 'Engenheira de Software Sênior', 'Fintech de grande porte', 'senior', array['backend', 'system_design'], 15000, 'Gosto de ajudar quem tá começando a entender como pensar em escala.', 'https://linkedin.com/in/mariana-demo', true),
-  ('d0000000-0000-4000-8000-000000000002', 'Tech Lead Frontend', 'Big tech', 'senior', array['frontend'], 18000, 'Já revisei centenas de code reviews, trago isso pra prática.', 'https://linkedin.com/in/rafael-demo', true),
-  ('d0000000-0000-4000-8000-000000000003', 'Staff Engineer', 'E-commerce de grande porte', 'staff', array['system_design', 'backend'], 22000, 'Foco em system design pra quem quer a vaga de sênior.', 'https://linkedin.com/in/juliana-demo', true),
-  ('d0000000-0000-4000-8000-000000000004', 'Engenheiro de Dados Pleno', 'Healthtech em crescimento', 'mid', array['data'], 9000, 'Entrevista tranquila, direto ao ponto, com feedback honesto.', 'https://linkedin.com/in/thiago-demo', true),
-  ('d0000000-0000-4000-8000-000000000005', 'Engineering Manager', 'Banco digital', 'senior', array['behavioral'], 20000, 'Já contratei dezenas de pessoas, sei o que o processo cobra.', 'https://linkedin.com/in/camila-demo', true),
-  ('d0000000-0000-4000-8000-000000000006', 'Desenvolvedora Mobile Sênior', 'Startup de logística', 'senior', array['mobile'], 12000, 'iOS e Android, do zero ao avançado.', 'https://linkedin.com/in/beatriz-demo', true);
+  ('d0000000-0000-4000-8000-000000000001', 'Engenheira de Software Sênior', 'Fintech de grande porte', 'senior', array['backend', 'system_design'], 15000, 'Gosto de ajudar quem tá começando a entender como pensar em escala.', 'https://linkedin.com/in/mariana-demo', 'https://github.com/mariana-demo', true),
+  ('d0000000-0000-4000-8000-000000000002', 'Tech Lead Frontend', 'Big tech', 'senior', array['frontend'], 18000, 'Já revisei centenas de code reviews, trago isso pra prática.', 'https://linkedin.com/in/rafael-demo', null, true),
+  ('d0000000-0000-4000-8000-000000000003', 'Staff Engineer', 'E-commerce de grande porte', 'staff', array['system_design', 'backend'], 22000, 'Foco em system design pra quem quer a vaga de sênior.', 'https://linkedin.com/in/juliana-demo', 'https://github.com/juliana-demo', true),
+  ('d0000000-0000-4000-8000-000000000004', 'Engenheiro de Dados Pleno', 'Healthtech em crescimento', 'mid', array['data'], 9000, 'Entrevista tranquila, direto ao ponto, com feedback honesto.', 'https://linkedin.com/in/thiago-demo', null, true),
+  ('d0000000-0000-4000-8000-000000000005', 'Engineering Manager', 'Banco digital', 'senior', array['behavioral'], 20000, 'Já contratei dezenas de pessoas, sei o que o processo cobra.', 'https://linkedin.com/in/camila-demo', null, true),
+  ('d0000000-0000-4000-8000-000000000006', 'Desenvolvedora Mobile Sênior', 'Startup de logística', 'senior', array['mobile'], 12000, 'iOS e Android, do zero ao avançado.', 'https://linkedin.com/in/beatriz-demo', null, true);
 
 -- 2 ou 3 blocos de disponibilidade por entrevistador, em horário de Brasília.
 insert into public.availability (interviewer_id, weekday, start_time, end_time) values
@@ -62,8 +78,8 @@ insert into public.sessions (
   'e0000000-0000-4000-8000-000000000001',
   'd0000000-0000-4000-8000-000000000007',
   'd0000000-0000-4000-8000-000000000001',
-  '2026-11-04 19:00:00-03',
-  '2026-11-04 20:00:00-03',
+  date_trunc('day', now() at time zone 'America/Sao_Paulo') at time zone 'America/Sao_Paulo' - interval '7 days' + interval '19 hours',
+  date_trunc('day', now() at time zone 'America/Sao_Paulo') at time zone 'America/Sao_Paulo' - interval '7 days' + interval '20 hours',
   'system_design',
   'completed',
   'Quero treinar pra uma vaga de backend sênior, foco em escalar um sistema do zero.',
@@ -80,6 +96,7 @@ insert into public.feedbacks (session_id, scores, strengths, improvements, would
 );
 
 -- 1 sessão futura já agendada, pra "/sessoes" ter "Próximas" e "Passadas".
+-- Datas contadas a partir do dia do reset, em horário de Brasília.
 insert into public.sessions (
   id, candidate_id, interviewer_id, starts_at, ends_at, type, status,
   candidate_notes
@@ -87,8 +104,8 @@ insert into public.sessions (
   'e0000000-0000-4000-8000-000000000002',
   'd0000000-0000-4000-8000-000000000007',
   'd0000000-0000-4000-8000-000000000002',
-  '2026-11-18 18:00:00-03',
-  '2026-11-18 19:00:00-03',
+  date_trunc('day', now() at time zone 'America/Sao_Paulo') at time zone 'America/Sao_Paulo' + interval '2 days' + interval '18 hours',
+  date_trunc('day', now() at time zone 'America/Sao_Paulo') at time zone 'America/Sao_Paulo' + interval '2 days' + interval '19 hours',
   'coding',
   'scheduled',
   'Quero revisar code review e boas práticas de frontend.'
