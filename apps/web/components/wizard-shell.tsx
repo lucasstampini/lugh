@@ -65,7 +65,7 @@ export function WizardShell({
             <WizardSteps activeStep={activeStep} steps={steps} />
 
             {/* No celular a dica sai: o formulário precisa aparecer logo. */}
-            <div className="bg-primary text-ink hidden flex-col gap-2.5 rounded-[20px] p-5 lg:flex">
+            <div className="edge bg-primary text-ink hidden flex-col gap-2.5 rounded-[20px] p-5 lg:flex">
               <span className="text-[10px] font-extrabold tracking-[0.13em] uppercase">
                 {dicaLabel}
               </span>

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { buttonVariants } from "@/components/ui/button";
 import { initials } from "@/lib/initials";
 import { createClient } from "@/lib/supabase/server";
 import { WizardShell } from "@/components/wizard-shell";
@@ -130,7 +131,7 @@ export default async function PerfilRevisarPage() {
             </Link>
             <Link
               href="/entrevistadores"
-              className="bg-brand-deep text-white flex min-h-[52px] items-center gap-2 rounded-xl px-5 text-sm font-extrabold"
+              className={buttonVariants({ className: "h-auto min-h-[52px] px-5 py-2 whitespace-normal" })}
             >
               Concluir e encontrar profissionais
             </Link>

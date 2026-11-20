@@ -29,7 +29,7 @@ const STATUS_LABELS: Record<string, string> = {
   no_show: "não compareceu",
 };
 
-// Verde: está valendo. Verde claro: aconteceu. Tracejado: parada ou sem efeito.
+// Amarelo: está valendo. Azul claro: aconteceu. Tracejado: parada ou sem efeito.
 const STATUS_CHIP_CLASS: Record<string, string> = {
   scheduled: "bg-primary text-ink",
   in_progress: "bg-primary text-ink",
@@ -227,25 +227,25 @@ export default async function SessionsPage({ searchParams }: PageProps<"/sessoes
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
 
-      {/* Faixa de topo amarela, a mesma da landing e da área de
+      {/* Faixa de topo azul, a mesma da landing e da área de
           entrevistadores. */}
       <section
-        className="edge-b bg-primary text-ink"
+        className="edge-b bg-brand-deep text-white"
         style={{
-          backgroundImage: "radial-gradient(rgba(20,22,43,0.13) 1.4px, transparent 1.4px)",
+          backgroundImage: "radial-gradient(rgba(255,255,255,0.16) 1.4px, transparent 1.4px)",
           backgroundSize: "26px 26px",
         }}
       >
         <div className="mx-auto box-border flex w-full max-w-[1120px] flex-wrap items-end justify-between gap-x-8 gap-y-4 px-[clamp(20px,5vw,48px)] py-[clamp(28px,4vw,52px)]">
           <div className="flex flex-col gap-2">
-            <span className="text-ink/75 font-mono text-[13px] font-bold">
+            <span className="font-mono text-[13px] font-bold text-white/80">
               {"// "}
               {isInterviewer ? "entrevistador" : "candidato"}
             </span>
             <h1 className="font-heading text-[clamp(30px,3.4vw,44px)] leading-[1.05] font-extrabold tracking-[-0.02em]">
               Minhas sessões
             </h1>
-            <p className="text-ink/75 text-sm">
+            <p className="text-sm text-white/80">
               {isInterviewer
                 ? "Tudo que você vai conduzir e o que já aconteceu."
                 : "Tudo que você marcou e o feedback de cada sessão."}
@@ -254,7 +254,7 @@ export default async function SessionsPage({ searchParams }: PageProps<"/sessoes
 
           <Link
             href={isInterviewer ? "/painel" : "/entrevistadores"}
-            className={buttonVariants({ variant: "ink", className: "h-12 px-5" })}
+            className={buttonVariants({ className: "h-12 px-5" })}
           >
             {isInterviewer ? "Abrir horários" : "Agendar nova sessão"}
           </Link>

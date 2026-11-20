@@ -159,7 +159,7 @@ export function InterviewerCard({
 
       <div className="flex items-center justify-between">
         <span className="text-muted-foreground text-xs">por sessão</span>
-        <span className="bg-primary text-ink font-heading rounded-full px-3.5 py-1.5 text-lg font-extrabold tabular-nums">
+        <span className="edge bg-primary text-ink font-heading rounded-full px-3.5 py-1.5 text-lg font-extrabold tabular-nums">
           {formatPrice(priceCents)}
         </span>
       </div>
