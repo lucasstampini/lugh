@@ -14,7 +14,9 @@ import { ConnectionStatus } from "./ConnectionStatus";
 import { EndSessionButton } from "./EndSessionButton";
 import { LanguageSelect } from "./LanguageSelect";
 import { RoomTimer } from "./RoomTimer";
+import { RunOutput } from "./RunOutput";
 import { useLanguage } from "./useLanguage";
+import { useRunCode } from "./useRunCode";
 import { VideoPanel } from "./VideoPanel";
 
 // Monaco só existe no navegador e é pesado: fica num pedaço separado do bundle.
@@ -39,15 +41,25 @@ type Props = {
   session?: RoomSession;
   // O entrevistador encerrou a sessão (o servidor já confirmou).
   onSessionEnded: () => void;
+  // Quem está na sala, para a rota de execução de código conferir o acesso.
+  sessionId: string;
+  userName: string;
 };
 
-export function RoomLayout({ session, onSessionEnded }: Props) {
+export function RoomLayout({ session, onSessionEnded, sessionId, userName }: Props) {
   const room = useRoomContext();
   // A aba é de cada participante (não sincroniza): um pode ler o código enquanto o outro desenha.
   const [tab, setTab] = useState<Tab>("code");
   // A linguagem mora aqui porque o seletor fica no cabeçalho, fora do painel do editor.
   const collab = useCollab()?.collab ?? null;
   const [language, changeLanguage] = useLanguage(collab);
+  const { run, pending, canRun, execute } = useRunCode({
+    collab,
+    sessionId,
+    userName,
+    sendName: !session,
+    language,
+  });
 
   return (
     // `dark`: a sala é toda escura (LiveKit, Monaco, Excalidraw dark); sem isto as abas e
@@ -124,14 +136,16 @@ export function RoomLayout({ session, onSessionEnded }: Props) {
                     linguagem
                   </span>
                   <LanguageSelect value={language} onChange={changeLanguage} />
-                  {/* Rodar o código ainda não existe: o botão fica desabilitado até lá. */}
+                  {/* Roda o código do documento compartilhado no Judge0. Sem colaboração
+                      conectada não há documento para enviar nem onde mostrar a saída. */}
                   <Button
                     type="button"
-                    disabled
-                    title="Executar código chega em breve"
+                    disabled={!canRun || pending}
+                    title={canRun ? undefined : "Executar precisa da colaboração conectada"}
+                    onClick={execute}
                     className="rounded-[10px] px-4"
                   >
-                    Executar
+                    {pending ? "Executando…" : "Executar"}
                   </Button>
                 </div>
               ) : null}
@@ -140,6 +154,7 @@ export function RoomLayout({ session, onSessionEnded }: Props) {
                 do Yjs (e o Monaco perderia desfazer, cursor e rolagem) a cada troca de aba. */}
             <TabsContent value="code" keepMounted className="flex min-h-0 flex-col data-hidden:hidden">
               <CodeEditor language={language} />
+              <RunOutput run={run} />
             </TabsContent>
             <TabsContent value="board" keepMounted className="flex min-h-0 flex-col data-hidden:hidden">
               <Whiteboard />
