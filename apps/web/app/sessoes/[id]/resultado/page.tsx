@@ -3,9 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Eyebrow } from "@/components/eyebrow";
-import { ScoreBar } from "@/components/score-bar";
 import { SessionBoard } from "@/components/session-board";
 import { SiteHeader } from "@/components/site-header";
+import { Stars } from "@/components/stars";
 import { buttonVariants } from "@/components/ui/button";
 import { SCORE_LABELS } from "@/lib/feedback";
 import { initials } from "@/lib/initials";
@@ -209,12 +209,15 @@ export default async function SessionResultPage({
                 <section className="flex flex-col gap-[18px]">
                   <h2 className={H2}>Notas por competência</h2>
                   {scoreEntries.map(([key, value]) => (
-                    <div key={key} className="flex flex-col gap-1.5">
-                      <div className="flex justify-between gap-3 text-[15px] font-bold">
-                        <span>{SCORE_LABELS[key] ?? key}</span>
+                    <div
+                      key={key}
+                      className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 text-[15px] font-bold"
+                    >
+                      <span className="min-w-0 break-words">{SCORE_LABELS[key] ?? key}</span>
+                      <span className="flex items-center gap-2.5">
+                        <Stars value={value} size={20} />
                         <span className="font-mono tabular-nums">{value}/5</span>
-                      </div>
-                      <ScoreBar score={value} />
+                      </span>
                     </div>
                   ))}
                 </section>
@@ -238,13 +241,15 @@ export default async function SessionResultPage({
                 <section className="flex flex-col gap-3">
                   <h2 className={H2}>{isCandidate ? "Sua avaliação" : "Avaliação do candidato"}</h2>
                   <div className="edge flex flex-col gap-2 rounded-2xl p-5">
-                    <div className="flex justify-between gap-3 text-[15px] font-bold">
+                    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 text-[15px] font-bold">
                       <span>
                         {isCandidate ? `Nota para ${interviewerName}` : "Nota que você recebeu"}
                       </span>
-                      <span className="font-mono tabular-nums">{review.rating}/5</span>
+                      <span className="flex items-center gap-2.5">
+                        <Stars value={review.rating} size={20} />
+                        <span className="font-mono tabular-nums">{review.rating}/5</span>
+                      </span>
                     </div>
-                    <ScoreBar score={review.rating} />
                     {review.comment ? (
                       <p className="text-muted-foreground pt-1 break-words whitespace-pre-line">
                         {review.comment}

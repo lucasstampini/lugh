@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { Field, FieldError, FormAlert } from "@/components/form-field";
+import { StarInput } from "@/components/star-input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -24,7 +25,7 @@ const HIRE_OPTIONS = [
 
 const H2 = "font-heading text-[22px] font-bold";
 const SUMMARY_ROW = "flex justify-between gap-4";
-// Escolha em pílula (nota e sim/não): marcada fica em tinta com texto branco.
+// Escolha em pílula (sim/não): marcada fica em tinta com texto branco.
 const CHOICE =
   "edge bg-card has-checked:bg-foreground has-checked:text-background has-focus-visible:outline-ring inline-flex min-h-11 cursor-pointer items-center justify-center has-checked:font-bold has-focus-visible:outline-[3px] has-focus-visible:outline-offset-[3px]";
 
@@ -99,22 +100,12 @@ export function FeedbackForm({
                     {criterion.help}
                   </p>
                 </div>
-                <div className="flex gap-1.5 font-mono text-[15px]">
-                  {SCORE_VALUES.map((value) => (
-                    <label key={value} className={`${CHOICE} w-11 rounded-[9px]`}>
-                      <input
-                        type="radio"
-                        name={name}
-                        value={value}
-                        checked={scores[criterion.key] === value}
-                        onChange={() => setScores((current) => ({ ...current, [criterion.key]: value }))}
-                        className="sr-only"
-                      />
-                      <span className="sr-only">nota </span>
-                      {value}
-                    </label>
-                  ))}
-                </div>
+                <StarInput
+                  name={name}
+                  values={SCORE_VALUES}
+                  value={scores[criterion.key] ?? null}
+                  onChange={(value) => setScores((current) => ({ ...current, [criterion.key]: value }))}
+                />
                 <div className="w-full empty:hidden">
                   <FieldError id={`${name}-error`} message={error} />
                 </div>

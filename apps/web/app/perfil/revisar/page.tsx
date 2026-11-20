@@ -19,7 +19,7 @@ function SummaryCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border-border-soft bg-card flex flex-col gap-4 rounded-[20px] border p-6">
+    <div className="border-border bg-card flex flex-col gap-4 rounded-[20px] border-[1.5px] p-6">
       <div className="flex items-center justify-between gap-3">
         <h3 className="font-heading text-[26px] leading-[1.15] font-extrabold tracking-[-0.03em]">
           {title}
@@ -114,7 +114,7 @@ export default async function PerfilRevisarPage() {
           <p className="text-muted-foreground text-sm">Ainda não é salvo no perfil.</p>
         </SummaryCard>
 
-        <div className="border-border-soft bg-card flex flex-col gap-4 rounded-[20px] border p-6">
+        <div className="border-border bg-card flex flex-col gap-4 rounded-[20px] border-[1.5px] p-6">
           <h3 className="font-heading text-[26px] leading-[1.15] font-extrabold tracking-[-0.03em]">
             Você escolhe o que recebe
           </h3>

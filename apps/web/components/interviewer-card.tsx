@@ -1,9 +1,10 @@
-import { Building2, CalendarDays, Star } from "lucide-react";
+import { Building2, CalendarDays } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/format-price";
 import { initials } from "@/lib/initials";
 import { AREA_OPTIONS, SENIORITY_OPTIONS } from "@/lib/interviewer-options";
+import { Stars } from "./stars";
 
 const areaLabels = Object.fromEntries(
   AREA_OPTIONS.map((option) => [option.value, option.label]),
@@ -12,7 +13,7 @@ const seniorityLabels = Object.fromEntries(
   SENIORITY_OPTIONS.map((option) => [option.value, option.label]),
 );
 
-// Nota do entrevistador em estrelas, arredondando para a meia mais próxima.
+// Nota do entrevistador em estrelas, com a média e o total de avaliações.
 function Rating({ value, count }: { value: number | null; count: number }) {
   if (count === 0 || value === null) {
     return (
@@ -20,31 +21,9 @@ function Rating({ value, count }: { value: number | null; count: number }) {
     );
   }
 
-  const rounded = Math.round(value * 2) / 2;
-
   return (
     <span className="flex items-center gap-1.5">
-      <span
-        role="img"
-        aria-label={`Nota ${value.toFixed(1).replace(".", ",")} de 5`}
-        className="flex items-center gap-0.5"
-      >
-        {[1, 2, 3, 4, 5].map((step) => (
-          <Star
-            key={step}
-            aria-hidden="true"
-            size={13}
-            strokeWidth={1.6}
-            className={
-              rounded >= step
-                ? "fill-primary stroke-ink"
-                : rounded >= step - 0.5
-                  ? "fill-primary/50 stroke-ink"
-                  : "fill-card stroke-border-soft"
-            }
-          />
-        ))}
-      </span>
+      <Stars value={value} size={13} />
       <span className="text-ink text-xs font-bold tabular-nums">
         {value.toFixed(1).replace(".", ",")}
       </span>
@@ -85,7 +64,7 @@ export function InterviewerCard({
   return (
     <Link
       href={`/entrevistadores/${profileId}`}
-      className="edge bg-card flex h-full flex-col gap-3.5 rounded-[20px] p-6 transition-shadow hover:shadow-[0_8px_0_-2px_var(--primary)]"
+      className="edge bg-card flex h-full flex-col gap-3.5 rounded-[20px] p-6 transition-shadow hover:shadow-[5px_5px_0_var(--primary)]"
     >
       <div className="flex items-center gap-3">
         {avatarUrl ? (

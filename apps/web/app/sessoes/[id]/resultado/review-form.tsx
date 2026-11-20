@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { Field, FieldError, FormAlert } from "@/components/form-field";
+import { StarInput } from "@/components/star-input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -58,25 +59,7 @@ export function ReviewForm({
           </p>
           <span className="text-muted-foreground font-mono text-xs">1 fraco · 5 excelente</span>
         </div>
-        <div className="flex gap-1.5 font-mono text-[15px]">
-          {RATING_VALUES.map((value) => (
-            <label
-              key={value}
-              className="edge bg-card has-checked:bg-foreground has-checked:text-background has-focus-visible:outline-ring inline-flex min-h-11 w-11 cursor-pointer items-center justify-center rounded-[9px] has-checked:font-bold has-focus-visible:outline-[3px] has-focus-visible:outline-offset-[3px]"
-            >
-              <input
-                type="radio"
-                name="rating"
-                value={value}
-                checked={rating === value}
-                onChange={() => setRating(value)}
-                className="sr-only"
-              />
-              <span className="sr-only">nota </span>
-              {value}
-            </label>
-          ))}
-        </div>
+        <StarInput name="rating" values={RATING_VALUES} value={rating} onChange={setRating} />
         <FieldError id="rating-error" message={fieldErrors.rating} />
       </div>
 

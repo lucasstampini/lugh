@@ -4,6 +4,14 @@ import { NavLink } from "./nav-link";
 import { SiteHeaderAccount } from "./site-header-account";
 import { buttonVariants } from "./ui/button";
 
+// Seções da landing no menu de quem ainda não entrou.
+const LANDING_SECTIONS = [
+  { href: "/#como-funciona", label: "Como funciona" },
+  { href: "/#a-sala", label: "A sala" },
+  { href: "/#seja-entrevistador", label: "Seja entrevistador" },
+  { href: "/#faq", label: "Dúvidas" },
+];
+
 // Isolado num Suspense próprio (ver site-header.tsx) porque acessa cookies()
 // via createClient(): cacheComponents exige limite de streaming pra dado
 // dinâmico fora da página.
@@ -20,9 +28,15 @@ export async function SiteHeaderNav() {
         className="flex flex-wrap items-center gap-x-7 gap-y-1 text-[15px] font-semibold"
       >
         <NavLink href="/entrevistadores">Entrevistadores</NavLink>
-        <Link href="/#como-funciona" className="text-foreground inline-flex min-h-11 items-center">
-          Como funciona
-        </Link>
+        {LANDING_SECTIONS.map((section) => (
+          <Link
+            key={section.href}
+            href={section.href}
+            className="text-foreground hidden min-h-11 items-center lg:inline-flex"
+          >
+            {section.label}
+          </Link>
+        ))}
         <Link href="/login" className="text-foreground inline-flex min-h-11 items-center">
           Entrar
         </Link>
