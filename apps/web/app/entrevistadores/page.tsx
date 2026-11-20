@@ -1,11 +1,18 @@
 import { ArrowRight, Compass, Search } from "lucide-react";
 import Link from "next/link";
+import { AutoSubmitSelect } from "@/components/auto-submit-select";
 import { SiteHeader } from "@/components/site-header";
 import { InterviewerCard } from "@/components/interviewer-card";
 import { FadeIn } from "@/components/motion/fade-in";
 import { HoverLift } from "@/components/motion/hover-lift";
 import { AREA_OPTIONS, SENIORITY_OPTIONS } from "@/lib/interviewer-options";
-import { upcomingSlots } from "@/lib/availability";
+import {
+  type AvailabilityBlock,
+  type BookedRange,
+  bookingWindow,
+  computeAllWeeks,
+  upcomingSlotLabels,
+} from "@/lib/slots";
 import { createClient } from "@/lib/supabase/server";
 
 export const instant = false;
@@ -45,26 +52,46 @@ export default async function EntrevistadoresPage({
   // entrevistador vem da view interviewer_profiles (só essas duas colunas,
   // nunca email), buscada à parte porque o PostgREST não embeda views.
   const profileIds = interviewers?.map((i) => i.profile_id) ?? [];
-  const [{ data: profiles }, { data: availability }, { data: ratings }] = profileIds.length
-    ? await Promise.all([
-        supabase
-          .from("interviewer_profiles")
-          .select("id, name, avatar_url")
-          .in("id", profileIds),
-        supabase
-          .from("availability")
-          .select("interviewer_id, weekday, start_time")
-          .in("interviewer_id", profileIds),
-        supabase.rpc("interviewer_ratings", { interviewer_ids: profileIds }),
-      ])
-    : [{ data: [] }, { data: [] }, { data: [] }];
+  const now = new Date();
+  const { from, to } = bookingWindow(now);
+  const [{ data: profiles }, { data: availability }, { data: ratings }, { data: booked }] =
+    profileIds.length
+      ? await Promise.all([
+          supabase
+            .from("interviewer_profiles")
+            .select("id, name, avatar_url")
+            .in("id", profileIds),
+          supabase
+            .from("availability")
+            .select("interviewer_id, weekday, start_time, end_time")
+            .in("interviewer_id", profileIds),
+          supabase.rpc("interviewer_ratings", { interviewer_ids: profileIds }),
+          // Sessões já marcadas, para os horários do card serem só os que
+          // ainda dá para agendar.
+          supabase.rpc("interviewers_booked_slots", {
+            interviewer_ids: profileIds,
+            from_ts: from.toISOString(),
+            to_ts: to.toISOString(),
+          }),
+        ])
+      : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }];
 
   const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
-  const blocksByInterviewer = new Map<string, { weekday: number; start_time: string }[]>();
+  const blocksByInterviewer = new Map<string, AvailabilityBlock[]>();
   for (const block of availability ?? []) {
     const list = blocksByInterviewer.get(block.interviewer_id) ?? [];
-    list.push({ weekday: block.weekday, start_time: block.start_time });
+    list.push({
+      weekday: block.weekday,
+      start_time: block.start_time,
+      end_time: block.end_time,
+    });
     blocksByInterviewer.set(block.interviewer_id, list);
+  }
+  const bookedByInterviewer = new Map<string, BookedRange[]>();
+  for (const range of booked ?? []) {
+    const list = bookedByInterviewer.get(range.interviewer_id) ?? [];
+    list.push({ starts_at: range.starts_at, ends_at: range.ends_at });
+    bookedByInterviewer.set(range.interviewer_id, list);
   }
   const ratingByInterviewer = new Map(
     (ratings ?? []).map((r) => [r.interviewer_id, { average: r.average, reviewCount: r.review_count }]),
@@ -75,8 +102,12 @@ export default async function EntrevistadoresPage({
       interviewer,
       profile: profileById.get(interviewer.profile_id),
       rating: ratingByInterviewer.get(interviewer.profile_id) ?? null,
-      slots: upcomingSlots(
-        blocksByInterviewer.get(interviewer.profile_id) ?? [],
+      slots: upcomingSlotLabels(
+        computeAllWeeks({
+          blocks: blocksByInterviewer.get(interviewer.profile_id) ?? [],
+          booked: bookedByInterviewer.get(interviewer.profile_id) ?? [],
+          now,
+        }),
         3,
       ),
     }))
@@ -94,11 +125,18 @@ export default async function EntrevistadoresPage({
 
   const hasFilters = Boolean(area || senioridade || q);
 
+  // A busca atual como link, para o "tentar de novo" do estado de erro.
+  const retryParams = new URLSearchParams();
+  if (q) retryParams.set("q", q);
+  if (area) retryParams.set("area", area);
+  if (senioridade) retryParams.set("senioridade", senioridade);
+  if (sort !== "recentes") retryParams.set("sort", sort);
+  const retryHref = retryParams.size ? `/entrevistadores?${retryParams}` : "/entrevistadores";
+
   return (
     <main className="bg-secondary flex min-h-screen flex-col">
       <SiteHeader />
 
-      {/* Hero Índigo de largura total (Figma node 3:4779). */}
       {/* Faixa de topo amarela, a mesma da landing: tinta sobre o amarelo Sol,
           textura de pontos e a linha de tinta embaixo. */}
       <section
@@ -108,7 +146,7 @@ export default async function EntrevistadoresPage({
           backgroundSize: "26px 26px",
         }}
       >
-        <FadeIn className="mx-auto flex max-w-[1312px] flex-col gap-4 px-6 py-14 lg:px-0">
+        <FadeIn className="mx-auto flex max-w-[1312px] flex-col gap-4 px-6 py-14">
           <span className="text-ink/75 text-[11px] font-extrabold tracking-[0.1em] uppercase">
             Encontre quem vai treinar com você
           </span>
@@ -130,6 +168,7 @@ export default async function EntrevistadoresPage({
           <form
             id="filtros-entrevistadores"
             method="GET"
+            role="search"
             className="flex flex-col gap-5"
           >
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -139,13 +178,16 @@ export default async function EntrevistadoresPage({
                   size={16}
                   className="text-muted-foreground absolute top-1/2 left-3.5 -translate-y-1/2"
                 />
+                <label htmlFor="q" className="sr-only">
+                  Buscar por nome, cargo ou empresa
+                </label>
                 <input
                   id="q"
                   name="q"
-                  type="text"
+                  type="search"
                   defaultValue={q}
-                  placeholder="Busque por nome, área ou especialidade"
-                  className="border-border-soft bg-background h-[52px] w-full rounded-xl border pl-10 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  placeholder="Busque por nome, cargo ou empresa"
+                  className="border-border-soft bg-background h-[52px] w-full rounded-xl border pl-10 pr-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
                 />
               </div>
               <button
@@ -162,7 +204,7 @@ export default async function EntrevistadoresPage({
                 <label htmlFor="area" className="text-xs font-bold">
                   Área
                 </label>
-                <select
+                <AutoSubmitSelect
                   id="area"
                   name="area"
                   defaultValue={area ?? ""}
@@ -174,14 +216,14 @@ export default async function EntrevistadoresPage({
                       {option.label}
                     </option>
                   ))}
-                </select>
+                </AutoSubmitSelect>
               </div>
 
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="senioridade" className="text-xs font-bold">
                   Senioridade
                 </label>
-                <select
+                <AutoSubmitSelect
                   id="senioridade"
                   name="senioridade"
                   defaultValue={senioridade ?? ""}
@@ -193,14 +235,14 @@ export default async function EntrevistadoresPage({
                       {option.label}
                     </option>
                   ))}
-                </select>
+                </AutoSubmitSelect>
               </div>
             </div>
 
             {hasFilters ? (
               <Link
                 href="/entrevistadores"
-                className="text-brand-deep w-fit text-sm font-semibold"
+                className="text-brand-deep inline-flex min-h-11 w-fit items-center text-sm font-semibold underline underline-offset-4"
               >
                 Limpar filtros
               </Link>
@@ -209,16 +251,40 @@ export default async function EntrevistadoresPage({
         </FadeIn>
 
         {error ? (
-          <p className="text-destructive text-sm">
-            Não deu para carregar os entrevistadores agora. Tente de novo.
-          </p>
+          <div
+            role="alert"
+            className="border-border-soft bg-card flex flex-col items-start gap-3 rounded-[20px] border p-7"
+          >
+            <h2 className="font-heading text-xl font-bold">
+              Não deu para carregar os profissionais
+            </h2>
+            <p className="text-muted-foreground max-w-[52ch] text-sm">
+              O problema é do nosso lado. Tente de novo em alguns segundos.
+            </p>
+            <Link
+              href={retryHref}
+              className="bg-brand-deep flex h-11 items-center rounded-xl px-5 text-sm font-bold text-white"
+            >
+              Tentar de novo
+            </Link>
+          </div>
         ) : results.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-16 text-center">
-            <p className="font-heading text-xl font-bold">
-              Nenhum profissional encontrado
+          <div className="border-border-dashed flex flex-col items-center gap-3 rounded-[20px] border-[1.5px] border-dashed px-6 py-14 text-center">
+            <h2 className="font-heading text-xl font-bold">
+              {hasFilters
+                ? "Nenhum profissional com esses filtros"
+                : "Ainda não há profissionais disponíveis"}
+            </h2>
+            <p className="text-muted-foreground max-w-[46ch] text-sm">
+              {hasFilters
+                ? "Tire um filtro ou busque por outro termo."
+                : "Os primeiros perfis estão chegando. Volte em breve."}
             </p>
             {hasFilters ? (
-              <Link href="/entrevistadores" className="text-brand-deep text-sm">
+              <Link
+                href="/entrevistadores"
+                className="bg-brand-deep flex h-11 items-center rounded-xl px-5 text-sm font-bold text-white"
+              >
                 Limpar filtros
               </Link>
             ) : null}
@@ -242,16 +308,16 @@ export default async function EntrevistadoresPage({
                 <label htmlFor="sort" className="text-muted-foreground">
                   Ordenar por:
                 </label>
-                <select
+                <AutoSubmitSelect
                   id="sort"
                   name="sort"
                   form="filtros-entrevistadores"
                   defaultValue={sort}
-                  className="border-border-soft bg-background h-9 rounded-lg border px-2.5 text-sm font-semibold"
+                  className="border-border-soft bg-background h-11 rounded-lg border px-2.5 text-sm font-semibold"
                 >
                   <option value="recentes">Mais recentes</option>
                   <option value="preco">Menor preço</option>
-                </select>
+                </AutoSubmitSelect>
               </div>
             </div>
 

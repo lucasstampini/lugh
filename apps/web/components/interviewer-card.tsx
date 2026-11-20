@@ -1,12 +1,9 @@
 import { Building2, CalendarDays, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { formatPrice } from "@/lib/format-price";
+import { initials } from "@/lib/initials";
 import { AREA_OPTIONS, SENIORITY_OPTIONS } from "@/lib/interviewer-options";
-
-const priceFormatter = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-});
 
 const areaLabels = Object.fromEntries(
   AREA_OPTIONS.map((option) => [option.value, option.label]),
@@ -14,14 +11,6 @@ const areaLabels = Object.fromEntries(
 const seniorityLabels = Object.fromEntries(
   SENIORITY_OPTIONS.map((option) => [option.value, option.label]),
 );
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
-  return (first + last).toUpperCase();
-}
-
 
 // Nota do entrevistador em estrelas, arredondando para a meia mais próxima.
 function Rating({ value, count }: { value: number | null; count: number }) {
@@ -105,7 +94,7 @@ export function InterviewerCard({
             alt={name}
             width={56}
             height={56}
-            className="ring-accent rounded-full ring-2"
+            className="ring-accent size-14 shrink-0 rounded-full object-cover ring-2"
             unoptimized
           />
         ) : (
@@ -115,7 +104,7 @@ export function InterviewerCard({
         )}
 
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <p className="truncate font-bold">{name}</p>
+          <h3 className="truncate font-bold">{name}</h3>
           <Rating value={rating} count={reviewCount} />
           <p className="text-muted-foreground truncate text-sm">{headline}</p>
           <div className="flex min-w-0 items-center gap-2">
@@ -162,16 +151,16 @@ export function InterviewerCard({
             ))}
           </div>
         </div>
-      ) : null}
+      ) : (
+        <p className="text-muted-foreground border-border-soft mt-auto border-t pt-4 text-xs">
+          Sem horário livre nos próximos 14 dias.
+        </p>
+      )}
 
-      <div
-        className={`flex items-center justify-between ${
-          slots.length > 0 ? "" : "border-border-soft mt-auto border-t pt-4"
-        }`}
-      >
+      <div className="flex items-center justify-between">
         <span className="text-muted-foreground text-xs">por sessão</span>
         <span className="bg-primary text-ink font-heading rounded-full px-3.5 py-1.5 text-lg font-extrabold tabular-nums">
-          {priceFormatter.format(priceCents / 100)}
+          {formatPrice(priceCents)}
         </span>
       </div>
     </Link>
