@@ -11,9 +11,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GitHubIcon, LinkedInIcon } from "@/components/brand-icons";
 import { FadeIn } from "@/components/motion/fade-in";
-import { ScoreBar } from "@/components/score-bar";
 import { HoverLift } from "@/components/motion/hover-lift";
 import { SiteHeader } from "@/components/site-header";
+import { Stars } from "@/components/stars";
 import { buttonVariants } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format-price";
 import { initials } from "@/lib/initials";
@@ -29,10 +29,10 @@ export const instant = false;
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// Pílula dos links sociais, sobre a faixa azul: contorno branco translúcido
-// que fecha no hover. A logo da plataforma herda a cor do texto.
+// Pílula dos links sociais, sobre a faixa azul: contorno branco
+// que enche no hover. A logo da plataforma herda a cor do texto.
 const SOCIAL_LINK =
-  "flex min-h-9 items-center gap-2 rounded-full border border-white/45 px-3 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/15";
+  "flex min-h-9 items-center gap-2 rounded-full border-[1.5px] border-white px-3 text-sm font-bold text-white transition-colors hover:border-white hover:bg-white/15";
 
 const areaLabels = Object.fromEntries(
   AREA_OPTIONS.map((option) => [option.value, option.label]),
@@ -209,19 +209,19 @@ export default async function InterviewerProfilePage({
               <Image
                 src={profile.avatar_url}
                 alt={profileName}
-                width={96}
-                height={96}
-                className="rounded-[24px]"
+                width={168}
+                height={168}
+                className="edge size-32 shrink-0 rounded-[28px] object-cover sm:size-[168px]"
                 unoptimized
               />
             ) : (
-              <div className="edge bg-card text-ink flex size-24 shrink-0 items-center justify-center rounded-[24px] font-heading text-2xl font-bold">
+              <div className="edge bg-card text-ink font-heading flex size-32 shrink-0 items-center justify-center rounded-[28px] text-4xl font-bold sm:size-[168px] sm:text-5xl">
                 {initials(profileName)}
               </div>
             )}
 
-            <div className="flex flex-col gap-1.5">
-              <p className="text-[11px] font-extrabold tracking-[0.1em] text-white/75 uppercase">
+            <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-2">
+              <p className="text-xs font-extrabold tracking-[0.1em] text-white uppercase">
                 Seu treino, com experiência de mercado
               </p>
               {/* Nome e links sociais na mesma linha, dentro da faixa. */}
@@ -257,8 +257,8 @@ export default async function InterviewerProfilePage({
                   ) : null}
                 </div>
               </div>
-              <p className="text-lg font-semibold">{interviewer.headline}</p>
-              <p className="text-sm text-white/75">{interviewer.company}</p>
+              <p className="text-xl font-bold">{interviewer.headline}</p>
+              <p className="text-base font-medium text-white">{interviewer.company}</p>
               {!isVisible ? (
                 <span className="edge bg-primary text-ink mt-1 w-fit rounded-full px-2.5 py-1 text-xs font-bold">
                   {interviewer.active
@@ -269,15 +269,15 @@ export default async function InterviewerProfilePage({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/80">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-base font-medium text-white">
             <span>
-              <span className="font-bold text-white">{sessionsCount}</span>{" "}
+              <span className="font-extrabold">{sessionsCount}</span>{" "}
               {sessionsCount === 1 ? "sessão" : "sessões"} na Lugh
             </span>
             {rating && rating.review_count > 0 ? (
               <span>
                 <span className="text-primary">★</span>{" "}
-                <span className="font-bold">
+                <span className="font-extrabold">
                   {rating.average.toFixed(1).replace(".", ",")}
                 </span>{" "}
                 · {rating.review_count}{" "}
@@ -291,7 +291,7 @@ export default async function InterviewerProfilePage({
             <span>No Lugh desde {joinYear}</span>
           </div>
 
-          <div className="h-px bg-white/25" />
+          <div className="h-px bg-white/40" />
 
           <div className="flex flex-wrap gap-2">
             {interviewer.areas.map((area) => (
@@ -325,7 +325,7 @@ export default async function InterviewerProfilePage({
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
           <div className="flex flex-col gap-5">
             {interviewer.bio ? (
-              <FadeIn className="border-border-soft bg-card flex flex-col gap-4 rounded-[20px] border p-7">
+              <FadeIn className="edge bg-card flex flex-col gap-4 rounded-[20px] p-7">
                 <h2 className="font-heading text-xl font-bold">
                   Um pouco sobre mim
                 </h2>
@@ -337,7 +337,7 @@ export default async function InterviewerProfilePage({
 
             <FadeIn
               index={1}
-              className="border-border-soft bg-card flex flex-col gap-5 rounded-[20px] border p-7"
+              className="edge bg-card flex flex-col gap-5 rounded-[20px] p-7"
             >
               <h2 className="font-heading text-xl font-bold">
                 O que vamos praticar
@@ -367,7 +367,7 @@ export default async function InterviewerProfilePage({
 
             <FadeIn
               index={2}
-              className="border-border-soft bg-card flex flex-col gap-4 rounded-[20px] border p-7"
+              className="edge bg-card flex flex-col gap-4 rounded-[20px] p-7"
             >
               <h2 className="font-heading text-xl font-bold">Disponibilidade</h2>
               <p className="text-muted-foreground text-sm">
@@ -406,14 +406,14 @@ export default async function InterviewerProfilePage({
                 </div>
               )}
             </FadeIn>
-            {/* Quem treinou, conta: média em destaque e, abaixo, cada avaliação
+            {/* Avaliações: média em destaque e, abaixo, cada avaliação
                 pública com nota, comentário e data, como no site no ar. */}
             <FadeIn
               index={3}
-              className="border-border-soft bg-card flex flex-col gap-4 rounded-[20px] border p-7"
+              className="edge bg-card flex flex-col gap-4 rounded-[20px] p-7"
             >
               <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                <h2 className="font-heading text-xl font-bold">Quem treinou, conta</h2>
+                <h2 className="font-heading text-xl font-bold">Avaliações</h2>
                 {rating && rating.review_count > 0 ? (
                   <span className="text-muted-foreground font-mono text-xs">
                     {rating.review_count}{" "}
@@ -423,13 +423,11 @@ export default async function InterviewerProfilePage({
               </div>
 
               {rating && rating.review_count > 0 ? (
-                <div className="bg-accent flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl p-4">
+                <div className="edge bg-accent flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl p-4">
                   <span className="font-heading text-3xl leading-none font-extrabold tabular-nums">
                     {rating.average.toFixed(1).replace(".", ",")}
                   </span>
-                  <div className="min-w-[140px] flex-1">
-                    <ScoreBar score={Math.round(rating.average)} />
-                  </div>
+                  <Stars value={rating.average} size={22} />
                   <span className="text-muted-foreground text-xs">
                     média das sessões concluídas
                   </span>
@@ -445,7 +443,7 @@ export default async function InterviewerProfilePage({
                   {reviews.map((review, index) => (
                     <li
                       key={index}
-                      className="border-border-soft flex flex-col gap-2 rounded-xl border p-4"
+                      className="edge flex flex-col gap-2 rounded-xl p-4"
                     >
                       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                         <p className="font-bold break-words">
@@ -457,9 +455,7 @@ export default async function InterviewerProfilePage({
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <div className="max-w-[180px] flex-1">
-                          <ScoreBar score={review.rating} />
-                        </div>
+                        <Stars value={review.rating} size={18} />
                         <span className="font-mono text-sm font-bold tabular-nums">
                           {review.rating}/5
                         </span>
@@ -479,7 +475,7 @@ export default async function InterviewerProfilePage({
 
           <FadeIn index={5}>
             <div className="flex flex-col gap-5">
-              <aside className="border-border-soft bg-card flex h-fit flex-col gap-5 rounded-[20px] border p-6">
+              <aside className="edge bg-card flex h-fit flex-col gap-5 rounded-[20px] p-6 shadow-[5px_5px_0_var(--primary)]">
                 <div className="flex flex-col gap-2">
                   <p className="text-brand-deep text-xs font-extrabold tracking-[0.1em] uppercase">
                     Um passo mais perto
@@ -516,7 +512,7 @@ export default async function InterviewerProfilePage({
 
                 {/* Agenda dos próximos 7 dias: cada horário leva direto para o
                     agendamento daquele slot. */}
-                <div className="border-border-soft flex flex-col gap-3 rounded-xl border p-4">
+                <div className="edge flex flex-col gap-3 rounded-xl p-4">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                     <p className="text-[10px] font-extrabold tracking-[0.06em] uppercase">
                       Horários livres
@@ -597,7 +593,7 @@ export default async function InterviewerProfilePage({
                   {isOwner ? (
                     <Link
                       href="/painel/perfil"
-                      className="border-border-soft flex h-12 items-center justify-center gap-2 rounded-xl border text-sm font-bold"
+                      className="edge hover-deep flex h-12 items-center justify-center gap-2 rounded-xl text-sm font-bold"
                     >
                       Editar perfil
                     </Link>
@@ -618,7 +614,7 @@ export default async function InterviewerProfilePage({
                 </p>
               </aside>
 
-              <div className="border-border-soft bg-card flex items-start gap-3 rounded-[20px] border p-5">
+              <div className="edge bg-card flex items-start gap-3 rounded-[20px] p-5">
                 <CalendarCheck
                   aria-hidden="true"
                   size={20}
