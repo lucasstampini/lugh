@@ -215,6 +215,15 @@ function SectionHead({
   );
 }
 
+// Seções da página no menu do topo: âncoras, com rolagem suave (globals.css).
+const HEADER_SECTIONS = [
+  { href: "#como-funciona", label: "Como funciona" },
+  { href: "#a-sala", label: "A sala" },
+  { href: "#profissionais", label: "Profissionais" },
+  { href: "#seja-entrevistador", label: "Seja entrevistador" },
+  { href: "#faq", label: "Dúvidas" },
+];
+
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col overflow-x-hidden">
@@ -248,12 +257,15 @@ export default function Home() {
             aria-label="Principal"
             className="flex flex-wrap items-center gap-x-7 gap-y-1 text-[15px] font-semibold"
           >
-            <a
-              href="#como-funciona"
-              className="nav-underline hidden min-h-11 items-center text-white after:bg-white! sm:inline-flex"
-            >
-              Como funciona
-            </a>
+            {HEADER_SECTIONS.map((section) => (
+              <a
+                key={section.href}
+                href={section.href}
+                className="nav-underline hidden min-h-11 items-center text-white after:bg-white! md:inline-flex"
+              >
+                {section.label}
+              </a>
+            ))}
             <Suspense fallback={null}>
               <LandingHeaderActions />
             </Suspense>
