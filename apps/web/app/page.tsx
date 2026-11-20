@@ -14,6 +14,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { RoomCollage } from "@/components/demo/room-collage";
+import { PriceStepper } from "@/components/demo/price-stepper";
 import { PortalGate } from "@/components/motion/portal-gate";
 import { LandingHeaderActions } from "@/components/landing-header-actions";
 import { buttonVariants } from "@/components/ui/button";
@@ -79,7 +80,7 @@ const AGENDA_SLOT: Record<SlotState, string> = {
   livre: "bg-accent text-ink rounded-[7px] py-[7px]",
   fechado:
     "border-border-dashed text-muted-foreground rounded-[7px] border-[1.5px] border-dashed py-[5.5px]",
-  marcado: "pop edge bg-primary text-ink rounded-[7px] py-[5.5px] font-bold",
+  marcado: "edge bg-primary text-ink rounded-[7px] py-[5.5px] font-bold",
 };
 
 // Perfis ilustrativos da vitrine de entrevistadores. O card do meio sobe e os
@@ -135,12 +136,6 @@ const INTERVIEWER_STATS = [
   },
 ];
 
-const INTERVIEWER_START = [
-  "Crie o perfil com área, senioridade e LinkedIn para a gente verificar.",
-  "Defina seu preço e marque na agenda os horários que quiser abrir.",
-  "Conduza a sessão na sala do Lugh e preencha o feedback no fim.",
-];
-
 const INTERVIEWER_BENEFITS = [
   { lead: "Ganhe dinheiro", rest: "compartilhando sua experiência" },
   { lead: "Encontre talentos", rest: "antes de eles chegarem ao mercado" },
@@ -189,11 +184,12 @@ const STEP_NUMBER_TONE = {
   ink: "bg-foreground text-background",
 } as const;
 
+// Os passos não levam a lugar nenhum: sem hover, para não parecerem botão.
 const STEP_CARD =
-  "rise lift-card edge bg-card box-border flex flex-col items-start gap-[18px] rounded-[20px] p-[clamp(22px,2.4vw,32px)]";
+  "rise edge bg-card box-border flex flex-col items-start gap-[18px] rounded-[20px] p-[clamp(22px,2.4vw,32px)]";
 
-// Cabeçalho de seção em duas colunas: filete e rótulo curto à esquerda, título
-// de display à direita.
+// Cabeçalho de seção: tudo alinhado à esquerda, com o rótulo pequeno (filete e
+// mono) em cima do título de display.
 function SectionHead({
   eyebrow,
   title,
@@ -204,21 +200,17 @@ function SectionHead({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="rise grid grid-cols-1 gap-x-[clamp(24px,4vw,56px)] gap-y-4 md:grid-cols-[4fr_8fr]">
-      <div className="flex items-start gap-3 md:pt-[0.5em]">
-        <span
-          aria-hidden="true"
-          className="bg-brand-deep mt-[0.55em] h-[6px] w-9 shrink-0 rounded-full"
-        />
-        <span className="text-brand-deep font-mono text-[13px] leading-[1.5] font-bold tracking-[0.08em] uppercase">
-          {eyebrow}
-        </span>
+    <div className="rise flex min-w-0 flex-col items-start gap-4">
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <span aria-hidden="true" className="bg-brand-deep h-[6px] w-9 shrink-0 rounded-full" />
+          <span className="text-brand-deep font-mono text-[13px] leading-[1.5] font-bold tracking-[0.08em] uppercase">
+            {eyebrow}
+          </span>
+        </div>
+        <h2 className={`max-w-[24ch] ${H2}`}>{title}</h2>
       </div>
-
-      <div className="flex min-w-0 flex-col gap-4">
-        <h2 className={H2}>{title}</h2>
-        {children}
-      </div>
+      {children}
     </div>
   );
 }
@@ -226,81 +218,77 @@ function SectionHead({
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col overflow-x-hidden">
-      {/* Bloco de abertura: cabeçalho e hero sobre o amarelo Sol, fechado por
-          uma linha de tinta. O portão da marca é o fundo da faixa inteira. */}
+      {/* Bloco de abertura: cabeçalho e hero sobre a faixa azul, fechada por
+          uma linha de tinta. Só quatro cores aqui: azul, branco, tinta e o
+          amarelo do botão. */}
       <div
-        className="edge-b bg-primary relative flex min-h-[66svh] flex-col overflow-hidden"
+        className="edge-b bg-brand-deep relative flex flex-col overflow-hidden"
         style={{
-          backgroundImage: "radial-gradient(rgba(20,22,43,0.13) 1.4px, transparent 1.4px)",
+          backgroundImage: "radial-gradient(rgba(255,255,255,0.16) 1.4px, transparent 1.4px)",
           backgroundSize: "26px 26px",
         }}
       >
-
         {/* Cabeçalho de ponta a ponta: logo encostado na esquerda, menu na
             direita, sem coluna centralizada. */}
-        <header className="bg-primary relative z-20 flex w-full flex-wrap items-center justify-between gap-x-8 gap-y-3 px-[clamp(20px,5vw,48px)] py-[18px]">
-        <Link
-          href="/"
-          aria-label="Lugh, página inicial"
-          className="group/logo inline-flex min-h-11 items-center"
-        >
-          <Image
-            src="/brand/lugh-logo.svg"
-            alt="Lugh"
-            width={98}
-            height={34}
-            className="h-[34px] w-auto transition-transform duration-[400ms] group-hover/logo:scale-[1.06] group-hover/logo:-rotate-3"
-          />
-        </Link>
-        <nav
-          aria-label="Principal"
-          className="flex flex-wrap items-center gap-x-7 gap-y-1 text-[15px] font-semibold"
-        >
-          <a
-            href="#como-funciona"
-            className="text-foreground nav-underline hidden min-h-11 items-center sm:inline-flex"
+        <header className="relative z-20 flex w-full flex-wrap items-center justify-between gap-x-8 gap-y-3 px-[clamp(20px,5vw,48px)] py-[18px]">
+          <Link
+            href="/"
+            aria-label="Lugh, página inicial"
+            className="group/logo inline-flex min-h-11 items-center"
           >
-            Como funciona
-          </a>
-          <Suspense fallback={null}>
-            <LandingHeaderActions />
-          </Suspense>
-        </nav>
-      </header>
+            <Image
+              src="/brand/lugh-logo-dark-bg.svg"
+              alt="Lugh"
+              width={98}
+              height={34}
+              className="h-[34px] w-auto transition-transform duration-[400ms] group-hover/logo:scale-[1.06] group-hover/logo:-rotate-3"
+            />
+          </Link>
+          <nav
+            aria-label="Principal"
+            className="flex flex-wrap items-center gap-x-7 gap-y-1 text-[15px] font-semibold"
+          >
+            <a
+              href="#como-funciona"
+              className="nav-underline hidden min-h-11 items-center text-white after:bg-white! sm:inline-flex"
+            >
+              Como funciona
+            </a>
+            <Suspense fallback={null}>
+              <LandingHeaderActions />
+            </Suspense>
+          </nav>
+        </header>
 
-        {/* Hero: o título atravessa a faixa inteira, em corpo de display, e
-            embaixo dele o botão à esquerda e a arte à direita. Assim o alto da
-            página não fica vazio. */}
-        <section className="relative z-10 mx-auto box-border flex w-full max-w-[1400px] flex-1 flex-wrap items-center gap-x-[clamp(28px,4vw,56px)] gap-y-10 pr-[clamp(20px,4vw,56px)] pl-[clamp(16px,2.5vw,36px)] pt-[clamp(24px,3vw,48px)] pb-0">
-          <div className="pop flex min-w-0 flex-[1_1_440px] flex-col items-start gap-8 self-center pt-[clamp(8px,2vw,28px)] pb-[clamp(16px,3vw,48px)]">
-            <h1 className="font-heading max-w-[16ch] text-[clamp(34px,4.3vw,64px)] leading-[1.0] font-extrabold tracking-[-0.03em] text-white">
+        {/* Hero: título e botão à esquerda, a arte à direita, com respiro
+            entre o cabeçalho e os cards. */}
+        <section className="relative z-10 mx-auto box-border flex w-full max-w-[1240px] flex-wrap items-center gap-x-[clamp(32px,5vw,72px)] gap-y-12 px-[clamp(20px,5vw,48px)] pt-[clamp(32px,5vw,72px)] pb-[clamp(48px,6vw,88px)]">
+          <div className="pop flex min-w-0 flex-[1_1_420px] flex-col items-start gap-8">
+            <h1 className="font-heading max-w-[16ch] text-[clamp(34px,4.3vw,60px)] leading-[1.02] font-extrabold tracking-[-0.03em] text-white">
               Treine entrevista técnica com quem já trabalha na área
-              <span className="text-brand-deep">.</span>
+              <span className="text-primary">.</span>
             </h1>
 
             <Link
               href="/entrevistadores"
-              className={buttonVariants({
-                variant: "ink",
-                size: "lg",
-                className: "h-14 px-7 text-[17px]",
-              })}
+              className={buttonVariants({ size: "lg", className: "h-14 px-7 text-[17px]" })}
             >
               Encontrar um entrevistador
               <ArrowRight aria-hidden="true" />
             </Link>
           </div>
 
-          {/* Arte: o portão da marca ao fundo, a colagem da sala na frente. */}
-          <div className="relative min-w-0 flex-[1.6_1_660px] self-end pt-[clamp(12px,2vw,28px)] md:translate-x-[clamp(4px,1.5vw,20px)]">
+          {/* Arte: o portão da marca como marca d'água, a colagem da sala na
+              frente. */}
+          <div className="relative flex min-w-0 flex-[1_1_420px] justify-center">
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute -top-[26%] bottom-0 left-1/2 flex w-full max-w-[560px] -translate-x-1/2 items-end justify-center md:max-w-none md:-translate-x-[54%]"
+              className="pointer-events-none absolute inset-y-[4%] left-1/2 flex -translate-x-1/2 items-end justify-center"
             >
-              <PortalGate tone="deep" areaTags={[]} />
+              <PortalGate tone="soft" areaTags={[]} />
             </div>
 
-            <div className="pop relative mx-auto w-full pb-[clamp(16px,2vw,28px)] md:-mt-[clamp(16px,4vw,64px)] md:w-[92%] md:translate-x-[5%]">
+            <div className="relative w-full max-w-[540px]">
               <RoomCollage />
             </div>
           </div>
@@ -318,11 +306,11 @@ export default function Home() {
                 <Link
                   key={slug}
                   href={`/entrevistadores?area=${slug}`}
-                  className="rise lift-card edge bg-card group/area box-border flex min-h-[104px] items-center gap-[18px] rounded-2xl px-[22px] py-5"
+                  className="hover-deep edge bg-card group/area box-border flex min-h-[104px] items-center gap-[18px] rounded-2xl px-[22px] py-5"
                 >
                   <span
                     aria-hidden="true"
-                    className="edge bg-secondary flex size-[52px] shrink-0 items-center justify-center rounded-xl transition-[background-color,transform] duration-300 group-hover/area:bg-primary group-hover/area:-rotate-6"
+                    className="edge bg-secondary flex size-[52px] shrink-0 items-center justify-center rounded-xl transition-colors duration-200 group-hover/area:border-white group-hover/area:bg-white/15"
                   >
                     <Icon size={26} strokeWidth={1.8} />
                   </span>
@@ -491,33 +479,50 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Seja entrevistador: a oferta para o outro lado do marketplace. O
-            entrevistador escolhe dia, horário e preço, então a agenda e o preço
-            aparecem como peça, não só como texto. */}
+        {/* Seja entrevistador: a oferta para o outro lado do marketplace. Duas
+            colunas: o convite e o que a pessoa ganha à esquerda; à direita, a
+            agenda e o preço como peças, porque são as duas coisas que ela
+            controla. */}
         <section id="seja-entrevistador" className="edge-b bg-background">
-          <div className={`${SECTION} flex flex-col gap-[clamp(28px,3.5vw,48px)] py-[clamp(56px,7vw,96px)]`}>
-            <SectionHead eyebrow="Do outro lado" title="Seja entrevistador">
-              <p className="text-muted-foreground max-w-[58ch] text-[17px]">
-                Você escolhe os dias, os horários e quanto cobra. O Lugh cuida do
-                pagamento, da sala e do feedback, e o seu tempo livre vira renda.
-              </p>
+          <div className={`${SECTION} flex flex-col gap-[clamp(32px,4vw,56px)] py-[clamp(56px,7vw,96px)]`}>
+            <div className="flex flex-wrap items-start gap-x-[clamp(32px,5vw,72px)] gap-y-10">
+              <div className="flex min-w-0 flex-[1_1_380px] flex-col items-start gap-8">
+                <SectionHead eyebrow="Do outro lado" title="Seja entrevistador">
+                  <p className="text-muted-foreground max-w-[52ch] text-[17px]">
+                    Você escolhe os dias, os horários e quanto cobra. O Lugh cuida do
+                    pagamento, da sala e do feedback, e o seu tempo livre vira renda.
+                  </p>
+                </SectionHead>
 
-              <Link
-                href="/onboarding/entrevistador"
-                className={buttonVariants({
-                  size: "lg",
-                  className: "h-[54px] self-start px-[26px]",
-                })}
-              >
-                Quero entrevistar
-                <ArrowRight aria-hidden="true" />
-              </Link>
-            </SectionHead>
+                <ul className="rise flex flex-col gap-3.5">
+                  {INTERVIEWER_BENEFITS.map((benefit) => (
+                    <li key={benefit.lead} className="flex items-start gap-3 text-[17px]">
+                      <span
+                        aria-hidden="true"
+                        className="edge bg-primary text-ink mt-px flex size-[26px] shrink-0 items-center justify-center rounded-lg"
+                      >
+                        <Check size={15} strokeWidth={3} />
+                      </span>
+                      <span>
+                        <strong className="font-extrabold">{benefit.lead}</strong>{" "}
+                        {benefit.rest}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
 
-            <div className="flex flex-wrap gap-x-14 gap-y-12">
-              {/* Peça da agenda e do preço: o controle fica com o entrevistador. */}
-              <div className="rise flex min-w-0 flex-[1.1_1_440px] flex-col gap-4">
-                <div className="lift-card edge bg-card flex flex-col gap-3.5 rounded-[18px] p-5 shadow-[6px_6px_0_var(--border)]">
+                <Link
+                  href="/onboarding/entrevistador"
+                  className={buttonVariants({ size: "lg", className: "h-[54px] px-[26px]" })}
+                >
+                  Quero entrevistar
+                  <ArrowRight aria-hidden="true" />
+                </Link>
+              </div>
+
+              {/* Peças da agenda e do preço: o controle fica com o entrevistador. */}
+              <div className="rise flex min-w-0 flex-[1_1_400px] flex-col gap-4">
+                <div className="edge bg-card flex flex-col gap-3.5 rounded-[18px] p-5">
                   <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
                     <span className="font-bold">sua agenda</span>
                     <span className="text-muted-foreground">16 a 20 nov</span>
@@ -525,24 +530,13 @@ export default function Home() {
 
                   <div className="grid grid-cols-5 gap-1.5 text-center font-mono text-xs">
                     {AGENDA_DAYS.map((day) => (
-                      <span
-                        key={day}
-                        className={day === "qua" ? "font-bold" : "text-muted-foreground"}
-                      >
+                      <span key={day} className="text-muted-foreground">
                         {day}
                       </span>
                     ))}
                     {AGENDA_ROWS.flatMap((row, rowIndex) =>
                       row.map((slot, index) => (
-                        <span
-                          key={`${rowIndex}-${index}`}
-                          className={AGENDA_SLOT[slot.state]}
-                          style={
-                            slot.state === "marcado"
-                              ? { animationDelay: `${0.6 + rowIndex * 0.5}s` }
-                              : undefined
-                          }
-                        >
+                        <span key={`${rowIndex}-${index}`} className={AGENDA_SLOT[slot.state]}>
                           {slot.label}
                         </span>
                       )),
@@ -565,67 +559,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="lift-card edge bg-card flex flex-wrap items-center justify-between gap-4 rounded-[18px] p-5 shadow-[6px_6px_0_var(--border)]">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-muted-foreground font-mono text-xs">
-                      seu preço por sessão
-                    </span>
-                    <span className="font-heading text-[clamp(28px,3vw,38px)] leading-none font-extrabold tabular-nums">
-                      R$ 100
-                    </span>
-                    <span className="text-muted-foreground text-sm">
-                      Você define, muda quando quiser e sem teto.
-                    </span>
-                  </div>
-
-                  <div aria-hidden="true" className="flex items-center gap-2">
-                    <span className="edge bg-card flex size-9 items-center justify-center rounded-[10px] font-mono text-lg font-bold">
-                      −
-                    </span>
-                    <span className="edge bg-primary text-ink flex size-9 items-center justify-center rounded-[10px] font-mono text-lg font-bold">
-                      +
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="rise flex min-w-0 flex-[1_1_380px] flex-col gap-8">
-                <div className="flex flex-col gap-4">
-                  <h3 className="font-heading text-2xl font-bold">O que você ganha</h3>
-                  <ul className="flex flex-col gap-3.5">
-                    {INTERVIEWER_BENEFITS.map((benefit) => (
-                      <li
-                        key={benefit.lead}
-                        className="group/benefit flex items-start gap-3 text-[17px]"
-                      >
-                        <span
-                          aria-hidden="true"
-                          className="edge bg-primary text-ink mt-px flex size-[26px] shrink-0 items-center justify-center rounded-lg transition-transform duration-300 group-hover/benefit:scale-115 group-hover/benefit:-rotate-10"
-                        >
-                          <Check size={15} strokeWidth={3} />
-                        </span>
-                        <span>
-                          <strong className="font-extrabold">{benefit.lead}</strong>{" "}
-                          {benefit.rest}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="flex flex-col gap-4">
-                  <h3 className="font-heading text-2xl font-bold">Como começar</h3>
-                  <ol className="flex flex-col gap-3.5">
-                    {INTERVIEWER_START.map((item, index) => (
-                      <li key={item} className="flex items-start gap-3 text-[17px]">
-                        <span className="edge bg-card text-ink mt-px flex size-[26px] shrink-0 items-center justify-center rounded-lg font-mono text-xs font-bold">
-                          {index + 1}
-                        </span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
+                <PriceStepper />
               </div>
             </div>
 
@@ -664,17 +598,17 @@ export default function Home() {
               {FAQ.map((item) => (
                 <details
                   key={item.question}
-                  className="edge bg-card text-foreground group/faq rounded-[14px] transition-[transform,box-shadow] duration-300 hover:-translate-x-[3px] hover:-translate-y-[3px] hover:shadow-[6px_6px_0_var(--primary)] open:bg-primary open:shadow-[6px_6px_0_var(--border)]"
+                  className="lift edge bg-card text-foreground group/faq rounded-[14px]"
                 >
                   <summary className="flex min-h-[60px] cursor-pointer list-none items-center justify-between gap-4 px-5 text-[17px] font-extrabold [&::-webkit-details-marker]:hidden">
                     {item.question}
                     <Plus
                       aria-hidden="true"
                       size={20}
-                      className="edge bg-primary box-content shrink-0 rounded-[9px] p-1.5 transition-transform duration-300 group-open/faq:bg-card group-open/faq:rotate-45"
+                      className="edge bg-primary text-ink box-content shrink-0 rounded-[9px] p-1.5 transition-transform duration-300 group-open/faq:rotate-45"
                     />
                   </summary>
-                  <p className="text-muted-foreground max-w-[64ch] px-5 pb-[18px] group-open/faq:text-ink">
+                  <p className="text-muted-foreground max-w-[64ch] px-5 pb-[18px]">
                     {item.answer}
                   </p>
                 </details>

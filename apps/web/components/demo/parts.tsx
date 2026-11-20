@@ -13,7 +13,7 @@ export function LiveDot({ className }: { className?: string }) {
   );
 }
 
-// Cursor colaborativo com etiqueta. Cores do produto: entrevistador em verde,
+// Cursor colaborativo com etiqueta. Cores do produto: entrevistador em amarelo,
 // candidato em branco.
 export function DemoCursor({
   name,
@@ -56,8 +56,8 @@ export function LineAuthor({
   return (
     <span
       className={cn(
-        "text-ink rounded-[5px] px-1.5 py-px text-[11px] font-bold",
-        tone === "interviewer" ? "bg-primary" : "bg-code-foreground",
+        "edge text-ink rounded-[5px] px-1.5 py-px text-[11px] font-bold",
+        tone === "interviewer" ? "bg-primary" : "bg-card",
       )}
     >
       {name}
@@ -70,17 +70,17 @@ export function Caret({ className }: { className?: string }) {
   return (
     <span
       aria-hidden="true"
-      className={cn("caret bg-code-foreground inline-block h-[1.1em] w-0.5 align-text-bottom", className)}
+      className={cn("caret bg-ink inline-block h-[1.1em] w-0.5 align-text-bottom", className)}
     />
   );
 }
 
 export function Kw({ children }: { children: ReactNode }) {
-  return <span className="text-primary">{children}</span>;
+  return <span className="text-brand-deep font-bold">{children}</span>;
 }
 
 export function LineNo({ children }: { children: ReactNode }) {
-  return <span className="text-code-muted">{children}</span>;
+  return <span className="text-muted-foreground">{children}</span>;
 }
 
 // Setas do diagrama do quadro, presas ao nó "API".
