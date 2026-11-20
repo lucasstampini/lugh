@@ -26,8 +26,11 @@ export function WizardSteps({
   steps?: WizardStep[];
 }) {
   return (
-    <div className="flex flex-col gap-3.5">
-      {steps.map((step, index) => {
+    <nav aria-label="Etapas">
+      {/* No celular as etapas ficam lado a lado, só com o número; a etapa
+          atual mostra o nome. A lista em coluna é do desktop. */}
+      <ol className="flex flex-wrap gap-2 lg:flex-col lg:gap-3.5">
+        {steps.map((step, index) => {
         const stepNumber = index + 1;
         const isActive = stepNumber === activeStep;
         const isDone = stepNumber < activeStep;
@@ -39,10 +42,17 @@ export function WizardSteps({
                 isActive ? "text-brand-deep" : isDone ? "text-primary" : "text-white/70"
               }`}
             >
-              {isDone ? "✓" : step.number}
+              {isDone ? (
+                <>
+                  <span aria-hidden="true">✓</span>
+                  <span className="sr-only">Concluída: </span>
+                </>
+              ) : (
+                step.number
+              )}
             </span>
             <span
-              className={`text-[13px] ${
+              className={`text-[13px] ${isActive ? "" : "max-lg:sr-only"} ${
                 isActive
                   ? "text-brand-deep font-extrabold"
                   : isDone
@@ -55,18 +65,29 @@ export function WizardSteps({
           </>
         );
 
-        const shape = `flex items-center gap-3 rounded-xl px-3 py-4 ${isActive ? "bg-card" : ""}`;
+        const shape = `flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 lg:py-4 ${
+          isActive ? "bg-card" : "max-lg:border max-lg:border-white/35"
+        }`;
 
-        return step.href ? (
-          <Link key={step.number} href={step.href} className={shape}>
-            {content}
-          </Link>
-        ) : (
-          <div key={step.number} className={shape}>
-            {content}
-          </div>
+        return (
+          <li key={step.number}>
+            {step.href ? (
+              <Link
+                href={step.href}
+                aria-current={isActive ? "step" : undefined}
+                className={shape}
+              >
+                {content}
+              </Link>
+            ) : (
+              <div aria-current={isActive ? "step" : undefined} className={shape}>
+                {content}
+              </div>
+            )}
+          </li>
         );
-      })}
-    </div>
+        })}
+      </ol>
+    </nav>
   );
 }

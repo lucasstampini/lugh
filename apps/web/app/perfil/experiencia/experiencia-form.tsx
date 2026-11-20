@@ -1,17 +1,17 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-
-const DEFAULT_SKILLS = ["JavaScript", "Node.js", "SQL"];
+import { NotSavedNote } from "../wizard-parts";
 
 // Etapa 3 ("Experiência e prática", Figma node 47:120) é só visual por
 // enquanto: curso, situação da formação, experiência e habilidades não têm
-// coluna no banco ainda. "Salvar e continuar" só navega pra próxima etapa.
+// coluna no banco ainda. "Continuar" só navega pra próxima etapa, e por isso
+// nada vem preenchido de início.
 export function ExperienciaForm() {
-  const [hasExperience, setHasExperience] = useState(false);
-  const [skills, setSkills] = useState(DEFAULT_SKILLS);
+  const [hasExperience, setHasExperience] = useState<boolean | null>(null);
+  const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
   const [addingSkill, setAddingSkill] = useState(false);
 
@@ -83,11 +83,18 @@ export function ExperienciaForm() {
       </div>
 
       <div className="border-border-soft bg-card flex flex-col gap-[18px] rounded-[20px] border p-6">
-        <h3 className="font-heading text-[26px] leading-[1.15] font-extrabold tracking-[-0.03em]">
+        <h3
+          id="experience-label"
+          className="font-heading text-[26px] leading-[1.15] font-extrabold tracking-[-0.03em]"
+        >
           Sua experiência na área
         </h3>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div
+          role="radiogroup"
+          aria-labelledby="experience-label"
+          className="flex flex-col gap-3 sm:flex-row"
+        >
           {[
             { value: false, label: "Ainda não trabalhei na área" },
             { value: true, label: "Já tenho experiência" },
@@ -97,6 +104,8 @@ export function ExperienciaForm() {
               <button
                 key={option.label}
                 type="button"
+                role="radio"
+                aria-checked={selected}
                 onClick={() => setHasExperience(option.value)}
                 className={`flex flex-1 items-center gap-2 rounded-xl border p-3.5 text-left text-sm font-bold ${
                   selected
@@ -104,7 +113,7 @@ export function ExperienciaForm() {
                     : "bg-card border-border-soft"
                 }`}
               >
-                {selected ? "✓" : "○"} {option.label}
+                <span aria-hidden="true">{selected ? "✓" : "○"}</span> {option.label}
               </button>
             );
           })}
@@ -124,9 +133,17 @@ export function ExperienciaForm() {
           {skills.map((skill) => (
             <span
               key={skill}
-              className="bg-accent text-ink rounded-[10px] px-3.5 py-2 text-xs font-bold"
+              className="bg-accent text-ink flex items-center gap-1 rounded-[10px] py-1 pr-1 pl-3.5 text-xs font-bold"
             >
               {skill}
+              <button
+                type="button"
+                aria-label={`Remover ${skill}`}
+                onClick={() => setSkills(skills.filter((item) => item !== skill))}
+                className="hover:bg-card flex size-7 items-center justify-center rounded-md"
+              >
+                <X aria-hidden="true" size={13} />
+              </button>
             </span>
           ))}
 
@@ -142,8 +159,9 @@ export function ExperienciaForm() {
                   addSkill();
                 }
               }}
+              aria-label="Nome da habilidade"
               placeholder="Nome da habilidade"
-              className="border-border-soft bg-card h-9 w-40 rounded-[10px] border px-3 text-xs outline-none"
+              className="border-border-soft bg-card focus-visible:ring-ring h-9 w-40 rounded-[10px] border px-3 text-xs outline-none focus-visible:ring-2"
             />
           ) : (
             <button
@@ -197,23 +215,21 @@ export function ExperienciaForm() {
       </div>
 
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
+        <NotSavedNote />
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/perfil/objetivo"
-            className="text-brand-deep flex h-[52px] items-center text-sm font-bold"
+            className="text-brand-deep flex min-h-[52px] items-center text-sm font-bold"
           >
             ← Voltar
           </Link>
           <Link
             href="/perfil/revisar"
-            className="bg-brand-deep text-white flex h-[52px] items-center gap-2 rounded-xl px-5 text-sm font-extrabold"
+            className="bg-brand-deep text-white flex min-h-[52px] items-center gap-2 rounded-xl px-5 text-sm font-extrabold"
           >
-            Salvar e continuar →
+            Continuar →
           </Link>
         </div>
-        <p className="text-muted-foreground text-xs">
-          Você pode salvar e sair para continuar depois.
-        </p>
       </div>
     </div>
   );

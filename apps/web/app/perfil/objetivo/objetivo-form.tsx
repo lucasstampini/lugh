@@ -3,6 +3,7 @@
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { NotSavedNote } from "../wizard-parts";
 
 const LEVEL_OPTIONS = ["Estágio", "Júnior", "Os dois"];
 const COMPANY_OPTIONS = ["Fintech de grande porte", "Big tech", "Empresa em crescimento"];
@@ -14,11 +15,12 @@ const FORMAT_OPTIONS = [
 
 // Etapa 2 ("Objetivo profissional", Figma node 47:61) é só visual por
 // enquanto: não existe coluna no banco pra nível, tipo de empresa ou
-// formato de treino. "Salvar e continuar" só navega pra próxima etapa.
+// formato de treino. "Continuar" só navega pra próxima etapa, e por isso nada
+// vem marcado de início: a tela não finge ter dados da pessoa.
 export function ObjetivoForm() {
-  const [level, setLevel] = useState("Os dois");
-  const [companies, setCompanies] = useState<string[]>(["Fintech de grande porte", "Big tech"]);
-  const [formats, setFormats] = useState<string[]>(["Entrevista técnica", "Comportamental"]);
+  const [level, setLevel] = useState<string | null>(null);
+  const [companies, setCompanies] = useState<string[]>([]);
+  const [formats, setFormats] = useState<string[]>([]);
 
   function toggle(list: string[], setList: (v: string[]) => void, value: string) {
     setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
@@ -34,7 +36,7 @@ export function ObjetivoForm() {
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
             <label htmlFor="area" className="text-xs font-bold">
-              Área de interesse *
+              Área de interesse
             </label>
             <input
               id="area"
@@ -58,14 +60,18 @@ export function ObjetivoForm() {
         </div>
 
         <div className="flex flex-col gap-3">
-          <span className="text-xs font-bold">Seu próximo nível *</span>
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <span id="level-label" className="text-xs font-bold">
+            Seu próximo nível
+          </span>
+          <div role="radiogroup" aria-labelledby="level-label" className="flex flex-col gap-3 sm:flex-row">
             {LEVEL_OPTIONS.map((option) => {
               const selected = option === level;
               return (
                 <button
                   key={option}
                   type="button"
+                  role="radio"
+                  aria-checked={selected}
                   onClick={() => setLevel(option)}
                   className={`flex flex-1 items-center gap-2.5 rounded-xl border p-4 text-left text-sm font-bold ${
                     selected
@@ -78,7 +84,7 @@ export function ObjetivoForm() {
                       selected ? "bg-primary border-primary" : "bg-card border-border-soft"
                     }`}
                   >
-                    {selected ? <span className="bg-card size-1.5 rounded-full" /> : null}
+                    {selected ? <span className="bg-ink size-1.5 rounded-full" /> : null}
                   </span>
                   {option}
                 </button>
@@ -109,6 +115,7 @@ export function ObjetivoForm() {
               <button
                 key={option}
                 type="button"
+                aria-pressed={selected}
                 onClick={() => toggle(companies, setCompanies, option)}
                 className={`flex flex-1 items-center gap-2.5 rounded-xl border p-4 text-left text-sm font-bold ${
                   selected
@@ -121,7 +128,7 @@ export function ObjetivoForm() {
                     selected ? "bg-primary" : "bg-card border-border-soft border"
                   }`}
                 >
-                  {selected ? <Check aria-hidden="true" size={12} className="text-white" /> : null}
+                  {selected ? <Check aria-hidden="true" size={12} strokeWidth={3} className="text-ink" /> : null}
                 </span>
                 {option}
               </button>
@@ -148,6 +155,7 @@ export function ObjetivoForm() {
               <button
                 key={option.label}
                 type="button"
+                aria-pressed={selected}
                 onClick={() => toggle(formats, setFormats, option.label)}
                 className={`flex flex-1 flex-col gap-2 rounded-xl border p-4 text-left ${
                   selected
@@ -166,7 +174,7 @@ export function ObjetivoForm() {
                     }`}
                   >
                     {selected ? (
-                      <Check aria-hidden="true" size={12} className="text-white" />
+                      <Check aria-hidden="true" size={12} strokeWidth={3} className="text-ink" />
                     ) : null}
                   </span>
                   {option.label}
@@ -179,23 +187,21 @@ export function ObjetivoForm() {
       </div>
 
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
+        <NotSavedNote />
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/perfil"
-            className="text-brand-deep flex h-[52px] items-center text-sm font-bold"
+            className="text-brand-deep flex min-h-[52px] items-center text-sm font-bold"
           >
             ← Voltar
           </Link>
           <Link
             href="/perfil/experiencia"
-            className="bg-brand-deep text-white flex h-[52px] items-center gap-2 rounded-xl px-5 text-sm font-extrabold"
+            className="bg-brand-deep text-white flex min-h-[52px] items-center gap-2 rounded-xl px-5 text-sm font-extrabold"
           >
-            Salvar e continuar →
+            Continuar →
           </Link>
         </div>
-        <p className="text-muted-foreground text-xs">
-          Você pode salvar e sair para continuar depois.
-        </p>
       </div>
     </div>
   );

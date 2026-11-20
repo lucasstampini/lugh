@@ -12,9 +12,6 @@ export type ProfileStep1Defaults = {
   bio: string;
 };
 
-// Cidade e estado saíram por enquanto (migration 20261109190000 ainda não
-// rodou no projeto Supabase). Volta a incluir depois de aplicar a migration.
-//
 // Cada bloco é um cartão branco separado (bg-card, border-border,
 // rounded-[20px]), igual ao Figma node 47:2: não é um formulário corrido.
 export function ProfileStep1Form({
@@ -37,15 +34,12 @@ export function ProfileStep1Form({
           name={avatarName}
           size={72}
           rounded="rounded-[20px]"
-          secondaryLabel="Adicionar foto"
+          secondaryLabel={avatarUrl ? "Trocar foto" : "Adicionar foto"}
+          help="Opcional. JPG, PNG ou WEBP de até 4 MB. As iniciais funcionam também."
         >
           <div className="flex flex-1 flex-col gap-1.5">
             <p className="font-heading text-[22px] leading-[1.15] font-extrabold tracking-[-0.03em]">
               Sua foto, do seu jeito
-            </p>
-            <p className="text-muted-foreground text-xs">
-              Opcional · JPG ou PNG de até 5 MB. As iniciais funcionam
-              também.
             </p>
           </div>
         </AvatarUpload>
@@ -66,6 +60,7 @@ export function ProfileStep1Form({
               name="name"
               defaultValue={defaultValues.name}
               required
+              autoComplete="name"
               maxLength={120}
               className="border-border-soft bg-card h-[50px] rounded-md border px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
@@ -73,7 +68,7 @@ export function ProfileStep1Form({
 
           <div className="flex flex-col gap-2">
             <label htmlFor="preferredName" className="text-xs font-bold">
-              Como quer ser chamada?
+              Como prefere ser chamado(a)?
             </label>
             <input
               id="preferredName"
@@ -91,19 +86,24 @@ export function ProfileStep1Form({
           </label>
           <input
             id="email"
+            type="email"
             value={defaultValues.email}
-            disabled
+            readOnly
+            aria-describedby="email-help"
             className="border-border-soft bg-background text-muted-foreground h-[50px] rounded-md border px-3.5 text-sm outline-none"
           />
-          <p className="text-muted-foreground text-[11px]">
-            Esse e-mail é usado para acesso e lembretes.
+          <p id="email-help" className="text-muted-foreground text-[11px]">
+            Esse e-mail é usado para acesso e lembretes. Não dá para trocar por aqui.
           </p>
         </div>
       </div>
 
       <div className="border-border-soft bg-card flex flex-col gap-[18px] rounded-[20px] border p-6">
         <div className="flex flex-col gap-1.5">
-          <h3 className="font-heading text-[26px] leading-[1.15] font-extrabold tracking-[-0.03em]">
+          <h3
+            id="bio-label"
+            className="font-heading text-[26px] leading-[1.15] font-extrabold tracking-[-0.03em]"
+          >
             Um pouco sobre você
           </h3>
           <p className="text-muted-foreground text-xs">
@@ -112,10 +112,11 @@ export function ProfileStep1Form({
           </p>
         </div>
 
-        <div className="border-border-soft flex flex-col gap-1.5 rounded-md border p-3.5">
+        <div className="border-border-soft focus-within:ring-ring flex flex-col gap-1.5 rounded-md border p-3.5 focus-within:ring-2">
           <textarea
             id="bio"
             name="bio"
+            aria-labelledby="bio-label"
             maxLength={300}
             rows={3}
             defaultValue={defaultValues.bio}
@@ -128,13 +129,17 @@ export function ProfileStep1Form({
         </div>
       </div>
 
-      {state?.error ? <p className="text-destructive text-sm">{state.error}</p> : null}
+      {state?.error ? (
+        <p role="alert" className="text-destructive text-sm font-semibold">
+          {state.error}
+        </p>
+      ) : null}
 
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/entrevistadores"
-            className="text-brand-deep flex h-[52px] items-center text-sm font-bold"
+            className="text-brand-deep flex min-h-[52px] items-center text-sm font-bold"
           >
             Voltar para minha conta
           </Link>
@@ -143,11 +148,11 @@ export function ProfileStep1Form({
             disabled={pending}
             className="bg-brand-deep text-white flex h-[52px] items-center gap-2 rounded-xl px-5 text-sm font-extrabold disabled:opacity-60"
           >
-            {pending ? "Salvando..." : "Salvar e continuar →"}
+            {pending ? "Salvando..." : "Salvar perfil"}
           </button>
         </div>
         <p className="text-muted-foreground text-xs">
-          Você pode salvar e sair para continuar depois.
+          Só esta etapa é salva. Depois de salvar, você volta para os profissionais.
         </p>
       </div>
     </form>

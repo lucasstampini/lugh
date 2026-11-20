@@ -29,17 +29,22 @@ export function PreferenceToggles() {
       {PREFERENCES.map((pref) => {
         const on = state[pref.key];
         return (
-          <div key={pref.key} className="flex items-center justify-between gap-4">
-            <div className="flex flex-col gap-0.5">
-              <p className="text-sm font-bold">{pref.title}</p>
-              <p className="text-muted-foreground text-xs">{pref.description}</p>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={on}
-              aria-label={pref.title}
-              onClick={() => setState((s) => ({ ...s, [pref.key]: !s[pref.key] }))}
+          // A linha inteira é o interruptor: o trilho sozinho tem 42 por 24 px,
+          // pequeno demais para o dedo.
+          <button
+            key={pref.key}
+            type="button"
+            role="switch"
+            aria-checked={on}
+            onClick={() => setState((s) => ({ ...s, [pref.key]: !s[pref.key] }))}
+            className="flex min-h-11 items-center justify-between gap-4 text-left"
+          >
+            <span className="flex flex-col gap-0.5">
+              <span className="text-sm font-bold">{pref.title}</span>
+              <span className="text-muted-foreground text-xs">{pref.description}</span>
+            </span>
+            <span
+              aria-hidden="true"
               className={`edge flex h-6 w-[42px] shrink-0 items-center rounded-full p-[3px] transition-colors ${
                 on ? "bg-primary justify-end" : "bg-muted justify-start"
               }`}
@@ -47,10 +52,13 @@ export function PreferenceToggles() {
               {/* O botão leva borda de tinta: sem ela, o branco sobre o trilho
                   claro do estado desligado fica invisível. */}
               <span className="edge bg-card size-[15px] rounded-full" />
-            </button>
-          </div>
+            </span>
+          </button>
         );
       })}
+      <p className="text-muted-foreground text-xs">
+        As preferências ainda não são salvas: é uma prévia do que vem por aí.
+      </p>
     </div>
   );
 }
