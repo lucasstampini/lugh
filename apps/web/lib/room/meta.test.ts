@@ -12,7 +12,7 @@
 import { describe, expect, it } from "vitest";
 import * as Y from "yjs";
 
-import { ensureDefaultLanguage, getLanguage, setLanguage } from "./meta";
+import { ensureDefaultLanguage, getLanguage, getRun, setLanguage, setRun } from "./meta";
 
 function newMeta() {
   return new Y.Doc().getMap<unknown>("meta");
@@ -58,5 +58,34 @@ describe("setLanguage", () => {
     setLanguage(meta, "java");
 
     expect(getLanguage(meta)).toBe("java");
+  });
+});
+
+describe("getRun e setRun", () => {
+  it("sem execução devolve null", () => {
+    expect(getRun(newMeta())).toBeNull();
+  });
+
+  it("guarda a execução em andamento e a concluída", () => {
+    const meta = newMeta();
+
+    setRun(meta, { state: "running", by: "Ana", language: "python" });
+    expect(getRun(meta)).toEqual({ state: "running", by: "Ana", language: "python" });
+
+    const done = {
+      state: "done" as const,
+      by: "Ana",
+      language: "python" as const,
+      result: { outcome: "success" as const, output: "1\n", errorOutput: "", timeSeconds: 0.01 },
+    };
+    setRun(meta, done);
+    expect(getRun(meta)).toEqual(done);
+  });
+
+  it("valor fora do formato, escrito por outro navegador, é ignorado", () => {
+    const meta = newMeta();
+    meta.set("run", { state: "done", by: "Ana", language: "python", result: { outcome: "hackeado" } });
+
+    expect(getRun(meta)).toBeNull();
   });
 });

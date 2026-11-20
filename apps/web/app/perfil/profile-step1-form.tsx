@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
+import { buttonVariants } from "@/components/ui/button";
 import { AvatarUpload } from "@/app/onboarding/candidato/avatar-upload";
 import { updateProfileStep1 } from "./actions";
 
@@ -146,7 +147,7 @@ export function ProfileStep1Form({
           <button
             type="submit"
             disabled={pending}
-            className="bg-brand-deep text-white flex h-[52px] items-center gap-2 rounded-xl px-5 text-sm font-extrabold disabled:opacity-60"
+            className={buttonVariants({ className: "h-[52px] px-5" })}
           >
             {pending ? "Salvando..." : "Salvar perfil"}
           </button>

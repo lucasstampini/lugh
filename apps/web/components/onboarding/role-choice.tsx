@@ -12,7 +12,7 @@ export function OnboardingRoleChoice() {
     <main className="flex min-h-screen flex-col items-center justify-center gap-12 px-6 py-16">
       <FadeIn className="flex flex-col items-center gap-4 text-center">
         <div className="flex items-center gap-2.5">
-          <span className="bg-primary h-2 w-8 rounded-full" />
+          <span className="bg-brand-deep h-2 w-8 rounded-full" />
           <span className="text-brand-deep text-sm font-extrabold tracking-[0.08em] uppercase">
             Bem-vindo ao Lugh
           </span>

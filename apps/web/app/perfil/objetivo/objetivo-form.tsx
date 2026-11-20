@@ -3,6 +3,7 @@
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { buttonVariants } from "@/components/ui/button";
 import { NotSavedNote } from "../wizard-parts";
 
 const LEVEL_OPTIONS = ["Estágio", "Júnior", "Os dois"];
@@ -75,13 +76,13 @@ export function ObjetivoForm() {
                   onClick={() => setLevel(option)}
                   className={`flex flex-1 items-center gap-2.5 rounded-xl border p-4 text-left text-sm font-bold ${
                     selected
-                      ? "bg-secondary border-primary text-brand-deep"
+                      ? "bg-secondary border-ink text-brand-deep"
                       : "bg-card border-border-soft"
                   }`}
                 >
                   <span
                     className={`flex size-[18px] shrink-0 items-center justify-center rounded-full border ${
-                      selected ? "bg-primary border-primary" : "bg-card border-border-soft"
+                      selected ? "bg-primary border-ink" : "bg-card border-border-soft"
                     }`}
                   >
                     {selected ? <span className="bg-ink size-1.5 rounded-full" /> : null}
@@ -119,13 +120,13 @@ export function ObjetivoForm() {
                 onClick={() => toggle(companies, setCompanies, option)}
                 className={`flex flex-1 items-center gap-2.5 rounded-xl border p-4 text-left text-sm font-bold ${
                   selected
-                    ? "bg-secondary border-primary text-brand-deep"
+                    ? "bg-secondary border-ink text-brand-deep"
                     : "bg-card border-border-soft"
                 }`}
               >
                 <span
                   className={`flex size-[18px] shrink-0 items-center justify-center rounded-md ${
-                    selected ? "bg-primary" : "bg-card border-border-soft border"
+                    selected ? "bg-primary border-ink border" : "bg-card border-border-soft border"
                   }`}
                 >
                   {selected ? <Check aria-hidden="true" size={12} strokeWidth={3} className="text-ink" /> : null}
@@ -159,7 +160,7 @@ export function ObjetivoForm() {
                 onClick={() => toggle(formats, setFormats, option.label)}
                 className={`flex flex-1 flex-col gap-2 rounded-xl border p-4 text-left ${
                   selected
-                    ? "bg-secondary border-primary"
+                    ? "bg-secondary border-ink"
                     : "bg-card border-border-soft"
                 }`}
               >
@@ -170,7 +171,7 @@ export function ObjetivoForm() {
                 >
                   <span
                     className={`flex size-[18px] shrink-0 items-center justify-center rounded-md ${
-                      selected ? "bg-primary" : "bg-card border-border-soft border"
+                      selected ? "bg-primary border-ink border" : "bg-card border-border-soft border"
                     }`}
                   >
                     {selected ? (
@@ -197,7 +198,7 @@ export function ObjetivoForm() {
           </Link>
           <Link
             href="/perfil/experiencia"
-            className="bg-brand-deep text-white flex min-h-[52px] items-center gap-2 rounded-xl px-5 text-sm font-extrabold"
+            className={buttonVariants({ className: "h-[52px] px-5" })}
           >
             Continuar →
           </Link>

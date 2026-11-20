@@ -7,10 +7,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Primário: amarelo com texto tinta. Um por tela ou seção.
-        default: "lift-hard bg-primary text-primary-foreground hover:bg-[#FFD75E] dark:border-primary",
+        // Primário: amarelo com contorno e texto tinta. Um por tela ou seção.
+        // No hover continua amarelo cheio, só levanta.
+        default: "lift-hard bg-primary text-primary-foreground dark:border-primary",
+        // Hover de controle claro é sempre azul elétrico cheio, nunca amarelo.
         outline:
-          "lift-hard bg-background text-foreground hover:bg-primary hover:text-ink aria-expanded:bg-accent dark:border-input dark:hover:bg-accent dark:hover:text-foreground",
+          "lift-hard bg-background text-foreground hover:bg-brand-deep hover:text-white aria-expanded:bg-accent dark:border-input dark:hover:bg-accent dark:hover:text-foreground",
         ink: "lift-hard bg-foreground text-background hover:bg-brand-deep hover:text-white",
         secondary:
           "lift border-transparent bg-secondary text-secondary-foreground hover:bg-accent",

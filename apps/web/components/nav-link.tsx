@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-// Link do cabeçalho. A página atual ganha o sublinhado verde por dentro
+// Link do cabeçalho. A página atual ganha o sublinhado amarelo por dentro
 // (box-shadow inset, pra não mexer na altura da linha).
 export function NavLink({ href, children }: { href: string; children: ReactNode }) {
   const pathname = usePathname();
