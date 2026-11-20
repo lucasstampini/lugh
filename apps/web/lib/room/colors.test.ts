@@ -15,7 +15,7 @@ import { colorForRole, colorFromName, PARTICIPANT_COLORS } from "./colors";
 
 describe("colorForRole", () => {
   it("entrevistador em Verde e candidato em branco, como no DESIGN.md", () => {
-    expect(colorForRole("interviewer")).toBe("#2EF58A");
+    expect(colorForRole("interviewer")).toBe("#FFC629");
     expect(colorForRole("candidate")).toBe("#FFFFFF");
   });
 });

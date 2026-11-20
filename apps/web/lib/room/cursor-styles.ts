@@ -12,9 +12,9 @@ import { NAME_MAX_LENGTH } from "./session";
 export type RemoteCursor = { clientId: number; name: unknown; color: unknown };
 
 // Cinza claro da sala: também precisa contrastar com o texto Tinta da etiqueta.
-const FALLBACK_COLOR = "#A9BDB2";
+const FALLBACK_COLOR = "#9AA0C2";
 // Texto das etiquetas: as cores dos participantes são todas claras.
-const LABEL_TEXT_COLOR = "#0F1A14";
+const LABEL_TEXT_COLOR = "#14162B";
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
 export function safeColor(color: unknown): string {
