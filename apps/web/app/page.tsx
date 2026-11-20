@@ -383,20 +383,30 @@ export default function Home() {
           </div>
         </section>
 
-        {/* A sala: a seção existe para receber a demo do produto. O quadro
-            abaixo é o espaço reservado, em 16 por 9, com a borda de tinta do
-            resto da página. */}
+        {/* A sala: captura da sala de verdade (editor compartilhado, vídeo e o
+            cursor da outra pessoa), na moldura de tinta do resto da página. */}
         <section id="a-sala" className="edge-t bg-secondary">
           <div className={`${SECTION} flex flex-col gap-[clamp(24px,3vw,40px)] py-[clamp(56px,7vw,96px)]`}>
-            <SectionHead eyebrow="A sala" title="Vídeo, código e quadro na mesma tela" />
+            <SectionHead eyebrow="A sala" title="Vídeo, código e quadro na mesma tela">
+              <p className="text-muted-foreground max-w-[58ch] text-[17px]">
+                Os dois editam o mesmo código e o mesmo quadro ao mesmo tempo, com vídeo ao
+                lado. Abre no navegador, sem instalar nada.
+              </p>
+            </SectionHead>
 
-            <div
-              role="img"
-              aria-label="Espaço reservado para a demonstração do produto"
-              className="rise edge bg-dots bg-card flex aspect-[16/9] w-full items-center justify-center rounded-[18px] shadow-[7px_7px_0_var(--border)]"
-            >
-              <span className="text-muted-foreground font-mono text-sm">demo do produto</span>
-            </div>
+            <figure className="rise flex flex-col gap-3">
+              <Image
+                src="/illustrations/sala.png"
+                alt="Sala de entrevista do Lugh: vídeo das duas pessoas à esquerda e, à direita, o editor com uma solução em Python e o cursor da entrevistadora"
+                width={2160}
+                height={1215}
+                sizes="(min-width: 1240px) 1144px, 92vw"
+                className="edge h-auto w-full rounded-[18px] shadow-[7px_7px_0_var(--border)]"
+              />
+              <figcaption className="text-muted-foreground font-mono text-xs">
+                captura da sala do Lugh, com nomes ilustrativos
+              </figcaption>
+            </figure>
           </div>
         </section>
 
