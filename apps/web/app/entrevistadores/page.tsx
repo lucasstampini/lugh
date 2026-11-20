@@ -375,7 +375,7 @@ export default async function EntrevistadoresPage({
 
         <div className="bg-secondary border-primary flex flex-wrap items-center gap-4 rounded-xl border-l-4 p-5">
           <Compass aria-hidden="true" size={24} className="text-brand-deep shrink-0" />
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <div className="flex min-w-[200px] flex-1 flex-col gap-0.5">
             <p className="text-sm font-bold">Ainda não sabe por onde começar?</p>
             <p className="text-foreground/70 text-sm">
               Para a primeira vaga, uma entrevista comportamental ajuda você
