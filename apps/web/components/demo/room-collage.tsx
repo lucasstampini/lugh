@@ -3,13 +3,12 @@ import Image from "next/image";
 import { Caret, DemoCursor, Kw, LineAuthor, LineNo } from "./parts";
 
 // Composição decorativa da sala: vídeo, editor e quadro, espalhados em
-// diagonal. Usada no hero da landing e no painel direito do login. O
-// conteúdo é ilustrativo. Cada card imita a interface real da sala com a
-// mesma linguagem do produto: borda de tinta, mono nos rótulos, amarelo no
-// que está ativo.
+// diagonal, no hero da landing. O conteúdo é ilustrativo. Os três cards são
+// brancos com borda de tinta, para o hero ter só quatro cores: o azul do
+// fundo, branco, tinta e o amarelo no que está ativo.
 
 const CARD =
-  "pop edge relative rounded-[14px] shadow-[7px_7px_0_var(--border)]";
+  "pop edge relative rounded-[14px] shadow-[5px_5px_0_var(--border)]";
 
 // Seta reta do diagrama, em SVG, para não depender do glifo da fonte.
 function Arrow({ direction, className }: { direction: "right" | "down"; className?: string }) {
@@ -93,7 +92,7 @@ export function RoomCollage() {
               height={360}
               className="size-full object-cover"
             />
-            <span className="edge bg-brand-deep absolute bottom-1.5 left-1.5 rounded-md px-1.5 py-px font-mono text-[11px] font-bold text-white">
+            <span className="edge bg-primary text-ink absolute bottom-1.5 left-1.5 rounded-md px-1.5 py-px font-mono text-[11px] font-bold">
               Camila
             </span>
           </div>
@@ -119,19 +118,19 @@ export function RoomCollage() {
       </div>
 
       {/* Editor: aba do arquivo, código com a linha ativa e a barra de status. */}
-      <div className={`${CARD} bg-code w-full self-stretch rotate-0 md:w-[64%] md:self-start md:-rotate-[1.1deg] overflow-hidden [animation-delay:.3s]`}>
-        <div className="border-code-border flex items-center justify-between border-b pr-4 font-mono text-xs">
+      <div className={`${CARD} bg-card w-full self-stretch rotate-0 md:w-[74%] md:self-start md:-rotate-[1.1deg] overflow-hidden [animation-delay:.3s]`}>
+        <div className="edge-b flex items-center justify-between pr-4 font-mono text-xs">
           <div className="flex items-stretch">
-            <span className="bg-code-line text-code-foreground border-code-border flex items-center gap-1.5 border-r px-3.5 py-2.5">
-              <span className="bg-primary size-1.5 rounded-full" />
+            <span className="bg-secondary text-ink border-border flex items-center gap-1.5 border-r-[1.5px] px-3.5 py-2.5 font-bold">
+              <span className="edge bg-primary size-2 rounded-full" />
               dois_somam.py
             </span>
-            <span className="text-code-muted flex items-center px-3 py-2.5">+</span>
+            <span className="text-muted-foreground flex items-center px-3 py-2.5">+</span>
           </div>
-          <span className="text-primary">Python</span>
+          <span className="text-muted-foreground">Python</span>
         </div>
 
-        <div className="text-code-foreground overflow-hidden px-4 pt-3.5 pb-3.5 font-mono text-[clamp(11px,1vw,13px)] leading-[1.75] whitespace-pre">
+        <div className="text-ink overflow-hidden px-4 pt-3.5 pb-3.5 font-mono text-[clamp(11px,1vw,13px)] leading-[1.75] whitespace-pre">
           <div>
             <LineNo>{"1  "}</LineNo>
             <Kw>def</Kw> dois_somam(nums, alvo):
@@ -145,24 +144,24 @@ export function RoomCollage() {
             {"    "}
             <Kw>for</Kw> i, n <Kw>in</Kw> enumerate(nums):
           </div>
-          <div className="bg-code-line border-primary -mx-4 border-l-2 px-4 pl-[14px]">
+          <div className="bg-secondary border-ink -mx-4 border-l-2 px-4 pl-[14px]">
             <LineNo>{"4  "}</LineNo>
             <span className="type-in [animation-delay:1s]">{"        falta = alvo - n"}</span>
             <Caret /> <LineAuthor name="Você" tone="candidate" />
           </div>
           <div>
             <LineNo>{"5  "}</LineNo>
-            <span className="type-in text-code-muted [animation-delay:3s]">
+            <span className="type-in text-muted-foreground [animation-delay:3s]">
               {"        # e se o par já foi visto?"}
             </span>
-            <Caret className="bg-primary [animation-delay:.4s]" />{" "}
+            <Caret className="[animation-delay:.4s]" />{" "}
             <LineAuthor name="Camila" tone="interviewer" />
           </div>
         </div>
 
-        <div className="border-code-border text-code-muted flex items-center justify-between border-t px-4 py-1.5 font-mono text-[10px]">
+        <div className="edge-t text-muted-foreground flex items-center justify-between px-4 py-1.5 font-mono text-[10px]">
           <span className="flex items-center gap-1.5">
-            <span className="bg-primary size-1.5 rounded-full" />
+            <span className="edge bg-primary size-2 rounded-full" />
             sincronizado
           </span>
           <span>Ln 4, Col 24 · UTF-8</span>

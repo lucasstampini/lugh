@@ -3,6 +3,7 @@
 import { Plus, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { buttonVariants } from "@/components/ui/button";
 import { NotSavedNote } from "../wizard-parts";
 
 // Etapa 3 ("Experiência e prática", Figma node 47:120) é só visual por
@@ -109,7 +110,7 @@ export function ExperienciaForm() {
                 onClick={() => setHasExperience(option.value)}
                 className={`flex flex-1 items-center gap-2 rounded-xl border p-3.5 text-left text-sm font-bold ${
                   selected
-                    ? "bg-secondary border-primary text-brand-deep"
+                    ? "bg-secondary border-ink text-brand-deep"
                     : "bg-card border-border-soft"
                 }`}
               >
@@ -225,7 +226,7 @@ export function ExperienciaForm() {
           </Link>
           <Link
             href="/perfil/revisar"
-            className="bg-brand-deep text-white flex min-h-[52px] items-center gap-2 rounded-xl px-5 text-sm font-extrabold"
+            className={buttonVariants({ className: "h-[52px] px-5" })}
           >
             Continuar →
           </Link>

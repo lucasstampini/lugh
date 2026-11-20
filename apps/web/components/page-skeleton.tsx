@@ -12,7 +12,7 @@ export function PageSkeleton({
   // Texto lido por leitor de tela enquanto carrega.
   label: string;
   maxWidth?: string;
-  // Faixa amarela de topo, para as telas que têm uma.
+  // Faixa azul de topo, para as telas que têm uma.
   band?: boolean;
   // Altura de cada bloco de conteúdo (classe do Tailwind).
   blocks?: string[];
@@ -21,9 +21,9 @@ export function PageSkeleton({
 
   const heading = (
     <div className="flex flex-col gap-3">
-      <div className={`h-3.5 w-28 rounded ${band ? "bg-ink/15" : "bg-skeleton skeleton-pulse"}`} />
+      <div className={`h-3.5 w-28 rounded ${band ? "bg-white/20" : "bg-skeleton skeleton-pulse"}`} />
       <div
-        className={`h-10 w-[min(100%,360px)] rounded ${band ? "bg-ink/15" : "bg-skeleton skeleton-pulse"}`}
+        className={`h-10 w-[min(100%,360px)] rounded ${band ? "bg-white/20" : "bg-skeleton skeleton-pulse"}`}
       />
     </div>
   );
@@ -33,7 +33,7 @@ export function PageSkeleton({
       <SiteHeader />
 
       {band ? (
-        <section className="edge-b bg-primary">
+        <section className="edge-b bg-brand-deep">
           <div className={`${container} py-[clamp(28px,4vw,52px)]`}>{heading}</div>
         </section>
       ) : null}
