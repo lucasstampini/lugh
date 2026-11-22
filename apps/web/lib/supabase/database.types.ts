@@ -335,12 +335,14 @@ export type Database = {
       sessions: {
         Row: {
           candidate_id: string
+          candidate_joined_at: string | null
           candidate_notes: string | null
           collab_doc_name: string | null
           created_at: string
           ends_at: string
           id: string
           interviewer_id: string
+          interviewer_joined_at: string | null
           livekit_room: string | null
           starts_at: string
           status: string
@@ -348,12 +350,14 @@ export type Database = {
         }
         Insert: {
           candidate_id: string
+          candidate_joined_at?: string | null
           candidate_notes?: string | null
           collab_doc_name?: string | null
           created_at?: string
           ends_at: string
           id?: string
           interviewer_id: string
+          interviewer_joined_at?: string | null
           livekit_room?: string | null
           starts_at: string
           status?: string
@@ -361,12 +365,14 @@ export type Database = {
         }
         Update: {
           candidate_id?: string
+          candidate_joined_at?: string | null
           candidate_notes?: string | null
           collab_doc_name?: string | null
           created_at?: string
           ends_at?: string
           id?: string
           interviewer_id?: string
+          interviewer_joined_at?: string | null
           livekit_room?: string | null
           starts_at?: string
           status?: string

@@ -89,7 +89,20 @@ export function roomAccess(startsAt: string, endsAt: string, now: Date = new Dat
 export type RoomEntry = RoomAccess | "unavailable";
 
 const ENTERABLE_STATUSES = new Set(["scheduled", "in_progress"]);
-const FINISHED_STATUSES = new Set(["awaiting_feedback", "completed"]);
+// no_show também é "já terminou": o horário passou sem os dois na sala.
+const FINISHED_STATUSES = new Set(["awaiting_feedback", "completed", "no_show"]);
+
+// A sessão só aconteceu quando os dois entraram na sala. Se o horário acabou sem isso,
+// ela é no_show, mesmo que o banco ainda diga scheduled ou in_progress (não há cron: quem
+// grava o status é closeMissedSessions, no próximo acesso à lista de sessões).
+export function isNoShow(
+  status: string,
+  endsAt: string,
+  bothJoined: boolean,
+  now: Date = new Date(),
+): boolean {
+  return ENTERABLE_STATUSES.has(status) && !bothJoined && now.getTime() >= new Date(endsAt).getTime();
+}
 
 export function roomEntry(
   status: string,

@@ -40,6 +40,17 @@ export async function POST(_request: Request, context: RouteContext<"/api/sessio
       );
     }
 
+    // Sem os dois na sala a sessão não aconteceu: não há o que encerrar nem feedback a dar.
+    if (!session.bothJoined) {
+      return Response.json(
+        {
+          error:
+            "Só dá para encerrar depois que o candidato entrar na sala. Se ele não aparecer, a sessão fecha sozinha no fim do horário.",
+        },
+        { status: 409 },
+      );
+    }
+
     try {
       await endSession(session.id);
     } catch {

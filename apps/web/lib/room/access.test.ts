@@ -51,6 +51,7 @@ function session(overrides: Partial<SessionForUser> = {}): SessionForUser {
     startsAt: "2026-11-12T21:00:00.000Z",
     endsAt: "2026-11-12T22:00:00.000Z",
     status: "scheduled",
+    bothJoined: false,
     ...overrides,
   };
 }

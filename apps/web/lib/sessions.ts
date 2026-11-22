@@ -1,9 +1,20 @@
-import { UUID_RE, type RoomSession, type SessionType } from "@/lib/room/session";
+import {
+  isNoShow,
+  UUID_RE,
+  type RoomSession,
+  type SessionRole,
+  type SessionType,
+} from "@/lib/room/session";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 
 // Só servidor: lê a sessão com o login de quem faz o request.
 
-export type SessionForUser = RoomSession & { status: string };
+export type SessionForUser = RoomSession & {
+  // Já vem como no_show quando o horário acabou sem os dois na sala (ver isNoShow).
+  status: string;
+  // Os dois participantes entraram na sala: a sessão aconteceu.
+  bothJoined: boolean;
+};
 
 const SESSION_TYPES = new Set<string>(["coding", "system_design", "behavioral"]);
 
@@ -26,7 +37,9 @@ export async function getSessionForUser(
   // A RLS de sessions já só devolve a linha para os dois participantes.
   const { data: session, error } = await supabase
     .from("sessions")
-    .select("id, candidate_id, interviewer_id, starts_at, ends_at, type, status")
+    .select(
+      "id, candidate_id, interviewer_id, starts_at, ends_at, type, status, candidate_joined_at, interviewer_joined_at",
+    )
     .eq("id", sessionId)
     .maybeSingle();
 
@@ -52,6 +65,7 @@ export async function getSessionForUser(
 
   const candidateName = participants.candidate_name?.trim() || "Candidato";
   const interviewerName = participants.interviewer_name?.trim() || "Entrevistador";
+  const bothJoined = Boolean(session.candidate_joined_at && session.interviewer_joined_at);
 
   return {
     id: session.id,
@@ -61,7 +75,8 @@ export async function getSessionForUser(
     otherParticipantName: role === "candidate" ? interviewerName : candidateName,
     startsAt: session.starts_at,
     endsAt: session.ends_at,
-    status: session.status,
+    status: isNoShow(session.status, session.ends_at, bothJoined) ? "no_show" : session.status,
+    bothJoined,
   };
 }
 
@@ -70,16 +85,44 @@ export async function getSessionForUser(
 // condicional ao status de origem: duas chamadas ao mesmo tempo não se atropelam, e a
 // segunda simplesmente não encontra linha para mudar.
 
-// scheduled → in_progress: o primeiro participante entrou na sala. Para o segundo
-// (e para quem recarrega a página) não muda nada.
-export async function startSession(sessionId: string): Promise<void> {
-  const { error } = await createAdminClient()
-    .from("sessions")
-    .update({ status: "in_progress" })
-    .eq("id", sessionId)
-    .eq("status", "scheduled");
+// Um participante entrou na sala: registra a primeira entrada dele e, se for o primeiro
+// dos dois, scheduled → in_progress. Para quem recarrega a página não muda nada.
+export async function startSession(sessionId: string, role: SessionRole): Promise<void> {
+  const admin = createAdminClient();
+  const joinedColumn = role === "candidate" ? "candidate_joined_at" : "interviewer_joined_at";
+  const joinedAt = new Date().toISOString();
 
+  const [joined, started] = await Promise.all([
+    admin
+      .from("sessions")
+      .update(
+        role === "candidate"
+          ? { candidate_joined_at: joinedAt }
+          : { interviewer_joined_at: joinedAt },
+      )
+      .eq("id", sessionId)
+      .is(joinedColumn, null),
+    admin
+      .from("sessions")
+      .update({ status: "in_progress" })
+      .eq("id", sessionId)
+      .eq("status", "scheduled"),
+  ]);
+
+  const error = joined.error ?? started.error;
   if (error) throw new Error(`Falha ao iniciar a sessão: ${error.message}`);
+}
+
+// scheduled ou in_progress → no_show para toda sessão cujo horário acabou sem os dois na
+// sala. Não há cron: roda quando a lista de sessões é aberta. Melhor esforço: até rodar,
+// getSessionForUser já devolve essas sessões como no_show.
+export async function closeMissedSessions(now: Date = new Date()): Promise<void> {
+  await createAdminClient()
+    .from("sessions")
+    .update({ status: "no_show" })
+    .in("status", ["scheduled", "in_progress"])
+    .lt("ends_at", now.toISOString())
+    .or("candidate_joined_at.is.null,interviewer_joined_at.is.null");
 }
 
 // in_progress → awaiting_feedback: o entrevistador encerrou. Devolve false quando a

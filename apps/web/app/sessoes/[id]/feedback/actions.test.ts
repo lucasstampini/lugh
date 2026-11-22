@@ -61,6 +61,7 @@ const session = {
   startsAt: "2026-11-10T22:00:00.000Z",
   endsAt: "2026-11-10T23:00:00.000Z",
   status: "awaiting_feedback",
+  bothJoined: true,
 };
 
 async function validForm(): Promise<FormData> {
@@ -83,6 +84,18 @@ beforeEach(() => {
   mocks.insertFeedback.mockResolvedValue({ error: null });
   mocks.completeSession.mockResolvedValue(true);
   mocks.releasePayment.mockResolvedValue("released");
+});
+
+describe("submitFeedback em sessão que não aconteceu", () => {
+  it("recusa o feedback e não libera repasse quando a sessão é no_show", async () => {
+    mocks.getSessionForUser.mockResolvedValue({ ...session, status: "no_show", bothJoined: false });
+
+    const result = await submitFeedback(SESSION_ID, null, await validForm());
+
+    expect(result?.error).toContain("não aconteceu");
+    expect(mocks.insertFeedback).not.toHaveBeenCalled();
+    expect(mocks.releasePayment).not.toHaveBeenCalled();
+  });
 });
 
 describe("submitFeedback e o e-mail do candidato", () => {
