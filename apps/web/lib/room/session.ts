@@ -66,9 +66,19 @@ export const ROOM_OPENS_BEFORE_MINUTES = 10;
 
 export type RoomAccess = "early" | "open" | "ended";
 
+// ROOM_ALLOW_EARLY_ENTRY=true tira a espera: dá para entrar a qualquer momento antes do fim
+// da sessão. Serve para testar e para a demo, sem precisar agendar para dali a 10 minutos.
+// Só o servidor lê a variável (não é NEXT_PUBLIC): no navegador ela nunca vale.
+export function isEarlyEntryAllowed(): boolean {
+  return process.env.ROOM_ALLOW_EARLY_ENTRY === "true";
+}
+
 export function roomAccess(startsAt: string, endsAt: string, now: Date = new Date()): RoomAccess {
   const current = now.getTime();
-  if (current < new Date(startsAt).getTime() - ROOM_OPENS_BEFORE_MINUTES * 60 * 1000) {
+  if (
+    !isEarlyEntryAllowed() &&
+    current < new Date(startsAt).getTime() - ROOM_OPENS_BEFORE_MINUTES * 60 * 1000
+  ) {
     return "early";
   }
   return current < new Date(endsAt).getTime() ? "open" : "ended";
