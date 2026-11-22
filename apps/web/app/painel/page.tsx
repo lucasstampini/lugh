@@ -4,7 +4,8 @@ import { Eyebrow } from "@/components/eyebrow";
 import { SiteHeader } from "@/components/site-header";
 import { formatPrice } from "@/lib/format-price";
 import { WEEKDAY_LABELS } from "@/lib/interviewer-options";
-import { sumEarnings } from "@/lib/payments";
+import { formatSessionDate } from "@/lib/format-session-date";
+import { retryPendingPayouts, sumEarnings } from "@/lib/payments";
 import { createClient } from "@/lib/supabase/server";
 import { AddBlockForm } from "./add-block-form";
 import { DeleteBlockButton } from "./delete-block-button";
@@ -69,6 +70,25 @@ export default async function PainelPage() {
     .eq("interviewer_id", user.id)
     .order("weekday")
     .order("start_time");
+
+  // A próxima sessão que este entrevistador conduz (confirmada ou em andamento).
+  const { data: nextSessions } = await supabase
+    .from("sessions")
+    .select("id, starts_at")
+    .eq("interviewer_id", user.id)
+    .in("status", ["scheduled", "in_progress"])
+    .gt("ends_at", new Date().toISOString())
+    .order("starts_at")
+    .limit(1);
+  const nextSession = nextSessions?.[0] ?? null;
+  const nextSessionDate = nextSession ? formatSessionDate(nextSession.starts_at) : null;
+  const { data: nextSessionNames } = nextSession
+    ? await supabase.rpc("session_participant_names", { session_ids: [nextSession.id] })
+    : { data: null };
+  const nextCandidateName = nextSessionNames?.[0]?.candidate_name?.trim() || "Candidato";
+
+  // Repasse que falhou quando o feedback foi enviado: tenta de novo antes de somar.
+  await retryPendingPayouts(user.id);
 
   // A RLS de payments devolve os pagamentos das sessões do usuário. Ele também pode ser
   // candidato em outras sessões, então só contam as que ele conduz. Se a leitura
@@ -137,7 +157,6 @@ export default async function PainelPage() {
             </div>
           </section>
 
-          {/* O agendamento ainda não existe: o card mostra o estado vazio real. */}
           <section
             aria-label="Próxima sessão"
             className="pop edge bg-card box-border flex min-w-0 flex-[1_1_300px] flex-col gap-3.5 rounded-[18px] p-5 [animation-delay:.1s]"
@@ -149,13 +168,23 @@ export default async function PainelPage() {
               </Link>
             </div>
             <div className="flex items-center gap-3.5">
-              <div className="bg-secondary text-muted-foreground w-24 shrink-0 rounded-[10px] px-2 py-2.5 text-center font-mono">
-                <div className="text-xs">sem data</div>
-                <div className="text-[22px] leading-[1.2] font-bold">--h</div>
+              <div
+                className={`bg-secondary w-24 shrink-0 rounded-[10px] px-2 py-2.5 text-center font-mono ${
+                  nextSessionDate ? "" : "text-muted-foreground"
+                }`}
+              >
+                <div className="text-xs">{nextSessionDate?.day ?? "sem data"}</div>
+                <div className="text-[22px] leading-[1.2] font-bold">
+                  {nextSessionDate?.time ?? "--h"}
+                </div>
               </div>
-              <p className="text-muted-foreground min-w-0 text-sm">
-                Nenhuma sessão marcada. Quando um candidato agendar, ela aparece aqui.
-              </p>
+              {nextSessionDate ? (
+                <p className="min-w-0 text-sm font-bold break-words">Com {nextCandidateName}</p>
+              ) : (
+                <p className="text-muted-foreground min-w-0 text-sm">
+                  Nenhuma sessão marcada. Quando um candidato agendar, ela aparece aqui.
+                </p>
+              )}
             </div>
           </section>
         </div>
