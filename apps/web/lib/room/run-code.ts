@@ -33,7 +33,31 @@ export const runBodySchema = z.object({
     .refine((value) => value.trim().length > 0, { error: "Escreva algum código antes de executar." }),
 });
 
-export const RUN_OUTCOMES = ["success", "compile_error", "runtime_error", "timeout", "failed"] as const;
+// Intervalo mínimo entre duas execuções da mesma sessão. O botão já trava o clique duplo,
+// mas a rota pode ser chamada direto: sem isto um script gasta a cota do Judge0 de todos.
+export const RUN_MIN_INTERVAL_MS = 2_000;
+
+// shortcut: a memória é de cada instância do servidor, então com várias instâncias o
+// limite real é 1 execução por intervalo por instância. Basta para segurar um laço; se a
+// cota virar problema de verdade, o contador vai para o banco.
+const lastRunBySession = new Map<string, number>();
+
+// true quando a sessão pode executar agora (e já registra a execução).
+export function takeRunSlot(sessionId: string, now: number = Date.now()): boolean {
+  const last = lastRunBySession.get(sessionId);
+  if (last !== undefined && now - last < RUN_MIN_INTERVAL_MS) return false;
+
+  // Não deixa o mapa crescer para sempre: entradas vencidas saem quando ele enche.
+  if (lastRunBySession.size >= 1000) {
+    for (const [id, at] of lastRunBySession) {
+      if (now - at >= RUN_MIN_INTERVAL_MS) lastRunBySession.delete(id);
+    }
+  }
+  lastRunBySession.set(sessionId, now);
+  return true;
+}
+
+export const RUN_OUTCOMES =["success", "compile_error", "runtime_error", "timeout", "failed"] as const;
 export type RunOutcome = (typeof RUN_OUTCOMES)[number];
 
 // O que a sala mostra de uma execução. `failed` é falha nossa ou do Judge0 (não do código).

@@ -1,5 +1,5 @@
 import { authorizeRoomEntry } from "@/lib/room/access";
-import { readJudge0Config, runBodySchema, runOnJudge0 } from "@/lib/room/run-code";
+import { readJudge0Config, runBodySchema, runOnJudge0, takeRunSlot } from "@/lib/room/run-code";
 
 // POST /api/code/run  { sessionId, name?, language, code }
 // Roda o código do editor no Judge0 e devolve o resultado. Só para participante da sessão
@@ -22,6 +22,13 @@ export async function POST(request: Request) {
     return Response.json(
       { error: "Execução de código não configurada no servidor (JUDGE0_API_KEY)." },
       { status: 503 },
+    );
+  }
+
+  if (!takeRunSlot(entry.sessionId)) {
+    return Response.json(
+      { error: "Espere alguns segundos antes de executar de novo." },
+      { status: 429 },
     );
   }
 

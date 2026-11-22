@@ -20,6 +20,8 @@ import {
   readJudge0Config,
   runBodySchema,
   runOnJudge0,
+  RUN_MIN_INTERVAL_MS,
+  takeRunSlot,
 } from "./run-code";
 
 const b64 = (text: string) => Buffer.from(text, "utf8").toString("base64");
@@ -168,5 +170,18 @@ describe("runOnJudge0", () => {
     });
 
     expect(result.outcome).toBe("failed");
+  });
+});
+
+describe("takeRunSlot", () => {
+  it("recusa a segunda execução da mesma sessão dentro do intervalo", () => {
+    expect(takeRunSlot("sessao-a", 1_000)).toBe(true);
+    expect(takeRunSlot("sessao-a", 1_000 + RUN_MIN_INTERVAL_MS - 1)).toBe(false);
+  });
+
+  it("libera depois do intervalo e não mistura sessões", () => {
+    expect(takeRunSlot("sessao-b", 1_000)).toBe(true);
+    expect(takeRunSlot("sessao-c", 1_000)).toBe(true);
+    expect(takeRunSlot("sessao-b", 1_000 + RUN_MIN_INTERVAL_MS)).toBe(true);
   });
 });
