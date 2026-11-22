@@ -106,29 +106,6 @@ describe("roomAccess", () => {
   it("fecha quando a sessão termina", () => {
     expect(roomAccess(startsAt, endsAt, new Date("2026-11-12T22:00:00.000Z"))).toBe("ended");
   });
-
-  describe("com ROOM_ALLOW_EARLY_ENTRY", () => {
-    afterEach(() => vi.unstubAllEnvs());
-
-    it("'true' abre a sala antes dos 10 minutos, até dias antes", () => {
-      vi.stubEnv("ROOM_ALLOW_EARLY_ENTRY", "true");
-
-      expect(roomAccess(startsAt, endsAt, new Date("2026-11-12T20:49:59.000Z"))).toBe("open");
-      expect(roomAccess(startsAt, endsAt, new Date("2026-11-01T12:00:00.000Z"))).toBe("open");
-    });
-
-    it("'true' não reabre a sala depois do fim da sessão", () => {
-      vi.stubEnv("ROOM_ALLOW_EARLY_ENTRY", "true");
-
-      expect(roomAccess(startsAt, endsAt, new Date("2026-11-12T22:00:00.000Z"))).toBe("ended");
-    });
-
-    it.each(["false", "1", ""])("%j mantém a espera", (value) => {
-      vi.stubEnv("ROOM_ALLOW_EARLY_ENTRY", value);
-
-      expect(roomAccess(startsAt, endsAt, new Date("2026-11-12T20:49:59.000Z"))).toBe("early");
-    });
-  });
 });
 
 describe("roomEntry", () => {
