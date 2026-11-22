@@ -4,7 +4,8 @@ import { startSession } from "@/lib/sessions";
 
 // POST /api/livekit/token  { sessionId }
 // Devolve o token de vídeo da sala, só para participante da sessão e na janela de horário,
-// e marca a sessão como em andamento (scheduled → in_progress) na primeira entrada.
+// registra a entrada de quem pediu e marca a sessão como em andamento (scheduled →
+// in_progress) na primeira entrada.
 // O segredo do LiveKit só existe aqui no servidor.
 export async function POST(request: Request) {
   const entry = await authorizeRoomEntry(request);
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
   // Só vale para sessão real (a sala de teste não tem papel nem linha no banco).
   if (entry.role) {
     try {
-      await startSession(entry.sessionId);
+      await startSession(entry.sessionId, entry.role);
     } catch {
       return Response.json(
         { error: "Não deu para abrir a sala. O problema é do nosso lado. Tente de novo em alguns segundos." },

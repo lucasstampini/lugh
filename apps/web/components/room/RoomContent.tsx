@@ -159,7 +159,12 @@ export default function RoomContent({ sessionId, session }: RoomProps) {
         color={session ? colorForRole(session.role) : colorFromName(name)}
         sendName={!session}
       >
-        <RoomLayout session={session} onSessionEnded={handleSessionEnded} />
+        <RoomLayout
+          session={session}
+          onSessionEnded={handleSessionEnded}
+          sessionId={sessionId}
+          userName={name}
+        />
       </CollabProvider>
     </LiveKitRoom>
   );

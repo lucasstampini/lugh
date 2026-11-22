@@ -21,6 +21,7 @@ import {
   roomEntry,
   roomNameFor,
   tokenBodySchema,
+  isNoShow,
 } from "./session";
 
 const SESSION_ID = "0b8f6c1e-4a57-4d0b-9c58-2f1f4f3f7a10";
@@ -121,17 +122,42 @@ describe("roomEntry", () => {
     expect(roomEntry("in_progress", startsAt, endsAt, new Date("2026-11-12T22:30:00.000Z"))).toBe("ended");
   });
 
-  it.each(["awaiting_feedback", "completed"])(
+  it.each(["awaiting_feedback", "completed", "no_show"])(
     "trata sessão %s como encerrada, mesmo dentro do horário",
     (status) => {
       expect(roomEntry(status, startsAt, endsAt, during)).toBe("ended");
     },
   );
 
-  it.each(["pending_payment", "expired", "canceled", "no_show"])(
+  it.each(["pending_payment", "expired", "canceled"])(
     "não abre a sala de sessão %s",
     (status) => {
       expect(roomEntry(status, startsAt, endsAt, during)).toBe("unavailable");
+    },
+  );
+});
+
+describe("isNoShow", () => {
+  const endsAt = "2026-11-12T22:00:00.000Z";
+  const afterEnd = new Date("2026-11-12T22:00:00.000Z");
+  const beforeEnd = new Date("2026-11-12T21:59:59.000Z");
+
+  it.each(["scheduled", "in_progress"])("%s vira no_show no fim do horário sem os dois na sala", (status) => {
+    expect(isNoShow(status, endsAt, false, afterEnd)).toBe(true);
+  });
+
+  it("não vale antes do fim do horário: o outro ainda pode entrar", () => {
+    expect(isNoShow("in_progress", endsAt, false, beforeEnd)).toBe(false);
+  });
+
+  it("não vale quando os dois entraram, mesmo passando do horário", () => {
+    expect(isNoShow("in_progress", endsAt, true, afterEnd)).toBe(false);
+  });
+
+  it.each(["pending_payment", "awaiting_feedback", "completed", "expired"])(
+    "não mexe em sessão %s",
+    (status) => {
+      expect(isNoShow(status, endsAt, false, afterEnd)).toBe(false);
     },
   );
 });

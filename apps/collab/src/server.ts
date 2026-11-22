@@ -42,6 +42,40 @@ function fromBytea(value: string): Uint8Array {
   return new Uint8Array(Buffer.from(value.replace(/^\\x/, ""), "hex"));
 }
 
+// Sessão que ainda aceita edição. Encerrada (ou concluída, expirada, não compareceu), o
+// documento vira o retrato final que a tela de resultado mostra: ninguém mais escreve.
+const OPEN_STATUSES = new Set(["scheduled", "in_progress"]);
+// De quanto em quanto tempo o status é conferido de novo para um documento aberto. É o
+// tempo máximo que uma conexão já aberta ainda consegue editar depois do encerramento.
+const STATUS_CACHE_MS = 5_000;
+
+const openCache = new Map<string, { open: boolean; checkedAt: number }>();
+
+// O documento ainda aceita edição? Sem banco configurado (dev) e na sala de teste, sempre.
+// Se a consulta falhar, vale a última resposta conhecida (ou aberto, na primeira): uma
+// falha do banco não pode derrubar uma sessão no meio.
+async function isDocumentOpen(documentName: string): Promise<boolean> {
+  if (!supabase || documentName === TEST_DOCUMENT) return true;
+
+  const cached = openCache.get(documentName);
+  // Sessão fechada não reabre: não precisa consultar de novo.
+  if (cached && (!cached.open || Date.now() - cached.checkedAt < STATUS_CACHE_MS)) {
+    return cached.open;
+  }
+
+  const { data, error } = await supabase
+    .from("sessions")
+    .select("status")
+    .eq("id", documentName.replace(/^session-/, ""))
+    .maybeSingle();
+
+  if (error) return cached?.open ?? true;
+
+  const open = data ? OPEN_STATUSES.has(data.status) : false;
+  openCache.set(documentName, { open, checkedAt: Date.now() });
+  return open;
+}
+
 const persistence = supabase
   ? new Database({
       async fetch({ documentName }) {
@@ -97,7 +131,25 @@ const server = new Server({
       throw new Error("Sem acesso a esta sessão");
     }
 
+    // O token vale 2h: sem isto, quem guardou um ainda reconectaria depois do encerramento.
+    if (!(await isDocumentOpen(documentName))) {
+      throw new Error("Sessão encerrada");
+    }
+
     return { userId: payload.sub, name: payload.name };
+  },
+
+  // Conexão que já estava aberta quando a sessão foi encerrada: a mensagem é recusada
+  // (o Hocuspocus fecha a conexão) antes de mudar o documento.
+  async beforeHandleMessage({ documentName }) {
+    if (!(await isDocumentOpen(documentName))) {
+      throw new Error("Sessão encerrada");
+    }
+  },
+
+  // O documento saiu da memória (todos desconectaram): o cache dele não serve mais.
+  async afterUnloadDocument({ documentName }) {
+    openCache.delete(documentName);
   },
 
   extensions: persistence ? [persistence] : [],

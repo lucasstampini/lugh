@@ -49,6 +49,7 @@ function session(overrides: Partial<SessionForUser> = {}): SessionForUser {
     startsAt: "2026-11-12T21:00:00.000Z",
     endsAt: "2026-11-12T22:00:00.000Z",
     status: "in_progress",
+    bothJoined: true,
     ...overrides,
   };
 }
@@ -106,6 +107,15 @@ describe("POST /api/sessions/[id]/end", () => {
     expect(response.status).toBe(403);
     expect(mocks.endSession).not.toHaveBeenCalled();
     expect(mocks.closeLivekitRoom).not.toHaveBeenCalled();
+  });
+
+  it("responde 409 quando o candidato nunca entrou: a sessão não aconteceu", async () => {
+    mocks.getSessionForUser.mockResolvedValue(session({ bothJoined: false }));
+
+    const response = await end();
+
+    expect(response.status).toBe(409);
+    expect(mocks.endSession).not.toHaveBeenCalled();
   });
 
   it.each(["scheduled", "completed", "canceled"])(

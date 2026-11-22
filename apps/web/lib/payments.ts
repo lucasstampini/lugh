@@ -399,6 +399,28 @@ export async function releasePayment(
   return "released";
 }
 
+// Repasse que falhou no envio do feedback (AbacatePay fora do ar, saque ainda pendente)
+// fica como paid numa sessão já concluída, e o feedback não é enviado de novo. O painel
+// chama isto ao abrir, para tentar outra vez. releasePayment é idempotente. Nunca lança:
+// se falhar de novo, o valor segue como a receber e a próxima abertura tenta outra vez.
+export async function retryPendingPayouts(interviewerId: string): Promise<void> {
+  try {
+    const { data: stuck } = await createAdminClient()
+      .from("payments")
+      .select("session_id, sessions!inner(interviewer_id, status)")
+      .eq("status", "paid")
+      .gt("interviewer_share_cents", 0)
+      .eq("sessions.interviewer_id", interviewerId)
+      .eq("sessions.status", "completed");
+
+    await Promise.all(
+      (stuck ?? []).map((payment) => releasePayment(payment.session_id).catch(() => null)),
+    );
+  } catch {
+    // Melhor esforço.
+  }
+}
+
 export type Earnings = {
   // Parte de sessões pagas que ainda não foi repassada (o feedback não foi enviado).
   pendingCents: number;

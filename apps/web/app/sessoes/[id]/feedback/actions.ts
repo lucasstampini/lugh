@@ -54,6 +54,9 @@ export async function submitFeedback(
   if (session.status === "completed") {
     redirect(resultPath);
   }
+  if (session.status === "no_show") {
+    return { error: "Esta sessão não aconteceu: o horário acabou sem os dois na sala. Não há feedback a enviar." };
+  }
   if (!canSendFeedback(session.status, session.endsAt)) {
     return { error: "Esta sessão ainda não terminou. O feedback abre quando ela for encerrada." };
   }

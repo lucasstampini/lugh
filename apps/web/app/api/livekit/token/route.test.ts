@@ -126,7 +126,7 @@ describe("POST /api/livekit/token", () => {
       expect(claims.sub).toBe(USER_ID);
       expect(claims.name).toBe("Ana Candidata");
       expect(claims.video?.room).toBe(`session-${SESSION_ID}`);
-      expect(mocks.startSession).toHaveBeenCalledWith(SESSION_ID);
+      expect(mocks.startSession).toHaveBeenCalledWith(SESSION_ID, "candidate");
     });
 
     it("não entrega token se não conseguir marcar a sessão como em andamento", async () => {

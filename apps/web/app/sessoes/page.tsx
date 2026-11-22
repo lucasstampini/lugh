@@ -8,6 +8,7 @@ import { formatSessionDate } from "@/lib/format-session-date";
 import { initials } from "@/lib/initials";
 import { expireUnpaidSessions, PAYMENT_WINDOW_MINUTES } from "@/lib/payments";
 import { ROOM_OPENS_BEFORE_MINUTES, roomAccess } from "@/lib/room/session";
+import { closeMissedSessions } from "@/lib/sessions";
 import { createClient } from "@/lib/supabase/server";
 
 export const instant = false;
@@ -76,6 +77,8 @@ export default async function SessionsPage({ searchParams }: PageProps<"/sessoes
 
   // Sem cron: quem passou do prazo de pagamento vira "expirada" antes de a lista ser lida.
   await expireUnpaidSessions();
+  // E quem chegou ao fim do horário sem os dois na sala vira "não compareceu".
+  await closeMissedSessions();
 
   // Sem filtro: RLS já só devolve sessão onde o usuário logado é o
   // candidate_id ou o interviewer_id.
