@@ -31,7 +31,7 @@ export default function Loading() {
             {["h-36", "h-64", "h-48"].map((height) => (
               <div
                 key={height}
-                className={`border-border-soft bg-card flex flex-col gap-4 rounded-[20px] border p-7 ${height}`}
+                className={`edge bg-card flex flex-col gap-4 rounded-[20px] p-7 ${height}`}
               >
                 <div className="bg-skeleton skeleton-pulse h-6 w-48 rounded" />
                 <div className="bg-skeleton skeleton-pulse flex-1 rounded" />
@@ -39,7 +39,7 @@ export default function Loading() {
             ))}
           </div>
 
-          <div className="border-border-soft bg-card flex h-fit flex-col gap-4 rounded-[20px] border p-6">
+          <div className="edge bg-card flex h-fit flex-col gap-4 rounded-[20px] p-6">
             <div className="bg-skeleton skeleton-pulse h-7 w-40 rounded" />
             <div className="bg-skeleton skeleton-pulse h-9 w-28 rounded" />
             <div className="bg-skeleton skeleton-pulse h-40 rounded-xl" />

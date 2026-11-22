@@ -29,7 +29,7 @@ export function ObjetivoForm() {
 
   return (
     <div className="flex flex-col gap-[22px]">
-      <div className="border-border-soft bg-card flex flex-col gap-[18px] rounded-[20px] border p-6">
+      <div className="border-border bg-card flex flex-col gap-[18px] rounded-[20px] border-[1.5px] p-6">
         <h3 className="font-heading text-[26px] leading-[1.15] font-extrabold tracking-[-0.03em]">
           Que tipo de oportunidade você busca?
         </h3>
@@ -43,7 +43,7 @@ export function ObjetivoForm() {
               id="area"
               name="area"
               placeholder="Engenharia de software"
-              className="border-border-soft bg-card h-[50px] rounded-md border px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="border-border bg-card h-[50px] rounded-md border-[1.5px] px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
 
@@ -55,7 +55,7 @@ export function ObjetivoForm() {
               id="role"
               name="role"
               placeholder="Desenvolvedora back-end"
-              className="border-border-soft bg-card h-[50px] rounded-md border px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="border-border bg-card h-[50px] rounded-md border-[1.5px] px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
         </div>
@@ -74,15 +74,15 @@ export function ObjetivoForm() {
                   role="radio"
                   aria-checked={selected}
                   onClick={() => setLevel(option)}
-                  className={`flex flex-1 items-center gap-2.5 rounded-xl border p-4 text-left text-sm font-bold ${
+                  className={`flex flex-1 items-center gap-2.5 rounded-xl border-[1.5px] p-4 text-left text-sm font-bold ${
                     selected
                       ? "bg-secondary border-ink text-brand-deep"
-                      : "bg-card border-border-soft"
+                      : "bg-card border-border"
                   }`}
                 >
                   <span
-                    className={`flex size-[18px] shrink-0 items-center justify-center rounded-full border ${
-                      selected ? "bg-primary border-ink" : "bg-card border-border-soft"
+                    className={`flex size-[18px] shrink-0 items-center justify-center rounded-full border-[1.5px] ${
+                      selected ? "bg-primary border-ink" : "bg-card border-border"
                     }`}
                   >
                     {selected ? <span className="bg-ink size-1.5 rounded-full" /> : null}
@@ -99,7 +99,7 @@ export function ObjetivoForm() {
         </div>
       </div>
 
-      <div className="border-border-soft bg-card flex flex-col gap-[18px] rounded-[20px] border p-6">
+      <div className="border-border bg-card flex flex-col gap-[18px] rounded-[20px] border-[1.5px] p-6">
         <div className="flex flex-col gap-1.5">
           <h3 className="font-heading text-[26px] leading-[1.15] font-extrabold tracking-[-0.03em]">
             Onde você gostaria de trabalhar?
@@ -118,15 +118,15 @@ export function ObjetivoForm() {
                 type="button"
                 aria-pressed={selected}
                 onClick={() => toggle(companies, setCompanies, option)}
-                className={`flex flex-1 items-center gap-2.5 rounded-xl border p-4 text-left text-sm font-bold ${
+                className={`flex flex-1 items-center gap-2.5 rounded-xl border-[1.5px] p-4 text-left text-sm font-bold ${
                   selected
                     ? "bg-secondary border-ink text-brand-deep"
-                    : "bg-card border-border-soft"
+                    : "bg-card border-border"
                 }`}
               >
                 <span
                   className={`flex size-[18px] shrink-0 items-center justify-center rounded-md ${
-                    selected ? "bg-primary border-ink border" : "bg-card border-border-soft border"
+                    selected ? "bg-primary border-ink border-[1.5px]" : "bg-card border-border border-[1.5px]"
                   }`}
                 >
                   {selected ? <Check aria-hidden="true" size={12} strokeWidth={3} className="text-ink" /> : null}
@@ -138,7 +138,7 @@ export function ObjetivoForm() {
         </div>
       </div>
 
-      <div className="border-border-soft bg-card flex flex-col gap-[18px] rounded-[20px] border p-6">
+      <div className="border-border bg-card flex flex-col gap-[18px] rounded-[20px] border-[1.5px] p-6">
         <div className="flex flex-col gap-1.5">
           <h3 className="font-heading text-[26px] leading-[1.15] font-extrabold tracking-[-0.03em]">
             O que você quer treinar primeiro?
@@ -158,10 +158,10 @@ export function ObjetivoForm() {
                 type="button"
                 aria-pressed={selected}
                 onClick={() => toggle(formats, setFormats, option.label)}
-                className={`flex flex-1 flex-col gap-2 rounded-xl border p-4 text-left ${
+                className={`flex flex-1 flex-col gap-2 rounded-xl border-[1.5px] p-4 text-left ${
                   selected
                     ? "bg-secondary border-ink"
-                    : "bg-card border-border-soft"
+                    : "bg-card border-border"
                 }`}
               >
                 <span
@@ -171,7 +171,7 @@ export function ObjetivoForm() {
                 >
                   <span
                     className={`flex size-[18px] shrink-0 items-center justify-center rounded-md ${
-                      selected ? "bg-primary border-ink border" : "bg-card border-border-soft border"
+                      selected ? "bg-primary border-ink border-[1.5px]" : "bg-card border-border border-[1.5px]"
                     }`}
                   >
                     {selected ? (

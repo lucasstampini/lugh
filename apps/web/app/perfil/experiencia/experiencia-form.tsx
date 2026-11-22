@@ -27,7 +27,7 @@ export function ExperienciaForm() {
 
   return (
     <div className="flex flex-col gap-[22px]">
-      <div className="border-border-soft bg-card flex flex-col gap-[18px] rounded-[20px] border p-6">
+      <div className="border-border bg-card flex flex-col gap-[18px] rounded-[20px] border-[1.5px] p-6">
         <h3 className="font-heading text-[26px] leading-[1.15] font-extrabold tracking-[-0.03em]">
           Onde você está aprendendo?
         </h3>
@@ -41,7 +41,7 @@ export function ExperienciaForm() {
               id="course"
               name="course"
               placeholder="Sistemas de Informação"
-              className="border-border-soft bg-card h-[50px] rounded-md border px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="border-border bg-card h-[50px] rounded-md border-[1.5px] px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
 
@@ -53,7 +53,7 @@ export function ExperienciaForm() {
               id="institution"
               name="institution"
               placeholder="Faculdade Horizonte"
-              className="border-border-soft bg-card h-[50px] rounded-md border px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="border-border bg-card h-[50px] rounded-md border-[1.5px] px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
 
@@ -65,7 +65,7 @@ export function ExperienciaForm() {
               id="status"
               name="status"
               placeholder="Cursando · 6º semestre"
-              className="border-border-soft bg-card h-[50px] rounded-md border px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="border-border bg-card h-[50px] rounded-md border-[1.5px] px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
 
@@ -77,13 +77,13 @@ export function ExperienciaForm() {
               id="graduation"
               name="graduation"
               placeholder="Dezembro de 2027"
-              className="border-border-soft bg-card h-[50px] rounded-md border px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="border-border bg-card h-[50px] rounded-md border-[1.5px] px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
         </div>
       </div>
 
-      <div className="border-border-soft bg-card flex flex-col gap-[18px] rounded-[20px] border p-6">
+      <div className="border-border bg-card flex flex-col gap-[18px] rounded-[20px] border-[1.5px] p-6">
         <h3
           id="experience-label"
           className="font-heading text-[26px] leading-[1.15] font-extrabold tracking-[-0.03em]"
@@ -108,10 +108,10 @@ export function ExperienciaForm() {
                 role="radio"
                 aria-checked={selected}
                 onClick={() => setHasExperience(option.value)}
-                className={`flex flex-1 items-center gap-2 rounded-xl border p-3.5 text-left text-sm font-bold ${
+                className={`flex flex-1 items-center gap-2 rounded-xl border-[1.5px] p-3.5 text-left text-sm font-bold ${
                   selected
                     ? "bg-secondary border-ink text-brand-deep"
-                    : "bg-card border-border-soft"
+                    : "bg-card border-border"
                 }`}
               >
                 <span aria-hidden="true">{selected ? "✓" : "○"}</span> {option.label}
@@ -125,7 +125,7 @@ export function ExperienciaForm() {
         </p>
       </div>
 
-      <div className="border-border-soft bg-card flex flex-col gap-[18px] rounded-[20px] border p-6">
+      <div className="border-border bg-card flex flex-col gap-[18px] rounded-[20px] border-[1.5px] p-6">
         <h3 className="font-heading text-[26px] leading-[1.15] font-extrabold tracking-[-0.03em]">
           O que você já está praticando?
         </h3>
@@ -162,13 +162,13 @@ export function ExperienciaForm() {
               }}
               aria-label="Nome da habilidade"
               placeholder="Nome da habilidade"
-              className="border-border-soft bg-card focus-visible:ring-ring h-9 w-40 rounded-[10px] border px-3 text-xs outline-none focus-visible:ring-2"
+              className="border-border bg-card focus-visible:ring-ring h-9 w-40 rounded-[10px] border-[1.5px] px-3 text-xs outline-none focus-visible:ring-2"
             />
           ) : (
             <button
               type="button"
               onClick={() => setAddingSkill(true)}
-              className="border-border-soft bg-card text-brand-deep flex items-center gap-1.5 rounded-[10px] border px-3.5 py-2 text-xs font-bold"
+              className="border-border bg-card text-brand-deep flex items-center gap-1.5 rounded-[10px] border-[1.5px] px-3.5 py-2 text-xs font-bold"
             >
               <Plus aria-hidden="true" size={13} />
               Adicionar habilidade
@@ -177,7 +177,7 @@ export function ExperienciaForm() {
         </div>
       </div>
 
-      <div className="border-border-soft bg-card flex flex-col gap-[18px] rounded-[20px] border p-6">
+      <div className="border-border bg-card flex flex-col gap-[18px] rounded-[20px] border-[1.5px] p-6">
         <div className="flex flex-col gap-1.5">
           <h3 className="font-heading text-[26px] leading-[1.15] font-extrabold tracking-[-0.03em]">
             Um projeto que mostra seu jeito
@@ -197,7 +197,7 @@ export function ExperienciaForm() {
               id="project"
               name="project"
               placeholder="API de organização de estudos"
-              className="border-border-soft bg-card h-[50px] rounded-md border px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="border-border bg-card h-[50px] rounded-md border-[1.5px] px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
 
@@ -209,7 +209,7 @@ export function ExperienciaForm() {
               id="projectLink"
               name="projectLink"
               placeholder="Adicionar link do GitHub ou portfólio"
-              className="border-border-soft bg-card h-[50px] rounded-md border px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="border-border bg-card h-[50px] rounded-md border-[1.5px] px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
         </div>

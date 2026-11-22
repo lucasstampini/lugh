@@ -29,7 +29,7 @@ export function ProfileStep1Form({
 
   return (
     <form action={formAction} className="flex flex-col gap-[22px]">
-      <div className="border-border-soft bg-card flex items-center rounded-[20px] border p-6">
+      <div className="border-border bg-card flex items-center rounded-[20px] border-[1.5px] p-6">
         <AvatarUpload
           initialUrl={avatarUrl}
           name={avatarName}
@@ -46,7 +46,7 @@ export function ProfileStep1Form({
         </AvatarUpload>
       </div>
 
-      <div className="border-border-soft bg-card flex flex-col gap-[18px] rounded-[20px] border p-6">
+      <div className="border-border bg-card flex flex-col gap-[18px] rounded-[20px] border-[1.5px] p-6">
         <h3 className="font-heading text-[26px] leading-[1.15] font-extrabold tracking-[-0.03em]">
           Como você quer aparecer?
         </h3>
@@ -63,7 +63,7 @@ export function ProfileStep1Form({
               required
               autoComplete="name"
               maxLength={120}
-              className="border-border-soft bg-card h-[50px] rounded-md border px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="border-border bg-card h-[50px] rounded-md border-[1.5px] px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
 
@@ -76,7 +76,7 @@ export function ProfileStep1Form({
               name="preferredName"
               defaultValue={defaultValues.preferredName}
               maxLength={60}
-              className="border-border-soft bg-card h-[50px] rounded-md border px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="border-border bg-card h-[50px] rounded-md border-[1.5px] px-3.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
         </div>
@@ -91,7 +91,7 @@ export function ProfileStep1Form({
             value={defaultValues.email}
             readOnly
             aria-describedby="email-help"
-            className="border-border-soft bg-background text-muted-foreground h-[50px] rounded-md border px-3.5 text-sm outline-none"
+            className="border-border bg-background text-muted-foreground h-[50px] rounded-md border-[1.5px] px-3.5 text-sm outline-none"
           />
           <p id="email-help" className="text-muted-foreground text-[11px]">
             Esse e-mail é usado para acesso e lembretes. Não dá para trocar por aqui.
@@ -99,7 +99,7 @@ export function ProfileStep1Form({
         </div>
       </div>
 
-      <div className="border-border-soft bg-card flex flex-col gap-[18px] rounded-[20px] border p-6">
+      <div className="border-border bg-card flex flex-col gap-[18px] rounded-[20px] border-[1.5px] p-6">
         <div className="flex flex-col gap-1.5">
           <h3
             id="bio-label"
@@ -113,7 +113,7 @@ export function ProfileStep1Form({
           </p>
         </div>
 
-        <div className="border-border-soft focus-within:ring-ring flex flex-col gap-1.5 rounded-md border p-3.5 focus-within:ring-2">
+        <div className="border-border focus-within:ring-ring flex flex-col gap-1.5 rounded-md border-[1.5px] p-3.5 focus-within:ring-2">
           <textarea
             id="bio"
             name="bio"

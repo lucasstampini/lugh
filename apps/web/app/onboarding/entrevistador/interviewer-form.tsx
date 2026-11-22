@@ -348,7 +348,7 @@ export function InterviewerForm({
         className="pop flex w-full min-w-0 flex-[1_1_300px] flex-col gap-3 md:max-w-[380px]"
       >
         <span className="font-mono text-xs font-bold">prévia · como o candidato te vê</span>
-        <div className="bg-secondary rounded-[18px] p-[18px]">
+        <div className="edge bg-secondary rounded-[18px] p-[18px]">
           <div className="edge bg-card flex flex-col gap-3 rounded-2xl p-3">
             {avatarUrl ? (
               <Image

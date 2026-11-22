@@ -20,13 +20,13 @@ export default function Loading() {
           Carregando profissionais…
         </p>
 
-        <div className="border-border-soft bg-card skeleton-pulse h-[190px] rounded-[20px] border" />
+        <div className="edge bg-card skeleton-pulse h-[190px] rounded-[20px]" />
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, index) => (
             <div
               key={index}
-              className="border-border-soft bg-card border-l-brand-deep flex h-[300px] flex-col gap-3.5 rounded-[20px] border border-l-4 p-6"
+              className="edge bg-card flex h-[300px] flex-col gap-3.5 rounded-[20px] p-6"
             >
               <div className="flex items-center gap-3">
                 <div className="bg-skeleton skeleton-pulse size-14 shrink-0 rounded-full" />

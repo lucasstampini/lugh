@@ -164,7 +164,7 @@ export default async function EntrevistadoresPage({
       <div className="mx-auto flex w-full max-w-[1312px] flex-col gap-8 px-6 py-10">
         <FadeIn
           index={1}
-          className="border-border-soft bg-card flex flex-col gap-5 rounded-[20px] border p-6 shadow-[0_10px_0_-4px_var(--accent)]"
+          className="edge bg-card flex flex-col gap-5 rounded-[20px] p-6 shadow-[5px_5px_0_var(--primary)]"
         >
           <form
             id="filtros-entrevistadores"
@@ -188,7 +188,7 @@ export default async function EntrevistadoresPage({
                   type="search"
                   defaultValue={q}
                   placeholder="Busque por nome, cargo ou empresa"
-                  className="border-border-soft bg-background h-[52px] w-full rounded-xl border pl-10 pr-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
+                  className="edge bg-background h-[52px] w-full rounded-xl pl-10 pr-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
                 />
               </div>
               <button
@@ -209,7 +209,7 @@ export default async function EntrevistadoresPage({
                   id="area"
                   name="area"
                   defaultValue={area ?? ""}
-                  className="border-border-soft bg-background h-11 rounded-xl border px-3 text-sm"
+                  className="edge bg-background h-11 rounded-xl px-3 text-sm"
                 >
                   <option value="">Todas as áreas</option>
                   {AREA_OPTIONS.map((option) => (
@@ -228,7 +228,7 @@ export default async function EntrevistadoresPage({
                   id="senioridade"
                   name="senioridade"
                   defaultValue={senioridade ?? ""}
-                  className="border-border-soft bg-background h-11 rounded-xl border px-3 text-sm"
+                  className="edge bg-background h-11 rounded-xl px-3 text-sm"
                 >
                   <option value="">Todas as senioridades</option>
                   {SENIORITY_OPTIONS.map((option) => (
@@ -254,7 +254,7 @@ export default async function EntrevistadoresPage({
         {error ? (
           <div
             role="alert"
-            className="border-border-soft bg-card flex flex-col items-start gap-3 rounded-[20px] border p-7"
+            className="edge bg-card flex flex-col items-start gap-3 rounded-[20px] p-7"
           >
             <h2 className="font-heading text-xl font-bold">
               Não deu para carregar os profissionais
@@ -314,7 +314,7 @@ export default async function EntrevistadoresPage({
                   name="sort"
                   form="filtros-entrevistadores"
                   defaultValue={sort}
-                  className="border-border-soft bg-background h-11 rounded-lg border px-2.5 text-sm font-semibold"
+                  className="edge bg-background h-11 rounded-lg px-2.5 text-sm font-semibold"
                 >
                   <option value="recentes">Mais recentes</option>
                   <option value="preco">Menor preço</option>
@@ -355,7 +355,7 @@ export default async function EntrevistadoresPage({
                 <button
                   type="button"
                   disabled
-                  className="border-border-soft bg-card flex h-10 items-center rounded-xl border px-4 text-sm font-semibold opacity-40"
+                  className="edge bg-card flex h-10 items-center rounded-xl px-4 text-sm font-semibold opacity-40"
                 >
                   Anterior
                 </button>
@@ -365,7 +365,7 @@ export default async function EntrevistadoresPage({
                 <button
                   type="button"
                   disabled
-                  className="border-border-soft bg-card flex h-10 items-center rounded-xl border px-4 text-sm font-semibold opacity-40"
+                  className="edge bg-card flex h-10 items-center rounded-xl px-4 text-sm font-semibold opacity-40"
                 >
                   Próxima
                 </button>
@@ -374,7 +374,7 @@ export default async function EntrevistadoresPage({
           </>
         )}
 
-        <div className="bg-secondary border-primary flex flex-wrap items-center gap-4 rounded-xl border-l-4 p-5">
+        <div className="edge bg-card flex flex-wrap items-center gap-4 rounded-[20px] p-5 shadow-[5px_5px_0_var(--primary)]">
           <Compass aria-hidden="true" size={24} className="text-brand-deep shrink-0" />
           <div className="flex min-w-[200px] flex-1 flex-col gap-0.5">
             <p className="text-sm font-bold">Ainda não sabe por onde começar?</p>
