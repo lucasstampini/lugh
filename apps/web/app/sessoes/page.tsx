@@ -75,20 +75,21 @@ export default async function SessionsPage({ searchParams }: PageProps<"/sessoes
   }
   const userId = user.id;
 
-  // Sem cron: quem passou do prazo de pagamento vira "expirada" antes de a lista ser lida.
-  await expireUnpaidSessions();
-  // E quem chegou ao fim do horário sem os dois na sala vira "não compareceu".
-  await closeMissedSessions();
+  // Sem cron: quem passou do prazo de pagamento vira "expirada" e quem chegou ao fim do
+  // horário sem os dois na sala vira "não compareceu", antes de a lista ser lida. As duas
+  // marcações e a leitura do perfil não dependem uma da outra: saem juntas.
+  const [, , { data: profile }] = await Promise.all([
+    expireUnpaidSessions(),
+    closeMissedSessions(),
+    supabase.from("profiles").select("role").eq("id", userId).single(),
+  ]);
 
   // Sem filtro: RLS já só devolve sessão onde o usuário logado é o
   // candidate_id ou o interviewer_id.
-  const [{ data: sessions, error }, { data: profile }] = await Promise.all([
-    supabase
-      .from("sessions")
-      .select("id, candidate_id, interviewer_id, starts_at, ends_at, type, status, candidate_notes")
-      .order("starts_at", { ascending: false }),
-    supabase.from("profiles").select("role").eq("id", userId).single(),
-  ]);
+  const { data: sessions, error } = await supabase
+    .from("sessions")
+    .select("id, candidate_id, interviewer_id, starts_at, ends_at, type, status, candidate_notes")
+    .order("starts_at", { ascending: false });
 
   const isInterviewer = profile?.role === "interviewer";
 
