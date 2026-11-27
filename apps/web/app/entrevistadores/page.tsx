@@ -1,6 +1,7 @@
 import { ArrowRight, Compass, Search } from "lucide-react";
 import Link from "next/link";
 import { AutoSubmitSelect } from "@/components/auto-submit-select";
+import { LegalLinks } from "@/components/legal-links";
 import { SiteHeader } from "@/components/site-header";
 import { buttonVariants } from "@/components/ui/button";
 import { InterviewerCard } from "@/components/interviewer-card";
@@ -403,6 +404,10 @@ export default async function EntrevistadoresPage({
         <span className="text-muted-foreground text-xs">
           Precisa de uma mão? Fale com a gente
         </span>
+        <LegalLinks
+          className="text-xs"
+          linkClassName="text-foreground nav-underline inline-flex min-h-11 items-center font-semibold"
+        />
       </footer>
     </main>
   );

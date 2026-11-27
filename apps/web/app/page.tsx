@@ -647,6 +647,12 @@ export default function Home() {
           <a href="#seja-entrevistador" className={NAV_LINK}>
             Quero ser entrevistador
           </a>
+          <Link href="/termos" className={NAV_LINK}>
+            Termos de Uso
+          </Link>
+          <Link href="/privacidade" className={NAV_LINK}>
+            Privacidade
+          </Link>
         </nav>
         <span className="text-muted-foreground font-mono text-xs">© 2026 Lugh</span>
       </footer>

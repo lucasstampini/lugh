@@ -1,12 +1,14 @@
 "use client";
 
 import { CircleAlert, Mail } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { GoogleLoginButton } from "./google-login-button";
 import { MagicLinkForm } from "./magic-link-form";
 
 const H1 =
   "font-heading text-[clamp(30px,3.2vw,40px)] leading-[1.08] font-extrabold tracking-[-0.02em]";
+const LEGAL_LINK = "text-brand-deep font-bold underline underline-offset-2";
 
 // Troca o painel inteiro entre "entrar" e "confira seu e-mail". O envio do
 // link continua no MagicLinkForm, que avisa aqui quando o e-mail saiu.
@@ -76,6 +78,18 @@ export function LoginPanel({
       </div>
 
       <MagicLinkForm next={next} sentTo={null} onSentChange={setSentTo} />
+
+      <p className="text-muted-foreground text-[13px]">
+        Ao entrar, você concorda com os{" "}
+        <Link href="/termos" className={LEGAL_LINK}>
+          Termos de Uso
+        </Link>{" "}
+        e a{" "}
+        <Link href="/privacidade" className={LEGAL_LINK}>
+          Política de Privacidade
+        </Link>
+        .
+      </p>
     </>
   );
 }

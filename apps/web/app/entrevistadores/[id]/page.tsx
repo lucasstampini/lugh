@@ -12,6 +12,7 @@ import { notFound } from "next/navigation";
 import { GitHubIcon, LinkedInIcon } from "@/components/brand-icons";
 import { FadeIn } from "@/components/motion/fade-in";
 import { HoverLift } from "@/components/motion/hover-lift";
+import { LegalLinks } from "@/components/legal-links";
 import { SiteHeader } from "@/components/site-header";
 import { Stars } from "@/components/stars";
 import { buttonVariants } from "@/components/ui/button";
@@ -637,6 +638,10 @@ export default async function InterviewerProfilePage({
         <span className="text-muted-foreground text-xs">
           Precisa de uma mão? Fale com a gente
         </span>
+        <LegalLinks
+          className="text-xs"
+          linkClassName="text-foreground nav-underline inline-flex min-h-11 items-center font-semibold"
+        />
       </footer>
     </main>
   );
