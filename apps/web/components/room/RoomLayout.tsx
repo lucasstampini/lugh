@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LANGUAGE_NOTES } from "@/lib/room/run-code";
 import { SESSION_TYPE_LABELS, type RoomSession } from "@/lib/room/session";
 
 import { useCollab } from "./CollabProvider";
@@ -131,7 +132,12 @@ export function RoomLayout({ session, onSessionEnded, sessionId, userName }: Pro
                 <TabsTrigger value="board">Quadro</TabsTrigger>
               </TabsList>
               {tab === "code" ? (
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-wrap items-center justify-end gap-x-2.5 gap-y-2">
+                  {LANGUAGE_NOTES[language] ? (
+                    <p role="note" className="text-muted-foreground font-mono text-xs">
+                      {LANGUAGE_NOTES[language]}
+                    </p>
+                  ) : null}
                   <span aria-hidden="true" className="text-muted-foreground font-mono text-xs">
                     linguagem
                   </span>

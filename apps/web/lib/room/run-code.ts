@@ -25,6 +25,25 @@ export const JUDGE0_LANGUAGE_IDS: Record<LanguageId, number> = {
   javascript: 63, // JavaScript (Node.js)
   python: 71, // Python 3
   java: 62, // Java (OpenJDK). A classe com o main precisa se chamar Main.
+  c: 50, // C (GCC)
+  cpp: 54, // C++ (GCC)
+  csharp: 51, // C# (Mono)
+  go: 60,
+  rust: 73,
+  kotlin: 78,
+  swift: 83,
+  ruby: 72,
+  php: 68,
+  typescript: 74,
+};
+
+// O GCC do Judge0 compila em C++14 por padrão; a sala pede C++17.
+const JUDGE0_COMPILER_OPTIONS: Partial<Record<LanguageId, string>> = { cpp: "-std=c++17" };
+
+// Avisos que a sala mostra ao lado do seletor: regras do Judge0 que travam quem não conhece.
+export const LANGUAGE_NOTES: Partial<Record<LanguageId, string>> = {
+  java: "Em Java, a classe do main precisa se chamar Main.",
+  php: "Em PHP, o código precisa começar com <?php.",
 };
 
 export const runBodySchema = z.object({
@@ -162,7 +181,9 @@ export function parseSubmission(body: unknown): RunResult {
   const outcome = outcomeFor(submission.status.id);
   const time = submission.time == null ? Number.NaN : Number(submission.time);
 
-  const errorParts = [fromBase64(submission.compile_output), fromBase64(submission.stderr)];
+  // O compilador de Kotlin do Judge0 solta este aviso da JVM em toda execução: é ruído.
+  const compileOutput = fromBase64(submission.compile_output).replace(/^OpenJDK 64-Bit Server VM warning:.*\n?/gm, "");
+  const errorParts = [compileOutput, fromBase64(submission.stderr)];
   // `message` traz o motivo quando o Judge0 interrompe o programa (ex.: sinal recebido).
   if (outcome !== "success") errorParts.push(fromBase64(submission.message));
   let errorOutput = errorParts.map((part) => part.trimEnd()).filter(Boolean).join("\n");
@@ -194,6 +215,25 @@ export function needsMoreInput(result: RunResult): boolean {
   return result.outcome === "runtime_error" && result.errorOutput.startsWith(STDIN_HINT);
 }
 
+// O Judge0 salva o código Java como Main.java e roda `java Main`. Classe pública com outro
+// nome não compila; classe sem `public` com outro nome compila, mas não é encontrada.
+const JAVA_MAIN_CLASS_PATTERN =
+  /is public, should be declared in a file named|Could not find or load main class Main\b/;
+const JAVA_MAIN_CLASS_HINT = `${LANGUAGE_NOTES.java} Troque o nome da classe e execute de novo.`;
+
+// O TypeScript do Judge0 não tem os tipos do Node: `require` e `process` não existem para ele.
+const TS_NODE_TYPES_PATTERN = /error TS2580\b/;
+const TS_NODE_TYPES_HINT =
+  "O TypeScript daqui não conhece os tipos do Node. Declare o que for usar no topo do código, " +
+  "por exemplo: declare const require: any;";
+
+// Dica colocada na frente do erro quando ele tem uma causa conhecida da linguagem.
+function hintFor(language: LanguageId, errorOutput: string): string | null {
+  if (language === "java" && JAVA_MAIN_CLASS_PATTERN.test(errorOutput)) return JAVA_MAIN_CLASS_HINT;
+  if (language === "typescript" && TS_NODE_TYPES_PATTERN.test(errorOutput)) return TS_NODE_TYPES_HINT;
+  return null;
+}
+
 // Envia o código ao Judge0 e espera o resultado. Nunca lança: qualquer falha vira um
 // RunResult `failed` com uma mensagem que dá para mostrar na sala.
 export async function runOnJudge0(
@@ -210,6 +250,7 @@ export async function runOnJudge0(
         language_id: JUDGE0_LANGUAGE_IDS[input.language],
         source_code: toBase64(input.code),
         stdin: toBase64(input.stdin ?? ""),
+        compiler_options: JUDGE0_COMPILER_OPTIONS[input.language],
         cpu_time_limit: CPU_TIME_LIMIT,
         wall_time_limit: WALL_TIME_LIMIT,
       }),
@@ -240,5 +281,7 @@ export async function runOnJudge0(
     // A dica vai na frente: é a causa, e o traceback embaixo continua inteiro.
     return { ...result, errorOutput: clip(`${STDIN_HINT}\n\n${result.errorOutput}`) };
   }
+  const hint = hintFor(input.language, result.errorOutput);
+  if (hint) return { ...result, errorOutput: clip(`${hint}\n\n${result.errorOutput}`) };
   return result;
 }

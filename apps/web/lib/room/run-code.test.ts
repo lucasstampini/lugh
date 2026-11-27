@@ -59,7 +59,7 @@ describe("runBodySchema", () => {
   });
 
   it("recusa linguagem desconhecida, código vazio e código grande demais", () => {
-    expect(runBodySchema.safeParse({ language: "ruby", code: "puts 1" }).success).toBe(false);
+    expect(runBodySchema.safeParse({ language: "cobol", code: "puts 1"}).success).toBe(false);
     expect(runBodySchema.safeParse({ language: "python", code: "   \n" }).success).toBe(false);
     expect(
       runBodySchema.safeParse({ language: "python", code: "x".repeat(CODE_MAX_LENGTH + 1) }).success,
@@ -186,6 +186,61 @@ describe("runOnJudge0", () => {
     expect(needsMoreInput(python)).toBe(true);
     expect(needsMoreInput(java)).toBe(true);
     expect(needsMoreInput(other)).toBe(false);
+  });
+
+  it("cada linguagem vai com o id do Judge0, e só o C++ pede opção de compilador", async () => {
+    const fetchMock = vi.fn(async () => okResponse({ status: { id: 3 } }));
+    const expected = { c: 50, cpp: 54, csharp: 51, go: 60, rust: 73, kotlin: 78, swift: 83, ruby: 72, php: 68, typescript: 74 };
+
+    for (const language of Object.keys(expected) as (keyof typeof expected)[]) {
+      await runOnJudge0(rapid, { language, code: "x" }, fetchMock);
+    }
+
+    const sent = fetchMock.mock.calls.map((call) =>
+      JSON.parse(String((call as unknown as [string, RequestInit])[1].body)),
+    );
+    expect(sent.map((body) => body.language_id)).toEqual(Object.values(expected));
+    expect(sent.map((body) => body.compiler_options)).toEqual([
+      undefined, "-std=c++17", undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+    ]);
+  });
+
+  it("TypeScript sem os tipos do Node ganha a dica, e o aviso da JVM do Kotlin some", async () => {
+    const ts = await runOnJudge0(rapid, { language: "typescript", code: "x" }, async () =>
+      okResponse({ compile_output: b64("script.ts(1,12): error TS2580: Cannot find name 'require'."), status: { id: 6 } }),
+    );
+    const kotlin = await runOnJudge0(rapid, { language: "kotlin", code: "x" }, async () =>
+      okResponse({
+        stdout: b64("oi\n"),
+        compile_output: b64("OpenJDK 64-Bit Server VM warning: Options -Xverify:none and -noverify were deprecated\n"),
+        status: { id: 3 },
+      }),
+    );
+
+    expect(ts.errorOutput).toMatch(/^O TypeScript daqui não conhece os tipos do Node/);
+    expect(ts.errorOutput).toContain("error TS2580");
+    expect(kotlin).toMatchObject({ outcome: "success", output: "oi\n", errorOutput: "" });
+  });
+
+  it("Java com a classe do main fora do nome Main ganha a dica antes do erro", async () => {
+    const publicClass = await runOnJudge0(rapid, { language: "java", code: "x" }, async () =>
+      okResponse({
+        compile_output: b64("Main.java:1: error: class Solution is public, should be declared in a file named Solution.java"),
+        status: { id: 6 },
+      }),
+    );
+    const plainClass = await runOnJudge0(rapid, { language: "java", code: "x" }, async () =>
+      okResponse({ stderr: b64("Error: Could not find or load main class Main"), status: { id: 11 } }),
+    );
+    const other = await runOnJudge0(rapid, { language: "java", code: "x" }, async () =>
+      okResponse({ compile_output: b64("Main.java:3: error: ';' expected"), status: { id: 6 } }),
+    );
+
+    expect(publicClass.outcome).toBe("compile_error");
+    expect(publicClass.errorOutput).toMatch(/^Em Java, a classe do main precisa se chamar Main\./);
+    expect(publicClass.errorOutput).toContain("class Solution is public");
+    expect(plainClass.errorOutput).toMatch(/^Em Java, a classe do main precisa se chamar Main\./);
+    expect(other.errorOutput).toBe("Main.java:3: error: ';' expected");
   });
 
   it("instância própria usa X-Auth-Token, e sem chave não manda autenticação", async () => {
