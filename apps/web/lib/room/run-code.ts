@@ -186,7 +186,13 @@ export function parseSubmission(body: unknown): RunResult {
 const STDIN_EXHAUSTED_PATTERN = /\bEOFError\b|\bNoSuchElementException\b/;
 const STDIN_HINT =
   "O programa tentou ler mais entrada do que recebeu. A execução não é interativa: " +
-  "escreva na aba entrada tudo o que ele vai ler, uma linha para cada leitura.";
+  "escreva no campo entrada, ao lado, tudo o que ele vai ler, uma linha para cada leitura.";
+
+// true quando a execução parou porque o programa quis ler e a entrada tinha acabado: a
+// sala destaca o campo de entrada.
+export function needsMoreInput(result: RunResult): boolean {
+  return result.outcome === "runtime_error" && result.errorOutput.startsWith(STDIN_HINT);
+}
 
 // Envia o código ao Judge0 e espera o resultado. Nunca lança: qualquer falha vira um
 // RunResult `failed` com uma mensagem que dá para mostrar na sala.
