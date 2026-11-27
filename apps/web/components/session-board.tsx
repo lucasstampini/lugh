@@ -21,7 +21,7 @@ export function SessionBoard({
   files: Record<string, unknown>;
 }) {
   return (
-    <div className="edge bg-card h-[420px] overflow-hidden rounded-[14px]">
+    <div className="edge bg-card h-[clamp(360px,60vh,560px)] overflow-hidden rounded-[14px]">
       <SessionBoardCanvas elements={elements} files={files} />
     </div>
   );
