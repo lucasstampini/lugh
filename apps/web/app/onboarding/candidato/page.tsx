@@ -19,7 +19,7 @@ export default async function OnboardingCandidatoPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("name, avatar_url")
+    .select("name, avatar_url, terms_accepted_at")
     .eq("id", user.id)
     .single();
 
@@ -36,6 +36,7 @@ export default async function OnboardingCandidatoPage() {
       <ConfirmNameForm
         initialName={profile?.name ?? ""}
         initialAvatarUrl={profile?.avatar_url ?? null}
+        needsTermsAcceptance={!profile?.terms_accepted_at}
       />
     </WizardShell>
   );

@@ -11,7 +11,16 @@ const PROTECTED_PREFIXES = [
   "/sala",
 ];
 
-const SKIP_ROLE_CHECK_PREFIXES = ["/onboarding", "/auth", "/api", "/login"];
+// Termos e Privacidade ficam de fora: quem ainda está no onboarding (sem role) precisa
+// conseguir abrir os dois textos antes de aceitar.
+const SKIP_ROLE_CHECK_PREFIXES = [
+  "/onboarding",
+  "/auth",
+  "/api",
+  "/login",
+  "/termos",
+  "/privacidade",
+];
 
 // A sala de teste é aberta (sem login e sem perfil), mas só fora de produção:
 // serve para desenvolver e para os E2E. Toda outra sala exige login, e a página

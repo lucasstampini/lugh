@@ -91,6 +91,18 @@ describe("feedbackReadyEmail", () => {
     expect(email.text).toContain("Camila Ribeiro enviou o feedback da sessão de qua, 18 nov");
     expect(email.text).toContain("Ver o resultado: https://lugh.example/sessoes/sessao-1/resultado");
   });
+
+  it("leva o link da Política de Privacidade, no mesmo site do link de ação", () => {
+    const email = feedbackReadyEmail({
+      candidateName: "Pedro Almeida",
+      interviewerName: "Camila Ribeiro",
+      startsAt: STARTS_AT,
+      resultUrl: "https://lugh.example/sessoes/sessao-1/resultado",
+    });
+
+    expect(email.text).toContain("Política de Privacidade: https://lugh.example/privacidade");
+    expect(email.html).toContain('href="https://lugh.example/privacidade"');
+  });
 });
 
 describe("payoutEmail", () => {

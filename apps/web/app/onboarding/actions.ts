@@ -2,10 +2,36 @@
 
 import { redirect } from "next/navigation";
 import { candidateProfileSchema } from "@/lib/candidate-profile-schema";
+import { hasAcceptedTermsField, TERMS_REQUIRED_MESSAGE } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/server";
 import { interviewerFormSchema } from "./entrevistador/schema";
 
 const POSTGRES_UNIQUE_VIOLATION = "23505";
+
+const SAVE_ERROR = "Não deu para salvar agora. Tente de novo.";
+
+// Quem ainda não aceitou os Termos e a Política só passa com o checkbox marcado: a
+// conferência é aqui no servidor, o `required` do formulário é só conveniência. O aceite
+// é gravado pela função accept_terms, com o horário do banco. Devolve a mensagem de erro,
+// ou null quando o aceite já existia ou acabou de ser registrado.
+async function ensureTermsAccepted(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  formData: FormData,
+): Promise<string | null> {
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("terms_accepted_at")
+    .eq("id", userId)
+    .single();
+
+  if (error) return SAVE_ERROR;
+  if (profile.terms_accepted_at) return null;
+  if (!hasAcceptedTermsField(formData)) return TERMS_REQUIRED_MESSAGE;
+
+  const { error: acceptError } = await supabase.rpc("accept_terms");
+  return acceptError ? SAVE_ERROR : null;
+}
 
 // O mesmo limite vale no bucket (migration avatar_storage) e no
 // serverActions.bodySizeLimit do next.config.ts.
@@ -97,6 +123,11 @@ export async function confirmCandidate(
     redirect("/login");
   }
 
+  const termsError = await ensureTermsAccepted(supabase, user.id, formData);
+  if (termsError) {
+    return { error: termsError };
+  }
+
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -152,6 +183,11 @@ export async function createInterviewerProfile(
 
   if (!user) {
     redirect("/login");
+  }
+
+  const termsError = await ensureTermsAccepted(supabase, user.id, formData);
+  if (termsError) {
+    return { error: termsError };
   }
 
   const values = {

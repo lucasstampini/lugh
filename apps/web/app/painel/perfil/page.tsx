@@ -44,7 +44,7 @@ export default async function PerfilEntrevistadorPage() {
   // Nome e foto só alimentam a prévia do card.
   const { data: profile } = await supabase
     .from("profiles")
-    .select("name, avatar_url")
+    .select("name, avatar_url, terms_accepted_at")
     .eq("id", user.id)
     .single();
 
@@ -59,6 +59,7 @@ export default async function PerfilEntrevistadorPage() {
           backHref="/painel"
           profileName={profile?.name ?? ""}
           avatarUrl={profile?.avatar_url ?? null}
+          needsTermsAcceptance={!profile?.terms_accepted_at}
         />
       </main>
     </div>

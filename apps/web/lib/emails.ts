@@ -41,6 +41,11 @@ type Layout = {
   footnote?: string;
 };
 
+// A Política de Privacidade mora no mesmo site do link de ação, que é sempre absoluto.
+function privacyUrl(actionUrl: string): string {
+  return new URL("/privacidade", actionUrl).toString();
+}
+
 function renderHtml({ title, paragraphs, details = [], action, footnote }: Layout): string {
   const body = paragraphs
     .map(
@@ -77,7 +82,7 @@ ${body}${detailsBlock}
 <a href="${escapeHtml(action.url)}" style="display:inline-block;padding:14px 24px;background:${SUN};color:${INK};border:1.5px solid ${INK};border-radius:12px;font-size:16px;font-weight:800;text-decoration:none">${escapeHtml(action.label)}</a>
 ${footnoteBlock}
 </td></tr>
-<tr><td style="padding:20px 0 0;font-size:13px;line-height:1.55;color:${MUTED}">Você recebeu este e-mail porque tem uma sessão no Lugh. Se o botão não abrir, copie este link: <a href="${escapeHtml(action.url)}" style="color:${LINK}">${escapeHtml(action.url)}</a></td></tr>
+<tr><td style="padding:20px 0 0;font-size:13px;line-height:1.55;color:${MUTED}">Você recebeu este e-mail porque tem uma sessão no Lugh. Se o botão não abrir, copie este link: <a href="${escapeHtml(action.url)}" style="color:${LINK}">${escapeHtml(action.url)}</a><br><br><a href="${escapeHtml(privacyUrl(action.url))}" style="color:${LINK}">Política de Privacidade</a></td></tr>
 </table>
 </td></tr>
 </table>
@@ -92,6 +97,7 @@ function renderText({ title, paragraphs, details = [], action, footnote }: Layou
     ...(details.length ? [details.map(([label, value]) => `${label}: ${value}`).join("\n")] : []),
     `${action.label}: ${action.url}`,
     ...(footnote ? [footnote] : []),
+    `Política de Privacidade: ${privacyUrl(action.url)}`,
   ].join("\n\n");
 }
 

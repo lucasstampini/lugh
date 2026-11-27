@@ -16,6 +16,7 @@ import {
   LABEL_CLASS,
   SELECT_CLASS,
 } from "@/components/form-field";
+import { TermsConsent } from "@/components/terms-consent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -71,6 +72,7 @@ export function InterviewerForm({
   backHref,
   profileName,
   avatarUrl: initialAvatarUrl,
+  needsTermsAcceptance,
 }: {
   defaultValues?: InterviewerFormDefaults;
   submitLabel?: string;
@@ -80,6 +82,8 @@ export function InterviewerForm({
   profileName: string;
   // Foto atual da conta (no login com Google, vem a foto do Google).
   avatarUrl: string | null;
+  // Falso para quem já aceitou os Termos.
+  needsTermsAcceptance: boolean;
 }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(
     createInterviewerProfile,
@@ -328,6 +332,8 @@ export function InterviewerForm({
             </div>
           </Field>
         </div>
+
+        {needsTermsAcceptance ? <TermsConsent /> : null}
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-1.5">
           <Link
