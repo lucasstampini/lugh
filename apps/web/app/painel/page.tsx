@@ -54,50 +54,69 @@ export default async function PainelPage() {
     redirect("/login");
   }
 
-  const { data: interviewer } = await supabase
-    .from("interviewers")
-    .select("active, paused, abacate_subaccount_id")
-    .eq("profile_id", user.id)
-    .maybeSingle();
+  const userId = user.id;
+
+  // A próxima sessão que este entrevistador conduz (confirmada ou em andamento), com o
+  // nome do candidato.
+  async function loadNextSession() {
+    const { data } = await supabase
+      .from("sessions")
+      .select("id, starts_at")
+      .eq("interviewer_id", userId)
+      .in("status", ["scheduled", "in_progress"])
+      .gt("ends_at", new Date().toISOString())
+      .order("starts_at")
+      .limit(1);
+    const session = data?.[0];
+    if (!session) return null;
+
+    const { data: names } = await supabase.rpc("session_participant_names", {
+      session_ids: [session.id],
+    });
+    return {
+      date: formatSessionDate(session.starts_at),
+      candidateName: names?.[0]?.candidate_name?.trim() || "Candidato",
+    };
+  }
+
+  // A RLS de payments devolve os pagamentos das sessões do usuário. Ele também pode ser
+  // candidato em outras sessões, então só contam as que ele conduz. Se a leitura
+  // falhar, os ganhos não aparecem (em vez de mostrar zero como se fosse verdade).
+  async function loadEarnings() {
+    // Repasse que falhou quando o feedback foi enviado: tenta de novo antes de somar.
+    await retryPendingPayouts(userId);
+
+    const { data } = await supabase
+      .from("payments")
+      .select("status, interviewer_share_cents, sessions!inner(interviewer_id)")
+      .eq("sessions.interviewer_id", userId);
+    return data ? sumEarnings(data) : null;
+  }
+
+  // As quatro leituras não dependem uma da outra: saem juntas, para o painel não esperar
+  // uma ida ao banco de cada vez.
+  const [{ data: interviewer }, { data: availability }, nextSession, earnings] = await Promise.all([
+    supabase
+      .from("interviewers")
+      .select("active, paused, abacate_subaccount_id")
+      .eq("profile_id", userId)
+      .maybeSingle(),
+    supabase
+      .from("availability")
+      .select("id, weekday, start_time, end_time")
+      .eq("interviewer_id", userId)
+      .order("weekday")
+      .order("start_time"),
+    loadNextSession(),
+    loadEarnings(),
+  ]);
 
   if (!interviewer) {
     redirect("/onboarding/entrevistador");
   }
 
-  const { data: availability } = await supabase
-    .from("availability")
-    .select("id, weekday, start_time, end_time")
-    .eq("interviewer_id", user.id)
-    .order("weekday")
-    .order("start_time");
-
-  // A próxima sessão que este entrevistador conduz (confirmada ou em andamento).
-  const { data: nextSessions } = await supabase
-    .from("sessions")
-    .select("id, starts_at")
-    .eq("interviewer_id", user.id)
-    .in("status", ["scheduled", "in_progress"])
-    .gt("ends_at", new Date().toISOString())
-    .order("starts_at")
-    .limit(1);
-  const nextSession = nextSessions?.[0] ?? null;
-  const nextSessionDate = nextSession ? formatSessionDate(nextSession.starts_at) : null;
-  const { data: nextSessionNames } = nextSession
-    ? await supabase.rpc("session_participant_names", { session_ids: [nextSession.id] })
-    : { data: null };
-  const nextCandidateName = nextSessionNames?.[0]?.candidate_name?.trim() || "Candidato";
-
-  // Repasse que falhou quando o feedback foi enviado: tenta de novo antes de somar.
-  await retryPendingPayouts(user.id);
-
-  // A RLS de payments devolve os pagamentos das sessões do usuário. Ele também pode ser
-  // candidato em outras sessões, então só contam as que ele conduz. Se a leitura
-  // falhar, os ganhos não aparecem (em vez de mostrar zero como se fosse verdade).
-  const { data: payments } = await supabase
-    .from("payments")
-    .select("status, interviewer_share_cents, sessions!inner(interviewer_id)")
-    .eq("sessions.interviewer_id", user.id);
-  const earnings = payments ? sumEarnings(payments) : null;
+  const nextSessionDate = nextSession?.date ?? null;
+  const nextCandidateName = nextSession?.candidateName ?? "Candidato";
 
   const blocksByWeekday = new Map<
     number,

@@ -105,45 +105,50 @@ export default async function SessionResultPage({
     notFound();
   }
 
-  const { data: feedback } = await supabase
-    .from("feedbacks")
-    .select("scores, strengths, improvements, would_hire, created_at")
-    .eq("session_id", id)
-    .maybeSingle();
-
-  const { data: interviewerProfile } = await supabase
-    .from("interviewer_profiles")
-    .select("name, avatar_url")
-    .eq("id", session.interviewer_id)
-    .maybeSingle();
-
   // Código e quadro finais da sala. A participação já foi conferida acima (a RLS só
-  // devolveu a sessão para quem está nela), então a leitura pode ser do backend. Só vale
-  // com o feedback enviado, e uma falha aqui não esconde o feedback.
-  let snapshot: SessionSnapshot | null = null;
-  let snapshotFailed = false;
-  if (feedback) {
+  // devolveu a sessão para quem está nela), então a leitura pode ser do backend. Uma
+  // falha aqui não esconde o feedback.
+  async function loadSnapshot(): Promise<{ snapshot: SessionSnapshot | null; failed: boolean }> {
     try {
-      snapshot = await getSessionSnapshot(session.id);
+      return { snapshot: await getSessionSnapshot(id), failed: false };
     } catch {
-      snapshotFailed = true;
+      return { snapshot: null, failed: true };
     }
   }
+
+  // Feedback só existe depois de a sessão ser encerrada: antes disso nem vale buscar o
+  // retrato da sala.
+  const mayHaveFeedback = session.status === "awaiting_feedback" || session.status === "completed";
+
+  // As leituras não dependem uma da outra: saem juntas, para a tela não esperar uma ida
+  // ao banco de cada vez.
+  const [{ data: feedback }, { data: interviewerProfile }, loadedSnapshot, { data: review }] =
+    await Promise.all([
+      supabase
+        .from("feedbacks")
+        .select("scores, strengths, improvements, would_hire, created_at")
+        .eq("session_id", id)
+        .maybeSingle(),
+      supabase
+        .from("interviewer_profiles")
+        .select("name, avatar_url")
+        .eq("id", session.interviewer_id)
+        .maybeSingle(),
+      mayHaveFeedback ? loadSnapshot() : { snapshot: null, failed: false },
+      // Avaliação que o candidato deu ao entrevistador (uma por sessão). Aqui a linha vem
+      // pela RLS de reviews (só os dois participantes); no perfil do entrevistador ela é
+      // pública, pela função interviewer_reviews.
+      session.status === "completed"
+        ? supabase.from("reviews").select("rating, comment").eq("session_id", id).maybeSingle()
+        : { data: null },
+    ]);
+
+  // O retrato da sala só vale com o feedback enviado.
+  const snapshot = feedback ? loadedSnapshot.snapshot : null;
+  const snapshotFailed = feedback ? loadedSnapshot.failed : false;
   const code = snapshot?.code.trimEnd() ?? "";
   const codeLanguage = LANGUAGES.find((language) => language.id === snapshot?.language)?.label;
   const boardElements = snapshot?.boardElements ?? [];
-
-  // Avaliação que o candidato deu ao entrevistador (uma por sessão). Aqui a linha vem pela
-  // RLS de reviews (só os dois participantes); no perfil do entrevistador ela é pública,
-  // pela função interviewer_reviews.
-  const { data: review } =
-    session.status === "completed"
-      ? await supabase
-          .from("reviews")
-          .select("rating, comment")
-          .eq("session_id", id)
-          .maybeSingle()
-      : { data: null };
 
   const interviewerName = interviewerProfile?.name ?? "Entrevistador";
   const sessionTypeLabel = SESSION_TYPE_LABELS[session.type] ?? session.type;
