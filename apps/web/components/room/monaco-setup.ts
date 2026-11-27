@@ -1,15 +1,24 @@
 import { loader } from "@monaco-editor/react";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api.js";
+import "monaco-editor/esm/vs/basic-languages/cpp/cpp.contribution.js";
+import "monaco-editor/esm/vs/basic-languages/csharp/csharp.contribution.js";
+import "monaco-editor/esm/vs/basic-languages/go/go.contribution.js";
 import "monaco-editor/esm/vs/basic-languages/java/java.contribution.js";
 import "monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution.js";
+import "monaco-editor/esm/vs/basic-languages/kotlin/kotlin.contribution.js";
+import "monaco-editor/esm/vs/basic-languages/php/php.contribution.js";
 import "monaco-editor/esm/vs/basic-languages/python/python.contribution.js";
+import "monaco-editor/esm/vs/basic-languages/ruby/ruby.contribution.js";
+import "monaco-editor/esm/vs/basic-languages/rust/rust.contribution.js";
+import "monaco-editor/esm/vs/basic-languages/swift/swift.contribution.js";
+import "monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution.js";
 
 // Configura o Monaco uma vez, ao carregar o editor (só no navegador).
 //
 // - Usa o pacote `monaco-editor` instalado em vez da CDN padrão do @monaco-editor/react.
 //   O y-monaco importa este mesmo módulo (editor.api); com a CDN haveria duas cópias do
 //   Monaco e o binding não reconheceria o editor.
-// - Importa só a API do editor e o realce das três linguagens da sala, sem os serviços de
+// - Importa só a API do editor e o realce das linguagens da sala (o pacote cpp traz o C), sem os serviços de
 //   linguagem (autocomplete de TypeScript etc.): o bundle fica bem menor e só precisamos
 //   do worker básico do editor.
 self.MonacoEnvironment = {

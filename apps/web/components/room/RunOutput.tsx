@@ -102,9 +102,8 @@ export function RunOutput({ run, stdin, onStdinChange, canEditStdin }: Props) {
 
       <div className="flex min-h-0 flex-1">
         <div className="flex w-[34%] max-w-[440px] min-w-[230px] shrink-0 flex-col px-4 pb-3">
-          <label htmlFor="run-stdin" className="flex flex-wrap items-baseline gap-x-2 font-mono text-xs">
-            <span className="font-bold">entrada</span>
-            <span className="text-muted-foreground">o que o programa lê do teclado</span>
+          <label htmlFor="run-stdin" className="font-mono text-xs font-bold">
+            entrada
           </label>
           <textarea
             id="run-stdin"
@@ -116,7 +115,7 @@ export function RunOutput({ run, stdin, onStdinChange, canEditStdin }: Props) {
             spellCheck={false}
             autoCapitalize="off"
             autoCorrect="off"
-            placeholder={"Uma linha para cada input():\npedra\npapel\nsair"}
+            placeholder="Uma linha para cada input()"
             className={`bg-card placeholder:text-muted-foreground mt-2 min-h-0 w-full flex-1 resize-none rounded-[10px] border-[1.5px] px-3 py-2 font-mono text-[13px] leading-[1.6] outline-none focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-60 ${
               askedForInput ? "border-primary" : "border-input"
             }`}
