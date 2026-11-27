@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { candidateQuizSchema } from "@/lib/candidate-preferences";
 import { candidateProfileSchema } from "@/lib/candidate-profile-schema";
 import { hasAcceptedTermsField, TERMS_REQUIRED_MESSAGE } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/server";
@@ -93,6 +94,58 @@ export async function uploadAvatar(formData: FormData) {
   }
 
   return { url };
+}
+
+// Fim do questionário do candidato: grava o papel, o nome e as respostas, e leva para os
+// entrevistadores com melhor match. Pergunta pulada vira null (não apaga nada além dela).
+export async function saveCandidateQuiz(
+  _prevState: { error?: string } | null,
+  formData: FormData,
+) {
+  const parsed = candidateQuizSchema.safeParse({
+    name: formData.get("name"),
+    areas: formData.getAll("areas"),
+    interviewTypes: formData.getAll("interviewTypes"),
+    urgency: formData.get("urgency") ?? "",
+    careerStage: formData.get("careerStage") ?? "",
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const termsError = await ensureTermsAccepted(supabase, user.id, formData);
+  if (termsError) {
+    return { error: termsError };
+  }
+
+  const { areas, interviewTypes } = parsed.data;
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      role: "candidate",
+      name: parsed.data.name,
+      areas: areas.length > 0 ? areas : null,
+      interview_types: interviewTypes.length > 0 ? interviewTypes : null,
+      training_urgency: parsed.data.urgency,
+      career_stage: parsed.data.careerStage,
+    })
+    .eq("id", user.id);
+
+  if (error) {
+    return { error: SAVE_ERROR };
+  }
+
+  redirect("/onboarding/candidato/matches");
 }
 
 export async function confirmCandidate(
