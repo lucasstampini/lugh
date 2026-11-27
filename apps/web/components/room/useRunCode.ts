@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 
 import { getCode, getMeta, type Collab } from "@/lib/room/collab";
 import type { LanguageId } from "@/lib/room/languages";
-import { getRun, setRun, type SharedRun } from "@/lib/room/meta";
+import { getRun, getStdin, setRun, setStdin, type SharedRun } from "@/lib/room/meta";
 import { runResultSchema, type RunResult } from "@/lib/room/run-code";
 
 type Options = {
@@ -71,6 +71,19 @@ export function useRunCode({ collab, sessionId, userName, sendName, language }: 
   );
   const shared: SharedRun | null = collab ? getRun(getMeta(collab.ydoc)) : null;
 
+  // A entrada do programa também mora no documento: os dois veem e editam a mesma.
+  const stdin = useSyncExternalStore(
+    subscribe,
+    () => (collab ? getStdin(getMeta(collab.ydoc)) : ""),
+    () => "",
+  );
+  const changeStdin = useCallback(
+    (value: string) => {
+      if (collab) setStdin(getMeta(collab.ydoc), value);
+    },
+    [collab],
+  );
+
   // Quem clicou pode fechar a aba antes de a resposta chegar: o documento ficaria em
   // "executando" para sempre. Passado o prazo, esta tela mostra que a execução não terminou.
   const [staleRaw, setStaleRaw] = useState<unknown>(null);
@@ -98,10 +111,11 @@ export function useRunCode({ collab, sessionId, userName, sendName, language }: 
       name: sendName ? userName : undefined,
       language,
       code,
+      stdin: getStdin(meta),
     });
     setRun(meta, { state: "done", by: userName, language, result });
     setPending(false);
   }, [collab, pending, sessionId, userName, sendName, language]);
 
-  return { run, pending, canRun: Boolean(collab), execute };
+  return { run, pending, canRun: Boolean(collab), execute, stdin, changeStdin };
 }

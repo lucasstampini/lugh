@@ -1,7 +1,8 @@
 /**
  * Testes de lib/room/meta.ts
  *
- * O que cobre: a linguagem do editor guardada na gaveta `meta` do documento Yjs.
+ * O que cobre: a linguagem do editor, a entrada do programa e a última execução,
+ * guardadas na gaveta `meta` do documento Yjs.
  *
  * Por que importa: os dois participantes precisam ver a mesma linguagem. Quem entra
  * depois não pode sobrescrever a escolha de quem já estava na sala, e um valor
@@ -12,7 +13,8 @@
 import { describe, expect, it } from "vitest";
 import * as Y from "yjs";
 
-import { ensureDefaultLanguage, getLanguage, getRun, setLanguage, setRun } from "./meta";
+import { ensureDefaultLanguage, getLanguage, getRun, getStdin, setLanguage, setRun, setStdin } from "./meta";
+import { STDIN_MAX_LENGTH } from "./run-code";
 
 function newMeta() {
   return new Y.Doc().getMap<unknown>("meta");
@@ -58,6 +60,37 @@ describe("setLanguage", () => {
     setLanguage(meta, "java");
 
     expect(getLanguage(meta)).toBe("java");
+  });
+});
+
+describe("getStdin e setStdin", () => {
+  it("sem entrada devolve texto vazio", () => {
+    expect(getStdin(newMeta())).toBe("");
+  });
+
+  it("guarda a entrada com as quebras de linha", () => {
+    const meta = newMeta();
+
+    setStdin(meta, "pedra\npapel\nsair\n");
+
+    expect(getStdin(meta)).toBe("pedra\npapel\nsair\n");
+  });
+
+  it("valor que não é texto, escrito por outro navegador, é ignorado", () => {
+    const meta = newMeta();
+    meta.set("stdin", { linhas: 3 });
+
+    expect(getStdin(meta)).toBe("");
+  });
+
+  it("corta entrada acima do limite, na escrita e na leitura", () => {
+    const meta = newMeta();
+
+    setStdin(meta, "a".repeat(STDIN_MAX_LENGTH + 50));
+    expect(getStdin(meta)).toHaveLength(STDIN_MAX_LENGTH);
+
+    meta.set("stdin", "b".repeat(STDIN_MAX_LENGTH + 50));
+    expect(getStdin(meta)).toHaveLength(STDIN_MAX_LENGTH);
   });
 });
 

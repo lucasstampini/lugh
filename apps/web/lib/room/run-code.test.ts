@@ -21,6 +21,7 @@ import {
   runBodySchema,
   runOnJudge0,
   RUN_MIN_INTERVAL_MS,
+  STDIN_MAX_LENGTH,
   takeRunSlot,
 } from "./run-code";
 
@@ -61,6 +62,15 @@ describe("runBodySchema", () => {
     expect(runBodySchema.safeParse({ language: "python", code: "   \n" }).success).toBe(false);
     expect(
       runBodySchema.safeParse({ language: "python", code: "x".repeat(CODE_MAX_LENGTH + 1) }).success,
+    ).toBe(false);
+  });
+
+  it("a entrada é opcional, pode ser vazia e tem limite de tamanho", () => {
+    expect(runBodySchema.safeParse({ language: "python", code: "x", stdin: "" }).success).toBe(true);
+    expect(runBodySchema.safeParse({ language: "python", code: "x", stdin: "pedra\nsair\n" }).success).toBe(true);
+    expect(runBodySchema.safeParse({ language: "python", code: "x", stdin: 3 }).success).toBe(false);
+    expect(
+      runBodySchema.safeParse({ language: "python", code: "x", stdin: "a".repeat(STDIN_MAX_LENGTH + 1) }).success,
     ).toBe(false);
   });
 });
@@ -141,6 +151,37 @@ describe("runOnJudge0", () => {
     const sent = JSON.parse(String(init.body));
     expect(sent.language_id).toBe(71);
     expect(Buffer.from(sent.source_code, "base64").toString("utf8")).toBe("print('olá')");
+  });
+
+  it("envia a entrada em base64, e vazia quando não há", async () => {
+    const fetchMock = vi.fn(async () => okResponse({ status: { id: 3 } }));
+
+    await runOnJudge0(rapid, { language: "python", code: "x", stdin: "pedra\nção\n" }, fetchMock);
+    await runOnJudge0(rapid, { language: "python", code: "x" }, fetchMock);
+
+    const sent = fetchMock.mock.calls.map((call) =>
+      JSON.parse(String((call as unknown as [string, RequestInit])[1].body)),
+    );
+    expect(Buffer.from(sent[0].stdin, "base64").toString("utf8")).toBe("pedra\nção\n");
+    expect(sent[1].stdin).toBe("");
+  });
+
+  it("programa que lê além da entrada ganha a dica antes do traceback", async () => {
+    const python = await runOnJudge0(rapid, { language: "python", code: "input()" }, async () =>
+      okResponse({ stderr: b64("EOFError: EOF when reading a line\n"), status: { id: 11 } }),
+    );
+    const java = await runOnJudge0(rapid, { language: "java", code: "x" }, async () =>
+      okResponse({ stderr: b64("java.util.NoSuchElementException: No line found"), status: { id: 11 } }),
+    );
+    const other = await runOnJudge0(rapid, { language: "python", code: "1/0" }, async () =>
+      okResponse({ stderr: b64("ZeroDivisionError: division by zero"), status: { id: 11 } }),
+    );
+
+    expect(python.outcome).toBe("runtime_error");
+    expect(python.errorOutput).toMatch(/^O programa tentou ler mais entrada/);
+    expect(python.errorOutput).toContain("EOFError: EOF when reading a line");
+    expect(java.errorOutput).toContain("aba entrada");
+    expect(other.errorOutput).toBe("ZeroDivisionError: division by zero");
   });
 
   it("instância própria usa X-Auth-Token, e sem chave não manda autenticação", async () => {
