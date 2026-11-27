@@ -6,7 +6,7 @@ const base = {
   headline: "Engenheira de Software Sênior",
   company: "Fintech de grande porte",
   seniority: "senior",
-  areas: ["backend"],
+  areas: ["software_engineer"],
   bio: "",
   linkedin: "linkedin.com/in/fulana",
   github: "",

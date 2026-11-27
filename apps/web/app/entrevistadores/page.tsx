@@ -6,7 +6,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { InterviewerCard } from "@/components/interviewer-card";
 import { FadeIn } from "@/components/motion/fade-in";
 import { HoverLift } from "@/components/motion/hover-lift";
-import { AREA_OPTIONS, SENIORITY_OPTIONS } from "@/lib/interviewer-options";
+import {
+  AREA_OPTIONS,
+  SENIORITY_OPTIONS,
+  currentAreaSlug,
+} from "@/lib/interviewer-options";
 import {
   type AvailabilityBlock,
   type BookedRange,
@@ -22,7 +26,10 @@ export default async function EntrevistadoresPage({
   searchParams,
 }: PageProps<"/entrevistadores">) {
   const params = await searchParams;
-  const area = typeof params.area === "string" ? params.area : undefined;
+  const area =
+    typeof params.area === "string" && params.area
+      ? currentAreaSlug(params.area)
+      : undefined;
   const senioridade =
     typeof params.senioridade === "string" ? params.senioridade : undefined;
   const q = typeof params.q === "string" ? params.q.trim() : "";
