@@ -263,6 +263,7 @@ export type Database = {
           role: string | null
           state: string | null
           target_role: string | null
+          terms_accepted_at: string | null
         }
         Insert: {
           areas?: string[] | null
@@ -280,6 +281,7 @@ export type Database = {
           role?: string | null
           state?: string | null
           target_role?: string | null
+          terms_accepted_at?: string | null
         }
         Update: {
           areas?: string[] | null
@@ -297,6 +299,7 @@ export type Database = {
           role?: string | null
           state?: string | null
           target_role?: string | null
+          terms_accepted_at?: string | null
         }
         Relationships: []
       }
@@ -421,6 +424,7 @@ export type Database = {
       }
     }
     Functions: {
+      accept_terms: { Args: never; Returns: undefined }
       interviewer_booked_slots: {
         Args: { from_ts: string; interviewer: string; to_ts: string }
         Returns: {
