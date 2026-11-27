@@ -2,12 +2,12 @@ import type * as Y from "yjs";
 import { z } from "zod";
 
 import { DEFAULT_LANGUAGE, languageSchema, parseLanguage, type LanguageId } from "./languages";
-import { runResultSchema } from "./run-code";
+import { runResultSchema, STDIN_MAX_LENGTH } from "./run-code";
 import { NAME_MAX_LENGTH } from "./session";
 
 // A gaveta `meta` do documento Yjs da sessão guarda o estado compartilhado da sala: a
-// linguagem do editor (quando um participante troca, o outro vê a mesma) e a última
-// execução do código (os dois veem a mesma saída).
+// linguagem do editor (quando um participante troca, o outro vê a mesma), a entrada que o
+// programa lê e a última execução do código (os dois veem a mesma saída).
 
 const LANGUAGE_KEY = "language";
 
@@ -25,6 +25,21 @@ export function ensureDefaultLanguage(meta: Y.Map<unknown>): void {
   if (!meta.has(LANGUAGE_KEY)) {
     meta.set(LANGUAGE_KEY, DEFAULT_LANGUAGE);
   }
+}
+
+const STDIN_KEY = "stdin";
+
+// Entrada (stdin) que o programa lê ao executar, igual para os dois participantes.
+// shortcut: é uma string simples na gaveta, então se os dois digitarem ao mesmo tempo vale
+// a última escrita. Para um campo curto de entrada basta; se incomodar, vira um Y.Text.
+export function getStdin(meta: Y.Map<unknown>): string {
+  const value = meta.get(STDIN_KEY);
+  // Escrito por outro navegador: o que não for texto é ignorado e o excesso é cortado.
+  return typeof value === "string" ? value.slice(0, STDIN_MAX_LENGTH) : "";
+}
+
+export function setStdin(meta: Y.Map<unknown>, stdin: string): void {
+  meta.set(STDIN_KEY, stdin.slice(0, STDIN_MAX_LENGTH));
 }
 
 const RUN_KEY = "run";

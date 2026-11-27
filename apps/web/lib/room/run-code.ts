@@ -10,6 +10,8 @@ import { languageSchema, type LanguageId } from "./languages";
 
 // Limite do código enviado: uma resposta de entrevista não chega perto disso.
 export const CODE_MAX_LENGTH = 20_000;
+// Limite da entrada (stdin) digitada na sala para o programa ler.
+export const STDIN_MAX_LENGTH = 10_000;
 // Saída maior que isso é cortada: um laço imprimindo sem parar não pode inchar o
 // documento compartilhado da sala.
 export const OUTPUT_MAX_LENGTH = 8_000;
@@ -31,6 +33,12 @@ export const runBodySchema = z.object({
     .string({ error: "Código inválido" })
     .max(CODE_MAX_LENGTH, { error: `O código passa de ${CODE_MAX_LENGTH} caracteres.` })
     .refine((value) => value.trim().length > 0, { error: "Escreva algum código antes de executar." }),
+  // O que o programa lê do teclado (input(), Scanner, readline). A execução não é
+  // interativa: a entrada inteira vai junto com o código.
+  stdin: z
+    .string({ error: "Entrada inválida" })
+    .max(STDIN_MAX_LENGTH, { error: `A entrada passa de ${STDIN_MAX_LENGTH} caracteres.` })
+    .optional(),
 });
 
 // Intervalo mínimo entre duas execuções da mesma sessão. O botão já trava o clique duplo,
@@ -173,11 +181,18 @@ export function parseSubmission(body: unknown): RunResult {
   };
 }
 
+// Python (input) e Java (Scanner) lançam estas exceções quando a entrada acaba antes de o
+// programa parar de ler. No Node a leitura só termina, sem erro.
+const STDIN_EXHAUSTED_PATTERN = /\bEOFError\b|\bNoSuchElementException\b/;
+const STDIN_HINT =
+  "O programa tentou ler mais entrada do que recebeu. A execução não é interativa: " +
+  "escreva na aba entrada tudo o que ele vai ler, uma linha para cada leitura.";
+
 // Envia o código ao Judge0 e espera o resultado. Nunca lança: qualquer falha vira um
 // RunResult `failed` com uma mensagem que dá para mostrar na sala.
 export async function runOnJudge0(
   config: Judge0Config,
-  input: { language: LanguageId; code: string },
+  input: { language: LanguageId; code: string; stdin?: string },
   fetchImpl: typeof fetch = fetch,
 ): Promise<RunResult> {
   let response: Response;
@@ -188,6 +203,7 @@ export async function runOnJudge0(
       body: JSON.stringify({
         language_id: JUDGE0_LANGUAGE_IDS[input.language],
         source_code: toBase64(input.code),
+        stdin: toBase64(input.stdin ?? ""),
         cpu_time_limit: CPU_TIME_LIMIT,
         wall_time_limit: WALL_TIME_LIMIT,
       }),
@@ -213,5 +229,10 @@ export async function runOnJudge0(
   } catch {
     return failed("O serviço de execução respondeu num formato inesperado.");
   }
-  return parseSubmission(body);
+  const result = parseSubmission(body);
+  if (result.outcome === "runtime_error" && STDIN_EXHAUSTED_PATTERN.test(result.errorOutput)) {
+    // A dica vai na frente: é a causa, e o traceback embaixo continua inteiro.
+    return { ...result, errorOutput: clip(`${STDIN_HINT}\n\n${result.errorOutput}`) };
+  }
+  return result;
 }

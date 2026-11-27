@@ -1,7 +1,7 @@
 import { authorizeRoomEntry } from "@/lib/room/access";
 import { readJudge0Config, runBodySchema, runOnJudge0, takeRunSlot } from "@/lib/room/run-code";
 
-// POST /api/code/run  { sessionId, name?, language, code }
+// POST /api/code/run  { sessionId, name?, language, code, stdin? }
 // Roda o código do editor no Judge0 e devolve o resultado. Só para participante da sessão
 // e na janela de horário (a mesma checagem das rotas de token), para a chave do Judge0 não
 // virar um executor de código aberto. A chave só existe aqui no servidor.

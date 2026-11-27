@@ -53,7 +53,7 @@ export function RoomLayout({ session, onSessionEnded, sessionId, userName }: Pro
   // A linguagem mora aqui porque o seletor fica no cabeçalho, fora do painel do editor.
   const collab = useCollab()?.collab ?? null;
   const [language, changeLanguage] = useLanguage(collab);
-  const { run, pending, canRun, execute } = useRunCode({
+  const { run, pending, canRun, execute, stdin, changeStdin } = useRunCode({
     collab,
     sessionId,
     userName,
@@ -154,7 +154,7 @@ export function RoomLayout({ session, onSessionEnded, sessionId, userName }: Pro
                 do Yjs (e o Monaco perderia desfazer, cursor e rolagem) a cada troca de aba. */}
             <TabsContent value="code" keepMounted className="flex min-h-0 flex-col data-hidden:hidden">
               <CodeEditor language={language} />
-              <RunOutput run={run} />
+              <RunOutput run={run} stdin={stdin} onStdinChange={changeStdin} canEditStdin={canRun} />
             </TabsContent>
             <TabsContent value="board" keepMounted className="flex min-h-0 flex-col data-hidden:hidden">
               <Whiteboard />
