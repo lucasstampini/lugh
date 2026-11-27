@@ -12,26 +12,9 @@ import { getBoard, getBoardAssets } from "@/lib/room/collab";
 
 import { attachBoardUndo } from "./board-undo";
 import { useCollab } from "./CollabProvider";
+import { useSceneReady } from "./use-scene-ready";
 
 type PointerUpdate = ExcalidrawBinding["onPointerUpdate"];
-
-// O Excalidraw entrega a API antes de terminar de montar a cena: a inicialização é assíncrona e,
-// no fim, troca todos os elementos pelo `initialData` (vazio). Se o binding carregar o desenho
-// do documento antes disso, o desenho é apagado e o binding propaga a "remoção" para todos.
-// Por isso só ligamos o binding quando `isLoading` vira false.
-function useSceneReady(api: ExcalidrawImperativeAPI | null): boolean {
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    if (!api) return;
-    return api.onChange((_elements, appState) => {
-      if (!appState.isLoading) setLoaded(true);
-    });
-  }, [api]);
-
-  // Se a cena já terminou de carregar antes de nos inscrevermos, o onChange não avisa de novo.
-  return Boolean(api) && (loaded || !api?.getAppState().isLoading);
-}
 
 // Quadro branco da sala (fase 1, bullets 4 e 5): Excalidraw para desenhar a arquitetura em
 // entrevistas de system design, sincronizado com o outro participante pelo mesmo
@@ -42,6 +25,8 @@ export default function Whiteboard() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [api, setApi] = useState<ExcalidrawImperativeAPI | null>(null);
   const [onPointerUpdate, setOnPointerUpdate] = useState<PointerUpdate | null>(null);
+  // Se o binding carregar o desenho do documento antes de a cena ficar pronta, o desenho é
+  // apagado pelo `initialData` (vazio) e o binding propaga a "remoção" para todos.
   const sceneReady = useSceneReady(api);
 
   useEffect(() => {
