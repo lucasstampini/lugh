@@ -15,6 +15,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   CODE_MAX_LENGTH,
+  needsMoreInput,
   OUTPUT_MAX_LENGTH,
   parseSubmission,
   readJudge0Config,
@@ -180,8 +181,11 @@ describe("runOnJudge0", () => {
     expect(python.outcome).toBe("runtime_error");
     expect(python.errorOutput).toMatch(/^O programa tentou ler mais entrada/);
     expect(python.errorOutput).toContain("EOFError: EOF when reading a line");
-    expect(java.errorOutput).toContain("aba entrada");
+    expect(java.errorOutput).toContain("campo entrada");
     expect(other.errorOutput).toBe("ZeroDivisionError: division by zero");
+    expect(needsMoreInput(python)).toBe(true);
+    expect(needsMoreInput(java)).toBe(true);
+    expect(needsMoreInput(other)).toBe(false);
   });
 
   it("instância própria usa X-Auth-Token, e sem chave não manda autenticação", async () => {
