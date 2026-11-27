@@ -3,12 +3,12 @@ import {
   Check,
   ChevronRight,
   Database,
-  LayoutTemplate,
   MessagesSquare,
   Network,
   Plus,
   Server,
   Smartphone,
+  Sparkles,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -47,8 +47,8 @@ const STEPS = [
 // porta abre a lista já filtrada, então não pode existir área aqui que o
 // filtro não conheça.
 const AREAS = [
-  { icon: Server, slug: "backend", name: "Back-end", description: "APIs, bancos de dados e filas" },
-  { icon: LayoutTemplate, slug: "frontend", name: "Front-end", description: "React, CSS e acessibilidade" },
+  { icon: Server, slug: "software_engineer", name: "Software Engineer", description: "APIs, bancos de dados e filas" },
+  { icon: Sparkles, slug: "ai_engineer", name: "AI Engineer", description: "LLMs, RAG e avaliação de modelos" },
   { icon: Database, slug: "data", name: "Dados", description: "SQL, modelagem e pipelines" },
   { icon: Smartphone, slug: "mobile", name: "Mobile", description: "Android, iOS e React Native" },
   { icon: Network, slug: "system_design", name: "System design", description: "Arquitetura e escala" },
@@ -87,7 +87,7 @@ const AGENDA_SLOT: Record<SlotState, string> = {
 // das pontas inclinam de leve, como no desenho do /preview.
 const INTERVIEWERS = [
   {
-    tag: "Back-end · Entrevista técnica",
+    tag: "Software Engineer · Entrevista técnica",
     name: "Camila Ribeiro",
     role: "Engenheira de software sênior",
     company: "Fintech de grande porte",
@@ -97,9 +97,9 @@ const INTERVIEWERS = [
     raised: false,
   },
   {
-    tag: "Front-end · Entrevista técnica",
+    tag: "AI Engineer · Entrevista técnica",
     name: "Rafael Nascimento",
-    role: "Desenvolvedor front-end pleno",
+    role: "Engenheiro de IA pleno",
     company: "Plataforma de educação",
     slot: "Qui, 19 nov · 18h",
     price: "R$ 80",

@@ -95,7 +95,7 @@ const FORMATS = [
 // Mesmos perfis ilustrativos usados em outras telas de exemplo do marketplace.
 const INTERVIEWERS = [
   {
-    tag: "Back-end · Entrevista técnica",
+    tag: "Software Engineer · Entrevista técnica",
     name: "Camila Ribeiro",
     role: "Engenheira de software sênior",
     company: "Fintech de grande porte",
@@ -104,9 +104,9 @@ const INTERVIEWERS = [
     raised: false,
   },
   {
-    tag: "Front-end · Entrevista técnica",
+    tag: "AI Engineer · Entrevista técnica",
     name: "Rafael Nascimento",
-    role: "Desenvolvedor front-end pleno",
+    role: "Engenheiro de IA pleno",
     company: "Plataforma de educação",
     slot: "Qui, 19 nov · 18h",
     tilt: "",

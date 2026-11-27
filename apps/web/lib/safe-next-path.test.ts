@@ -5,8 +5,8 @@ import { safeNextPath } from "./safe-next-path";
 describe("safeNextPath", () => {
   it("aceita caminho interno, com query", () => {
     expect(safeNextPath("/painel")).toBe("/painel");
-    expect(safeNextPath("/entrevistadores?area=backend")).toBe(
-      "/entrevistadores?area=backend",
+    expect(safeNextPath("/entrevistadores?area=software_engineer")).toBe(
+      "/entrevistadores?area=software_engineer",
     );
   });
 

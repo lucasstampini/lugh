@@ -46,9 +46,9 @@ on conflict (id) do update set
 insert into public.interviewers (
   profile_id, headline, company, seniority, areas, price_cents, bio, linkedin_url, github_url, active
 ) values
-  ('d0000000-0000-4000-8000-000000000001', 'Engenheira de Software Sênior', 'Fintech de grande porte', 'senior', array['backend', 'system_design'], 15000, 'Gosto de ajudar quem tá começando a entender como pensar em escala.', 'https://linkedin.com/in/mariana-demo', 'https://github.com/mariana-demo', true),
-  ('d0000000-0000-4000-8000-000000000002', 'Tech Lead Frontend', 'Big tech', 'senior', array['frontend'], 18000, 'Já revisei centenas de code reviews, trago isso pra prática.', 'https://linkedin.com/in/rafael-demo', null, true),
-  ('d0000000-0000-4000-8000-000000000003', 'Staff Engineer', 'E-commerce de grande porte', 'staff', array['system_design', 'backend'], 22000, 'Foco em system design pra quem quer a vaga de sênior.', 'https://linkedin.com/in/juliana-demo', 'https://github.com/juliana-demo', true),
+  ('d0000000-0000-4000-8000-000000000001', 'Engenheira de Software Sênior', 'Fintech de grande porte', 'senior', array['software_engineer', 'system_design'], 15000, 'Gosto de ajudar quem tá começando a entender como pensar em escala.', 'https://linkedin.com/in/mariana-demo', 'https://github.com/mariana-demo', true),
+  ('d0000000-0000-4000-8000-000000000002', 'AI Engineer Sênior', 'Big tech', 'senior', array['ai_engineer'], 18000, 'Já revisei centenas de code reviews, trago isso pra prática.', 'https://linkedin.com/in/rafael-demo', null, true),
+  ('d0000000-0000-4000-8000-000000000003', 'Staff Engineer', 'E-commerce de grande porte', 'staff', array['system_design', 'software_engineer'], 22000, 'Foco em system design pra quem quer a vaga de sênior.', 'https://linkedin.com/in/juliana-demo', 'https://github.com/juliana-demo', true),
   ('d0000000-0000-4000-8000-000000000004', 'Engenheiro de Dados Pleno', 'Healthtech em crescimento', 'mid', array['data'], 9000, 'Entrevista tranquila, direto ao ponto, com feedback honesto.', 'https://linkedin.com/in/thiago-demo', null, true),
   ('d0000000-0000-4000-8000-000000000005', 'Engineering Manager', 'Banco digital', 'senior', array['behavioral'], 20000, 'Já contratei dezenas de pessoas, sei o que o processo cobra.', 'https://linkedin.com/in/camila-demo', null, true),
   ('d0000000-0000-4000-8000-000000000006', 'Desenvolvedora Mobile Sênior', 'Startup de logística', 'senior', array['mobile'], 12000, 'iOS e Android, do zero ao avançado.', 'https://linkedin.com/in/beatriz-demo', null, true);
