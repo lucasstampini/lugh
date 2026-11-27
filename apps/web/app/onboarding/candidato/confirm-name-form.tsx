@@ -7,6 +7,7 @@ import { useActionState, useState } from "react";
 import { confirmCandidate } from "@/app/onboarding/actions";
 import { Eyebrow } from "@/components/eyebrow";
 import { ChoicePill, DashedLabel, Field, FormAlert, LABEL_CLASS } from "@/components/form-field";
+import { TermsConsent } from "@/components/terms-consent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,9 +34,12 @@ type Preview = {
 export function ConfirmNameForm({
   initialName,
   initialAvatarUrl,
+  needsTermsAcceptance,
 }: {
   initialName: string;
   initialAvatarUrl: string | null;
+  // Falso para quem já aceitou os Termos (ex.: voltou ao onboarding).
+  needsTermsAcceptance: boolean;
 }) {
   const [state, formAction, pending] = useActionState(confirmCandidate, null);
   const [bioLength, setBioLength] = useState(0);
@@ -185,6 +189,8 @@ export function ConfirmNameForm({
             <Input id="github" name="github" placeholder="github.com/seu-usuario" />
           </Field>
         </div>
+
+        {needsTermsAcceptance ? <TermsConsent /> : null}
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-1.5">
           <Link
