@@ -7,6 +7,7 @@ import { Field, FormAlert } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { initials } from "@/lib/initials";
+import { INTERVIEW_TYPE_OPTIONS } from "@/lib/candidate-preferences";
 import { NOTES_MAX_LENGTH, type SessionType } from "@/lib/slots";
 import { createSession } from "./actions";
 
@@ -25,24 +26,6 @@ export type BookingDay = {
   slots: BookingSlot[];
 };
 
-const SESSION_TYPE_OPTIONS: { value: SessionType; title: string; description: string }[] = [
-  {
-    value: "coding",
-    title: "Código ao vivo",
-    description: "Você resolve um problema no editor e explica o raciocínio enquanto escreve.",
-  },
-  {
-    value: "system_design",
-    title: "System design",
-    description: "Você desenha a arquitetura de um sistema no quadro, junto com quem entrevista.",
-  },
-  {
-    value: "behavioral",
-    title: "Comportamental",
-    description: "Perguntas sobre suas experiências e sobre como você trabalha em equipe.",
-  },
-];
-
 const WEEK_LABELS = ["próximos 7 dias", "semana seguinte"];
 
 const H2 = "font-heading text-[22px] font-bold";
@@ -57,6 +40,7 @@ export function BookingForm({
   days,
   week,
   initialSlot,
+  initialType,
 }: {
   interviewerId: string;
   interviewerName: string;
@@ -66,6 +50,8 @@ export function BookingForm({
   days: BookingDay[];
   week: number;
   initialSlot: string | null;
+  // Tipo que já vem marcado (ex.: o que o candidato respondeu no onboarding).
+  initialType: SessionType;
 }) {
   const [state, formAction, pending] = useActionState(
     createSession.bind(null, interviewerId),
@@ -74,7 +60,7 @@ export function BookingForm({
   // Controlados: o React limpa campos não controlados depois da action, e um
   // erro (horário recém-ocupado, por exemplo) não pode apagar o que foi escrito.
   const [slot, setSlot] = useState<string | null>(initialSlot);
-  const [type, setType] = useState<SessionType>("coding");
+  const [type, setType] = useState<SessionType>(initialType);
   const [notes, setNotes] = useState("");
 
   const selected = days.flatMap((day) => day.slots).find((item) => item.startsAt === slot);
@@ -165,7 +151,7 @@ export function BookingForm({
 
         <fieldset className="flex flex-col gap-2.5">
           <legend className={`${H2} mb-3.5`}>Tipo de entrevista</legend>
-          {SESSION_TYPE_OPTIONS.map((option) => (
+          {INTERVIEW_TYPE_OPTIONS.map((option) => (
             <label
               key={option.value}
               className="edge bg-card has-checked:bg-accent flex cursor-pointer items-start gap-3 rounded-[14px] px-4 py-3.5"
