@@ -12,13 +12,7 @@ import {
   SENIORITY_OPTIONS,
   currentAreaSlug,
 } from "@/lib/interviewer-options";
-import {
-  type AvailabilityBlock,
-  type BookedRange,
-  bookingWindow,
-  computeAllWeeks,
-  upcomingSlotLabels,
-} from "@/lib/slots";
+import { listInterviewers } from "@/lib/interviewers";
 import { createClient } from "@/lib/supabase/server";
 
 export const instant = false;
@@ -37,100 +31,23 @@ export default async function EntrevistadoresPage({
   const sort = typeof params.sort === "string" ? params.sort : "recentes";
 
   const supabase = await createClient();
-  let query = supabase
-    .from("interviewers")
-    .select("profile_id, headline, company, seniority, areas, price_cents, bio")
-    .eq("active", true)
-    .eq("paused", false);
+  const { items, error } = await listInterviewers(supabase, {
+    area,
+    seniority: senioridade,
+    sort,
+  });
 
-  if (area) {
-    query = query.contains("areas", [area]);
-  }
-  if (senioridade) {
-    query = query.eq("seniority", senioridade);
-  }
-
-  query =
-    sort === "preco"
-      ? query.order("price_cents", { ascending: true })
-      : query.order("created_at", { ascending: false });
-
-  const { data: interviewers, error } = await query;
-
-  // profiles tem RLS "cada um só lê a própria linha": nome/avatar público de
-  // entrevistador vem da view interviewer_profiles (só essas duas colunas,
-  // nunca email), buscada à parte porque o PostgREST não embeda views.
-  const profileIds = interviewers?.map((i) => i.profile_id) ?? [];
-  const now = new Date();
-  const { from, to } = bookingWindow(now);
-  const [{ data: profiles }, { data: availability }, { data: ratings }, { data: booked }] =
-    profileIds.length
-      ? await Promise.all([
-          supabase
-            .from("interviewer_profiles")
-            .select("id, name, avatar_url")
-            .in("id", profileIds),
-          supabase
-            .from("availability")
-            .select("interviewer_id, weekday, start_time, end_time")
-            .in("interviewer_id", profileIds),
-          supabase.rpc("interviewer_ratings", { interviewer_ids: profileIds }),
-          // Sessões já marcadas, para os horários do card serem só os que
-          // ainda dá para agendar.
-          supabase.rpc("interviewers_booked_slots", {
-            interviewer_ids: profileIds,
-            from_ts: from.toISOString(),
-            to_ts: to.toISOString(),
-          }),
-        ])
-      : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }];
-
-  const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
-  const blocksByInterviewer = new Map<string, AvailabilityBlock[]>();
-  for (const block of availability ?? []) {
-    const list = blocksByInterviewer.get(block.interviewer_id) ?? [];
-    list.push({
-      weekday: block.weekday,
-      start_time: block.start_time,
-      end_time: block.end_time,
-    });
-    blocksByInterviewer.set(block.interviewer_id, list);
-  }
-  const bookedByInterviewer = new Map<string, BookedRange[]>();
-  for (const range of booked ?? []) {
-    const list = bookedByInterviewer.get(range.interviewer_id) ?? [];
-    list.push({ starts_at: range.starts_at, ends_at: range.ends_at });
-    bookedByInterviewer.set(range.interviewer_id, list);
-  }
-  const ratingByInterviewer = new Map(
-    (ratings ?? []).map((r) => [r.interviewer_id, { average: r.average, reviewCount: r.review_count }]),
-  );
-
-  const results = (interviewers ?? [])
-    .map((interviewer) => ({
-      interviewer,
-      profile: profileById.get(interviewer.profile_id),
-      rating: ratingByInterviewer.get(interviewer.profile_id) ?? null,
-      slots: upcomingSlotLabels(
-        computeAllWeeks({
-          blocks: blocksByInterviewer.get(interviewer.profile_id) ?? [],
-          booked: bookedByInterviewer.get(interviewer.profile_id) ?? [],
-          now,
-        }),
-        3,
-      ),
-    }))
-    .filter(({ interviewer, profile }) => {
-      if (!q) {
-        return true;
-      }
-      const needle = q.toLowerCase();
-      return (
-        (profile?.name ?? "").toLowerCase().includes(needle) ||
-        interviewer.headline.toLowerCase().includes(needle) ||
-        interviewer.company.toLowerCase().includes(needle)
-      );
-    });
+  const results = items.filter(({ interviewer, profile }) => {
+    if (!q) {
+      return true;
+    }
+    const needle = q.toLowerCase();
+    return (
+      (profile?.name ?? "").toLowerCase().includes(needle) ||
+      interviewer.headline.toLowerCase().includes(needle) ||
+      interviewer.company.toLowerCase().includes(needle)
+    );
+  });
 
   const hasFilters = Boolean(area || senioridade || q);
 

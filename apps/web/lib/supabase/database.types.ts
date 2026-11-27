@@ -251,12 +251,14 @@ export type Database = {
           areas: string[] | null
           avatar_url: string | null
           bio: string | null
+          career_stage: string | null
           city: string | null
           created_at: string
           email: string
           experience_years: number | null
           github_url: string | null
           id: string
+          interview_types: string[] | null
           linkedin_url: string | null
           name: string
           preferred_name: string | null
@@ -264,17 +266,20 @@ export type Database = {
           state: string | null
           target_role: string | null
           terms_accepted_at: string | null
+          training_urgency: string | null
         }
         Insert: {
           areas?: string[] | null
           avatar_url?: string | null
           bio?: string | null
+          career_stage?: string | null
           city?: string | null
           created_at?: string
           email: string
           experience_years?: number | null
           github_url?: string | null
           id: string
+          interview_types?: string[] | null
           linkedin_url?: string | null
           name: string
           preferred_name?: string | null
@@ -282,17 +287,20 @@ export type Database = {
           state?: string | null
           target_role?: string | null
           terms_accepted_at?: string | null
+          training_urgency?: string | null
         }
         Update: {
           areas?: string[] | null
           avatar_url?: string | null
           bio?: string | null
+          career_stage?: string | null
           city?: string | null
           created_at?: string
           email?: string
           experience_years?: number | null
           github_url?: string | null
           id?: string
+          interview_types?: string[] | null
           linkedin_url?: string | null
           name?: string
           preferred_name?: string | null
@@ -300,6 +308,7 @@ export type Database = {
           state?: string | null
           target_role?: string | null
           terms_accepted_at?: string | null
+          training_urgency?: string | null
         }
         Relationships: []
       }

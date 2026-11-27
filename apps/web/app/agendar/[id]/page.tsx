@@ -7,7 +7,7 @@ import { formatPrice } from "@/lib/format-price";
 import { formatSessionDate } from "@/lib/format-session-date";
 import { initials } from "@/lib/initials";
 import { PAYMENT_WINDOW_MINUTES, paymentSecondsLeft, type PaymentView } from "@/lib/payments";
-import { BOOKING_WEEKS, findSlotWeek, getFreeSlots } from "@/lib/slots";
+import { BOOKING_WEEKS, findSlotWeek, getFreeSlots, SESSION_TYPES } from "@/lib/slots";
 import { createClient } from "@/lib/supabase/server";
 import { type BookingDay, BookingForm } from "./booking-form";
 import { PaymentStep } from "./payment-step";
@@ -243,6 +243,10 @@ export default async function AgendarPage({
       ? weekParam
       : (slotWeek ?? 0);
 
+  // Tipo que veio dos matches do onboarding (?tipo=). Valor desconhecido cai no padrão.
+  const typeParam = firstParam(query.tipo);
+  const initialType = SESSION_TYPES.find((type) => type === typeParam) ?? "coding";
+
   const days: BookingDay[] = (freeSlots.weeks[week] ?? []).map((day) => ({
     dayKey: day.dayKey,
     label: `${WEEKDAY_SHORT[day.weekday]} ${day.dayOfMonth}`,
@@ -313,6 +317,7 @@ export default async function AgendarPage({
             days={days}
             week={week}
             initialSlot={initialSlot}
+            initialType={initialType}
           />
         )}
       </main>
