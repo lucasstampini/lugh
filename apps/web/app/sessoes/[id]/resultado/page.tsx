@@ -293,9 +293,11 @@ export default async function SessionResultPage({
                   <pre
                     tabIndex={0}
                     aria-label="Código final da sessão"
-                    className="bg-code text-code-foreground max-h-[420px] overflow-auto rounded-[14px] px-4 py-3.5 font-mono text-[13px] leading-[1.7]"
+                    className="edge bg-code text-code-foreground max-h-[420px] overflow-auto rounded-[14px] font-mono text-[13px] leading-[1.7]"
                   >
-                    <code>{code}</code>
+                    {/* O respiro fica no <code>, com largura do conteúdo: assim ele vale também
+                        no fim de uma linha longa, depois de rolar para o lado. */}
+                    <code className="block w-max min-w-full px-6 py-5">{code}</code>
                   </pre>
                 ) : (
                   <p className={EMPTY_PANEL}>
